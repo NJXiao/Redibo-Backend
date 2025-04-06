@@ -13,14 +13,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Genero {
+  MASCULINO
+  FEMENINO
+  OTRO
+}
+
 model Usuario {
   id               Int              @id @default(autoincrement())
   nombre           String
   fecha_nacimiento DateTime
-  genero           String
+  genero           Genero
   id_ciudad        Int
   ciudad           Ciudad           @relation(fields: [id_ciudad], references: [id])
-  contraseña       String
+  contraseña       String?
+  google_id       String?
+  foto            String?
   telefono         String
   roles            UsuarioRol[]
   favoritos        Favorito[]
