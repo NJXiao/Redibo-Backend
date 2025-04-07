@@ -1,10 +1,8 @@
 import express, { json } from 'express';
-import { PrismaClient } from '@prisma/client';
 import morgan from "morgan";
 import cors from "cors";
 
 const app = express();
-const prisma = new PrismaClient();
 
 app.use(json());
 app.use(morgan("dev"));
