@@ -23,6 +23,7 @@ enum Genero {
 model Usuario {
   id               Int              @id @default(autoincrement())
   nombre           String
+  correo           String           @unique
   fecha_nacimiento DateTime
   genero           String
   id_ciudad        Int
@@ -37,7 +38,9 @@ model Usuario {
   notificaciones   Notificacion[]
   reservas         Reserva[]
   carros           Carro[]          @relation("CarrosPorUsuario")
+  busquedas        Busqueda[]
 }
+
 
 model UsuarioRol {
   id         Int         @id @default(autoincrement())
@@ -184,4 +187,12 @@ model Provincia {
   id        Int       @id @default(autoincrement())
   nombre    String
   direcciones Direccion[]
+}
+
+model Busqueda {
+  id              Int       @id @default(autoincrement())
+  criterio        String
+  fecha_creacion  DateTime  @default(now())
+  id_usuario      Int
+  usuario         Usuario   @relation(fields: [id_usuario], references: [id])
 }
