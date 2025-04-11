@@ -1,6 +1,6 @@
 const { getCiudades } = require('../modelo/filtroCiudad');
 
-// Controlador para obtener las ciudades
+//  obtener las ciudades
 const obtenerCiudades = async (req, res) => {
   try {
     const ciudades = await getCiudades(); // Llama a la función del modelo

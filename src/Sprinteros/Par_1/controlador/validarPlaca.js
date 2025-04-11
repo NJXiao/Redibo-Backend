@@ -1,4 +1,5 @@
-const prisma = require('@prisma/client'); // Asegúrate de tener prisma importado
+const { PrismaClient } = require('@prisma/client'); // Importa PrismaClient
+const prisma = new PrismaClient(); // Inicializa PrismaClient
 
 // 1. Función para validar el formato de la placa
 function validarPlaca(placa) {
@@ -38,8 +39,5 @@ async function verificarYActualizarPlaca(idCarro, nuevaPlaca) {
   console.log("Carro actualizado con éxito:", carroActualizado);
 }
 
-// Ejemplo de uso
-const idCarro = 5; // ID del carro a editar
-const nuevaPlaca = "XYZ456"; // Nueva placa a asignar
 
-verificarYActualizarPlaca(idCarro, nuevaPlaca);
+module.exports = { validarPlaca };

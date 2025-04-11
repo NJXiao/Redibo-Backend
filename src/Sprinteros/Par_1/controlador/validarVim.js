@@ -58,3 +58,5 @@ rl.question("Ingrese el ID del carro: ", (idCarro) => {
     rl.close();
   });
 });
+
+module.exports = ControlVin;

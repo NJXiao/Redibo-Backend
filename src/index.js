@@ -1,13 +1,13 @@
-// filepath: d:\IS_proyect\Redibo-Backend\src\index.js
+
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const morgan = require("morgan");
 const cors = require("cors");
+const rutas = require('./Sprinteros/Par_1/controlador/rutas'); // Importa el archivo de rutas generales
 
 const app = express();
 const prisma = new PrismaClient();
 
-// Middlewares
 app.use(express.json());
 app.use(morgan("dev"));
 
@@ -19,19 +19,10 @@ app.get('/', (req, res) => {
   res.send('server is running');
 });
 
-// Ruta para departamentos
-app.get('/departamento', async (req, res) => {
-  try {
-    const departamento = await prisma.departamento.findMany();
-    res.json(departamento);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch departamento' });
-  }
-});
 
-// Importa y conecta las rutas de ciudades
-const ciudadRoutes = require('./Sprinteros/Par_1/controlador/ciudadaRuta');
-app.use('/api', ciudadRoutes);
+// Conecta las rutas generales
+app.use('/api', rutas);
+
 
 // Inicia el servidor
 const PORT = process.env.PORT || 4000;
