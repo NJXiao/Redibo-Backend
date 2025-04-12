@@ -6,7 +6,11 @@ export class CarModel {
       const cars = await prisma.carro.findMany({
         include: {
           imagenes: true,
-          reservas: true,
+          reservas: {
+            where: {
+              estado: "confirmado",
+            }
+          },
         }
       })
 
@@ -27,10 +31,23 @@ export class CarModel {
   static async getMostRented() {
     try {
       const cars = await prisma.carro.findMany({
+        where: {
+          reservas: {
+            some: {
+              estado: "confirmado",
+            }
+          }
+        },
         include: {
           imagenes: true,
           _count: {
-            select: { reservas: true }
+            select: { 
+              reservas: {
+                where: {
+                  estado: "confirmado",
+                }
+              } 
+            }
           }
         },
         orderBy: {
