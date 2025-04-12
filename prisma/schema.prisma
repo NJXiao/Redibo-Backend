@@ -142,7 +142,11 @@ model Reserva {
   id             Int         @id @default(autoincrement())
   id_carro       Int
   id_usuario     Int
-  fecha          DateTime
+  fecha_creacion DateTime @default(now())
+  fecha_inicio   DateTime
+  fecha_fin      DateTime
+  fecha_expiracion DateTime?
+  estado         String @default("pendiente")
   id_descuento   Int?
   carro          Carro       @relation(fields: [id_carro], references: [id])
   descuento      Descuento?  @relation(fields: [id_descuento], references: [id])
