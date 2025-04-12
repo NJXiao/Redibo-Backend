@@ -1,0 +1,14 @@
+buscar por precio, anio de vehiculo , asintos () FILTRO
+
+buscar por marca (Toyota, etc)
+
+buscar por modelo (Corolla, Camry)
+
+buscar por tipo de Vehiculo (trufi, noa, taxi, etc)
+
+buscar por el host (Nombre del q alquila)
+    Tarjetas -> desplegar sus publicaciones
+
+busar por el color (Auto rojo) -> la base  de datos no tiene la columna COLOR 
+
+buscar por ubicacion (Av. Heroinas)-> Aun falta analizar el concepto y se tiene q coordinar con los dev de auto
