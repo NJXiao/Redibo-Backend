@@ -19,8 +19,8 @@ export class CarModel {
         veces_alquilado: car.reservas.length,
       }))
     } catch (error) {
-      console.error('Error al obtener autos: ', error);
-      throw new Error('Error al obtener autos');
+      console.error('Error al obtener autos: ', error)
+      throw new Error('Error al obtener autos')
     }
   }
   

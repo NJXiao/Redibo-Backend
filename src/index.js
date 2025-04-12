@@ -4,7 +4,7 @@ import cors from "cors";
 import { carRouter } from './routes/cars.js';
 import { reservationRouter } from './routes/reservation.js';
 
-const app = express();
+const app = express()
 
 app.use(cors())
 app.use(json())

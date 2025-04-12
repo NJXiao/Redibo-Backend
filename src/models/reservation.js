@@ -28,9 +28,9 @@ export class ReservationModel {
       throw new Error('El carro ya está reservado para esas fechas')
     }
 
-    let expirationDate = null;
+    let expirationDate = null
     if (estado === 'pendiente') {
-      const now = new Date();
+      const now = new Date()
       const daysUntilReservation = (new Date(starDate) - now) / (1000 * 60 * 60 * 24)
       
       if (daysUntilReservation < 3) {

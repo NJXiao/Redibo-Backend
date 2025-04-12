@@ -3,4 +3,4 @@ import { ReservationController } from "../controllers/reservation.js";
 
 export const reservationRouter = Router()
 
-reservationRouter.post("/", ReservationController.createReservation)
+reservationRouter.post('/', ReservationController.createReservation)
