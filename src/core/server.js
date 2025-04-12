@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 
-const testRoutes = require('./routes/test.routes');
+const testModule = require('../modules/prueba/prueba.module');
 
 const app = express();
 
@@ -11,7 +11,7 @@ app.use(morgan("dev"));
 app.use(cors());
 
 //RUTAS DEFINIDAS   
-app.use('/test', testRoutes);
+app.use('/test', testModule.controller);
 
 
 module.exports = app;
