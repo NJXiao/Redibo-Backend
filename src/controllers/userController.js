@@ -14,7 +14,17 @@ exports.registerUser = async (req, res) => {
   try {
     console.log('Datos recibidos en req.body:', req.body);
     const userData = req.body;
-    let { nombre, correo, fecha_nacimiento, genero, id_ciudad, contrasena, telefono, id_rol } = userData;
+    let { nombre, correo, fecha_nacimiento, genero, id_ciudad, contrasena, telefono, rol } = userData;
+    // Validar rol recibido
+    const rolesValidos = ['HOST', 'RENTER', 'DRIVER'];
+    if (!rol || !rolesValidos.includes(rol)) {
+      return res.status(400).json({ error: 'El rol debe ser HOST, RENTER o DRIVER' });
+    }
+    // Buscar ID del rol en la base de datos
+    const rolData = await prisma.rol.findFirst({ where: { rol } });
+    if (!rolData) {
+      return res.status(400).json({ error: 'Rol no encontrado en base de datos' });
+    }
     // Verificar si el correo ya existe
     const existingEmail = await prisma.usuario.findFirst({
       where: { correo }
@@ -50,8 +60,7 @@ exports.registerUser = async (req, res) => {
           genero,
           id_ciudad: parseInt(userData.ciudad),
           foto: userData.foto,
-          telefono,
-          id_rol
+          telefono
         }
       });
     } else {
@@ -87,11 +96,11 @@ exports.registerUser = async (req, res) => {
       });
     }
     
-    // Asignar rol por defecto (por ejemplo, rol de usuario normal)
-    await prisma.usuarioRol.create({
+    // Asignar el rol al usuario
+     await prisma.usuarioRol.create({
       data: {
         id_usuario: newUser.id,
-        id_rol: id_rol // Asumiendo que 1 es el ID del rol de usuario normal
+        id_rol: rolData.id
       }
     });
     
@@ -108,9 +117,19 @@ exports.registerUser = async (req, res) => {
 
 // Función para completar registro con Google
 exports.completeGoogleRegistration = async (req, res) => {
-  const { nombre, correo, fechaNacimiento, genero, ciudad, foto, telefono, id_rol } = req.body;
+  const { nombre, correo, fechaNacimiento, genero, ciudad, foto, telefono, rol } = req.body;
 
   try {
+    // Validar rol recibido
+    const rolesValidos = ['HOST', 'RENTER', 'DRIVER'];
+    if (!rol || !rolesValidos.includes(rol)) {
+      return res.status(400).json({ error: 'El rol debe ser HOST, RENTER o DRIVER' });
+    }
+    // Buscar ID del rol
+    const rolData = await prisma.rol.findFirst({ where: { rol } });
+    if (!rolData) {
+      return res.status(400).json({ error: 'Rol no encontrado en base de datos' });
+    }
     // Verificar si el correo ya está registrado
     const correoExistente = await prisma.usuario.findFirst({
       where: { correo }
@@ -161,24 +180,19 @@ exports.completeGoogleRegistration = async (req, res) => {
       }
     });
 
-    // Asignar rol
+    // Asignar rol al usuario
     const usuarioRol = await prisma.usuarioRol.create({
       data: {
         id_usuario: nuevoUsuario.id,
-        id_rol: id_rol // ID del rol de usuario normal
+        id_rol: rolData.id
       }
     });
 
-    // Consultar el rol para incluirlo en el token
-    const rol = await prisma.rol.findUnique({
-      where: { id: id_rol }
-    });
-
-    // Generar token JWT
+    // Generar token con el nombre del rol
     const token = generateToken({
       id: nuevoUsuario.id,
       correo: nuevoUsuario.correo,
-      roles: [rol.rol]
+      roles: [rolData.rol]
     });
 
     return res.status(201).json({
