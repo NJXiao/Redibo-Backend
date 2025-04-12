@@ -14,7 +14,7 @@ exports.registerUser = async (req, res) => {
   try {
     console.log('Datos recibidos en req.body:', req.body);
     const userData = req.body;
-    let { nombre, correo, fecha_nacimiento, genero, id_ciudad, contrasena, telefono } = userData;
+    let { nombre, correo, fecha_nacimiento, genero, id_ciudad, contrasena, telefono, id_rol } = userData;
     // Verificar si el correo ya existe
     const existingEmail = await prisma.usuario.findFirst({
       where: { correo }
@@ -50,7 +50,8 @@ exports.registerUser = async (req, res) => {
           genero,
           id_ciudad: parseInt(userData.ciudad),
           foto: userData.foto,
-          telefono
+          telefono,
+          id_rol
         }
       });
     } else {
@@ -90,7 +91,7 @@ exports.registerUser = async (req, res) => {
     await prisma.usuarioRol.create({
       data: {
         id_usuario: newUser.id,
-        id_rol: 1 // Asumiendo que 1 es el ID del rol de usuario normal
+        id_rol: id_rol // Asumiendo que 1 es el ID del rol de usuario normal
       }
     });
     
@@ -107,7 +108,7 @@ exports.registerUser = async (req, res) => {
 
 // Función para completar registro con Google
 exports.completeGoogleRegistration = async (req, res) => {
-  const { nombre, correo, fechaNacimiento, genero, ciudad, foto, telefono } = req.body;
+  const { nombre, correo, fechaNacimiento, genero, ciudad, foto, telefono, id_rol } = req.body;
 
   try {
     // Verificar si el correo ya está registrado
@@ -164,13 +165,13 @@ exports.completeGoogleRegistration = async (req, res) => {
     const usuarioRol = await prisma.usuarioRol.create({
       data: {
         id_usuario: nuevoUsuario.id,
-        id_rol: 1 // ID del rol de usuario normal
+        id_rol: id_rol // ID del rol de usuario normal
       }
     });
 
     // Consultar el rol para incluirlo en el token
     const rol = await prisma.rol.findUnique({
-      where: { id: 1 }
+      where: { id: id_rol }
     });
 
     // Generar token JWT

@@ -20,15 +20,12 @@ enum Genero {
   OTRO
 }
 
-<<<<<<< HEAD
-=======
 enum Roles {
   HOST
   RENTER
   DRIVER
 }
 
->>>>>>> main
 model Usuario {
   id               Int              @id @default(autoincrement())
   nombre           String
@@ -204,8 +201,4 @@ model Busqueda {
   fecha_creacion  DateTime  @default(now())
   id_usuario      Int
   usuario         Usuario   @relation(fields: [id_usuario], references: [id])
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> main
