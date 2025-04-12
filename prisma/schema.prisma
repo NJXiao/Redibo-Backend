@@ -20,15 +20,12 @@ enum Genero {
   OTRO
 }
 
-<<<<<<< HEAD
-=======
 enum Roles {
   HOST
   RENTER
   DRIVER
 }
 
->>>>>>> main
 model Usuario {
   id               Int              @id @default(autoincrement())
   nombre           String
