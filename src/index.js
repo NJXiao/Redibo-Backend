@@ -2,6 +2,7 @@ import express, { json } from 'express';
 import morgan from "morgan";
 import cors from "cors";
 import { carRouter } from './routes/cars.js';
+import { reservationRouter } from './routes/reservation.js';
 
 const app = express();
 
@@ -11,6 +12,7 @@ app.use(morgan("dev"))
 app.disable("x-powered-by")
 
 app.use('/api/cars', carRouter)
+app.use('/api/reservations', reservationRouter)
 
 const PORT = process.env.PORT || 4000
 
