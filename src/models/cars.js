@@ -63,7 +63,7 @@ export class CarModel {
         modelo: car.modelo,
         anio: car.año,
         precio_por_dia: car.precio_por_dia,
-        imagenes: car.imagenes.map(img => img.url),
+        imagenes: car.imagenes[0].url || null,
         veces_alquilado: car._count.reservas,
       }))
     } catch (error) {
