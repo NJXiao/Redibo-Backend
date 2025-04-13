@@ -71,4 +71,19 @@ export class ReservationModel {
 
     return updated
   }
+
+  static async deleteReservation ({ id }) {
+    const reservation = await prisma.reserva.findUnique({
+      where: { id: id }
+    })
+
+    if (!reservation) {
+      throw new Error('Reserva no encontrada')
+    }
+
+    const deleted = await prisma.reserva.delete({
+      where: { id: id }
+    })
+    return deleted
+  }
 }
