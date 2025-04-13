@@ -54,4 +54,21 @@ export class ReservationModel {
 
     return newReservation
   }
+
+  static async updateReservationState ({ id, estado }) {
+    const reservation = await prisma.reserva.findUnique({
+      where: { id: id }
+    })
+
+    if (!reservation) {
+      throw new Error('Reserva no encontrada')
+    }
+
+    const updated = await prisma.reserva.update({
+      where: { id: id },
+      data: { estado: estado}
+    })
+
+    return updated
+  }
 }
