@@ -1,4 +1,4 @@
-import { validateReservation } from "../validations/reservation.js";
+import { validatePartialReservation, validateReservation } from "../validations/reservation.js";
 import { ReservationModel } from "../models/reservation.js";
 
 export class ReservationController {
@@ -25,4 +25,30 @@ export class ReservationController {
     }
   }
 
+  static async updateReservationState(req, res) {
+    try {
+      const { id } = req.params
+
+      const result = validatePartialReservation(req.body)
+
+      if (!result.success) {
+        return res.status(400).json({ error: JSON.parse(result.error.message)})
+      }
+      const { estado } = result.data
+
+      const updatedReservation = await ReservationModel.updateReservationState({ 
+        id: Number(id),
+        estado: estado
+      })
+
+      res.json(updatedReservation)
+    } catch (error) {
+      console.error(error)
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message })
+      } else {
+        res.status(500).json({ error: 'Error interno del servidor' })
+      }
+    }
+  }
 }
