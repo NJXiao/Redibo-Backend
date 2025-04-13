@@ -51,4 +51,24 @@ export class ReservationController {
       }
     }
   }
+
+  static async deleteReservation(req, res) {
+    const { id } = req.params
+    try {
+      const deletedReservation = await ReservationModel.deleteReservation({ id: Number(id) })
+
+      if (!deletedReservation) {
+        return res.status(404).json({ error: 'Reserva no encontrada' })
+      }
+      res.json({message: 'Reserva eliminada correctamente'})
+
+    } catch (error) {
+      console.error(error)
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message })
+      } else {
+        res.status(500).json({ error: 'Error interno del servidor' })
+      }
+    }
+  }
 }
