@@ -39,10 +39,10 @@ async function main() {
     usuarioRoles.push(ur);
   }
 
-  // 3) Crear una provincia de ejemplo para las direcciones de los autos
-  const deptLaPaz = await prisma.departamento.findFirst({ where: { nombre: 'La Paz' } });
-  if (!deptLaPaz) {
-    throw new Error('No existe el departamento "La Paz". Asegúrate de haberlo sembrado antes.');
+  // 3) Crear una ciudad de ejemplo para las direcciones de los autos
+  const ciudadLaPaz = await prisma.ciudad.findFirst({ where: { nombre: 'La Paz' } });
+  if (!ciudadLaPaz) {
+    throw new Error('No existe la ciudad "La Paz". Asegúrate de haberla sembrado antes.');
   }
 
   let provinciaLP = await prisma.provincia.findFirst({ where: { nombre: 'Provincia La Paz' } });
@@ -50,7 +50,7 @@ async function main() {
     provinciaLP = await prisma.provincia.create({
       data: {
         nombre: 'Provincia La Paz',
-        departamento: { connect: { id: deptLaPaz.id } },
+        ciudad: { connect: { id: ciudadLaPaz.id } },
       },
     });
   }

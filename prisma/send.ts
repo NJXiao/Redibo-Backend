@@ -14,8 +14,8 @@ async function main() {
     });
   }
 
-  // 2) Crear departamentos si no existen
-  const departamentosNombres = [
+  // 2) Crear ciudades si no existen
+  const ciudadesNombres = [
     'La Paz',
     'Cochabamba',
     'Santa Cruz',
@@ -27,12 +27,12 @@ async function main() {
     'Pando',
   ];
 
-  for (const nombre of departamentosNombres) {
-    const existente = await prisma.departamento.findFirst({
+  for (const nombre of ciudadesNombres) {
+    const existente = await prisma.ciudad.findFirst({
       where: { nombre },
     });
     if (!existente) {
-      await prisma.departamento.create({
+      await prisma.ciudad.create({
         data: {
           nombre,
           pais: { connect: { id: bolivia.id } },
@@ -41,8 +41,8 @@ async function main() {
     }
   }
 
-  // 3) Leer departamentos para obtener sus IDs
-  const departamentosBD = await prisma.departamento.findMany();
+  // 3) Leer ciudades para obtener sus IDs
+  const ciudadesBD = await prisma.ciudad.findMany();
 
   // 4) Crear usuarios de prueba (si no existen ya)
   const usuariosSeed = [
@@ -52,8 +52,7 @@ async function main() {
       fecha_nacimiento: new Date('1990-05-14'),
       contraseña: '1234',
       telefono: '78912345',
-      id_departamento:
-        departamentosBD.find((d) => d.nombre === 'La Paz')!.id,
+      id_ciudad: ciudadesBD.find((d) => d.nombre === 'La Paz')!.id,
     },
     {
       nombre: 'Carlos Gómez',
@@ -61,8 +60,7 @@ async function main() {
       fecha_nacimiento: new Date('1985-11-23'),
       contraseña: 'abcd',
       telefono: '71234567',
-      id_departamento:
-        departamentosBD.find((d) => d.nombre === 'Cochabamba')!.id,
+      id_ciudad: ciudadesBD.find((d) => d.nombre === 'Cochabamba')!.id,
     },
     {
       nombre: 'Luis Flores',
@@ -70,8 +68,7 @@ async function main() {
       fecha_nacimiento: new Date('1998-07-09'),
       contraseña: 'qwerty',
       telefono: '70123456',
-      id_departamento:
-        departamentosBD.find((d) => d.nombre === 'Santa Cruz')!.id,
+      id_ciudad: ciudadesBD.find((d) => d.nombre === 'Santa Cruz')!.id,
     },
     {
       nombre: 'María Rojas',
@@ -79,8 +76,7 @@ async function main() {
       fecha_nacimiento: new Date('2000-01-01'),
       contraseña: 'pass',
       telefono: '76543210',
-      id_departamento:
-        departamentosBD.find((d) => d.nombre === 'Oruro')!.id,
+      id_ciudad: ciudadesBD.find((d) => d.nombre === 'Oruro')!.id,
     },
     {
       nombre: 'Patricia Díaz',
@@ -88,8 +84,7 @@ async function main() {
       fecha_nacimiento: new Date('1993-09-27'),
       contraseña: 'pat123',
       telefono: '73456789',
-      id_departamento:
-        departamentosBD.find((d) => d.nombre === 'Potosí')!.id,
+      id_ciudad: ciudadesBD.find((d) => d.nombre === 'Potosí')!.id,
     },
   ] as const;
 
