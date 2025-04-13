@@ -19,7 +19,7 @@ export class ReservationModel {
           },
         ],
         estado: {
-          not: 'cancelada',
+          not: 'cancelado',
         },
       }
     })
