@@ -1,7 +1,7 @@
 const prisma = require('../../config/prisma');
 
 const findAll = async () => {
-    return prisma.test.findMany();
+    return prisma.Garantia.findMany();
 };
 
 module.exports = {findAll};
