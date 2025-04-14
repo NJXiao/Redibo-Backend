@@ -4,7 +4,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon --watch src --exec node src/index.js"
+    "dev": "nodemon --watch src --exec node src/index.js",
+    "seed": "ts-node prisma/send.ts",
+    "seed2": "ts-node prisma/send2.ts"
+    
   },
   "keywords": [],
   "author": "",
@@ -12,15 +15,15 @@
   "type": "commonjs",
   "description": "",
   "dependencies": {
-    "@prisma/client": "^6.5.0",
+    "@prisma/client": "^6.6.0",
     "cors": "^2.8.5",
     "express": "^4.21.2",
-    "morgan": "^1.10.0",
-    "prisma": "^6.5.0"
+    "morgan": "^1.10.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.1",
     "nodemon": "^3.1.9",
+    "prisma": "^6.6.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   }

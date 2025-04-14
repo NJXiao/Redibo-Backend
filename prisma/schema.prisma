@@ -208,4 +208,4 @@ model Provincia {
   ciudad    Ciudad @relation(fields: [id_ciudad], references: [id])   
   id_ciudad Int
   direcciones Direccion[]
-}
+} 
