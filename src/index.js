@@ -1,31 +1,21 @@
-const express = require('express');
-const { PrismaClient } = require('@prisma/client');
-const morgan = require("morgan");
-const cors = require("cors");
+import express, { json } from 'express';
+import morgan from "morgan";
+import cors from "cors";
+import { carRouter } from './routes/cars.js';
+import { reservationRouter } from './routes/reservation.js';
 
-const app = express();
-const prisma = new PrismaClient();
+const app = express()
 
-app.use(express.json());
-app.use(morgan("dev"));
-app.use(cors());
+app.use(cors())
+app.use(json())
+app.use(morgan("dev"))
+app.disable("x-powered-by")
 
+app.use('/api/cars', carRouter)
+app.use('/api/reservations', reservationRouter)
 
-app.get('/', (req, res) => {
-  res.send('Server is running!');
-});
+const PORT = process.env.PORT || 4000
 
-
-app.get('/departamento', async (req, res) => {
-  try {
-    const departamento = await prisma.departamento.findMany();
-    res.json(departamento);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch departamento' });
-  }
-});
-
-const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+  console.log(`Server is running on http://localhost:${PORT}`)
+})

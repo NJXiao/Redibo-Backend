@@ -1,6 +1,7 @@
 {
   "name": "redibo-back",
   "version": "1.0.0",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -9,13 +10,18 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "description": "",
   "dependencies": {
     "@prisma/client": "^6.6.0",
     "cors": "^2.8.5",
     "express": "^4.21.2",
+<<<<<<< HEAD
     "morgan": "^1.10.0"
+=======
+    "morgan": "^1.10.0",
+    "prisma": "^6.5.0",
+    "zod": "^3.24.2"
+>>>>>>> 39d68d744d43798711b1ec4655b78ce2374c8060
   },
   "devDependencies": {
     "nodemon": "^3.1.9",
