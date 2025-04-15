@@ -3,23 +3,38 @@ const prisma = new PrismaClient();
 
 // POST search-history
 const saveSearch = async (req, res) => {
-    const { criterio, id_usuario } = req.body;
+    const {criterio, id_usuario } = req.body;
 
     if (!criterio || !id_usuario) {
         return res.status(400).json({ error: 'Faltan datos: criterio o id_usuario' });
     }
 
     try {
+        const existing = await prisma.busqueda.findFirst({
+            where: {
+                criterio: criterio.trim(),
+                id_usuario
+            }
+        })
+
+        if (existing) {
+            const updated = await prisma.busqueda.update({
+                where: { id: existing.id },
+                data: { fecha_creacion: new Date() }
+            });
+            return res.status(200).json(updated);
+        }
+
         const newSearch = await prisma.busqueda.create({
             data: {
-                criterio,
+                criterio: criterio.trim(),
                 id_usuario
             }
         });
 
         res.status(201).json(newSearch);
     } catch (error) {
-        res.status(500).json({ error: 'Error al guardar búsqueda' })
+        res.status(500).json({ error: 'Error al guardar búsqueda' });
     }
 };
 
