@@ -9,7 +9,9 @@ const {
     obtenerCarroConDireccion // Importa la función para manejar la nueva ruta
 } = require('./controlCiudad');
 const { validarPlaca } = require('./validarPlaca');
-const {  obtenerVehiculoCompleto, obtenerCaracteristicas } = require('./vehiculo.controlador');
+const {  obtenerVehiculoCompleto,
+         obtenerCaracteristicas, 
+         obtenerCaracteristicasAdicionales} = require('./vehiculo.controlador');
 
 const router = express.Router();
 
@@ -25,5 +27,5 @@ router.get('/carro/ciudades/:idCarro', obtenerCiudadesPorCarro);
 router.post('/validar-placa', validarPlaca);
 router.get('/vehiculo/:id/completo', obtenerVehiculoCompleto);
 router.get('/vehiculo/:id/caracteristicas', obtenerCaracteristicas);
-
+router.get('/vehiculo/:id/caracteristicas-adicionales', obtenerCaracteristicasAdicionales);
 module.exports = router;

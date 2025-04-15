@@ -169,7 +169,38 @@ const obtenerCaracteristicasPorId = async (id) => {
   }
 };
 
+const obtenerCaracteristicasAdicionalesPorId = async (id) => {
+  try {
+    const caracteristicasAdicionales = await prisma.carro.findUnique({
+      where: { id: parseInt(id) },
+      select: {
+        caracteristicasAdicionalesCarro: {
+          select: {
+            carasteristicasAdicionales: {
+              select: {
+                nombre: true, // Selecciona el nombre de las características adicionales
+              },
+            },
+          },
+        },
+      },
+    });
 
+    if (!caracteristicasAdicionales) return null;
+
+    // Extraer y formatear las características adicionales
+    const adicionales = caracteristicasAdicionales.caracteristicasAdicionalesCarro.map(
+      (item) => item.carasteristicasAdicionales.nombre
+    );
+
+    return adicionales;
+  } catch (error) {
+    console.error('Error al obtener las características adicionales:', error);
+    throw error;
+  }
+};
+
+module.exports = { obtenerCaracteristicasAdicionalesPorId };
 
 module.exports = {
   obtenerPlacaPorId,
@@ -179,4 +210,5 @@ module.exports = {
   obtenerAnioPorId,
   obtenerVehiculoCompletoPorId,
   obtenerCaracteristicasPorId,
+  obtenerCaracteristicasAdicionalesPorId
 };
