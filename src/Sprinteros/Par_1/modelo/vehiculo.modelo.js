@@ -95,4 +95,39 @@ const obtenerAnioPorId = async (id) => {
     }
  };
 
-module.exports = { obtenerPlacaPorId, obtenerVIMPorId, obtenerMarcaPorId, obtenerModeloPorId, obtenerAnioPorId};
+ const obtenerVehiculoCompletoPorId = async (id) => {
+  try {
+    const vehiculo = await prisma.carro.findUnique({
+      where: { id: parseInt(id) },
+      select: {
+        placa: true,
+        vim: true,
+        marca: true,
+        modelo: true,
+        año: true, // Asegúrate que en Prisma esté como "año"
+      },
+    });
+
+    if (vehiculo) {
+      // Reestructuramos el objeto para asegurarnos del orden deseado
+      const vehiculoOrdenado = {
+        vim: vehiculo.vim,
+        año: vehiculo.año,
+        marca: vehiculo.marca,
+        modelo: vehiculo.modelo,
+        placa: vehiculo.placa,
+      };
+
+      return vehiculoOrdenado;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('Error al obtener los datos completos del vehículo:', error);
+    throw error;
+  }
+};
+
+
+
+module.exports = { obtenerPlacaPorId, obtenerVIMPorId, obtenerMarcaPorId, obtenerModeloPorId, obtenerAnioPorId, obtenerVehiculoCompletoPorId};
