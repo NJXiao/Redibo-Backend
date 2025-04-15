@@ -3,17 +3,17 @@ const prisma = new PrismaClient();
 
 // POST search-history
 const saveSearch = async (req, res) => {
-    const { content, userId } = req.body;
+    const { criterio, id_usuario } = req.body;
 
-    if (!content || !userId) {
-        return res.status(400).json({ error: 'Faltan datos: contenido o userId' });
+    if (!criterio || !id_usuario) {
+        return res.status(400).json({ error: 'Faltan datos: criterio o id_usuario' });
     }
 
     try {
         const newSearch = await prisma.busqueda.create({
             data: {
-                contenido: content,
-                userId
+                criterio,
+                id_usuario
             }
         });
 
@@ -29,13 +29,13 @@ const getUserSearches = async (req, res) => {
 
     try {
         const searches = await prisma.busqueda.findMany({
-            where: { userId: parseInt(userId) },
-            orderBy: { createdAt: 'desc' }
+            where: { id_usuario: parseInt(userId) },
+            orderBy: { fecha_creacion: 'desc' }
         });
 
         res.json(searches);
     } catch (error) {
-        res.status(500).json({ error: 'ERror al obtener búsquedas' });
+        res.status(500).json({ error: 'Error al obtener búsquedas' });
     }
 }
 
@@ -54,8 +54,20 @@ const deleteSearchById = async (req, res) => {
     }
 };
 
+// GET /all
+const getAllSearches = async (req, res) => {
+    try {
+        const allSearches = await prisma.busqueda.findMany();
+        res.json(allSearches);
+    } catch (error) {
+        res.status(500).json({ error: 'Error al obtener todas las búsquedas' });
+    }
+  };
+  
+
 export default {
     saveSearch,
     getUserSearches,
-    deleteSearchById
+    deleteSearchById,
+    getAllSearches
 };

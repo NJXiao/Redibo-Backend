@@ -14,7 +14,7 @@ app.disable("x-powered-by")
 
 app.use('/api/cars', carRouter)
 app.use('/api/reservations', reservationRouter)
-app.use('/api', searchRoutes)
+app.use('/api/search-history', searchRoutes)
 
 const PORT = process.env.PORT || 4000
 
