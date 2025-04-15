@@ -9,14 +9,16 @@ const {
     obtenerCarroConDireccion // Importa la función para manejar la nueva ruta
 } = require('./controlCiudad');
 const { validarPlaca } = require('./validarPlaca');
-const { 
-    obtenerPlaca, 
-    obtenerVIM, 
-    obtenerMarca, 
-    obtenerModelo, 
-    obtenerAnio, 
-    obtenerVehiculoCompleto 
+
+const {
+    obtenerPlaca,
+    obtenerVIM,
+    obtenerMarca,
+    obtenerModelo,
+    obtenerAnio,
+    obtenerVehiculoCompleto, obtenerCaracteristicas // 👈 nuevo import
 } = require('./vehiculo.controlador');
+const { obtenerPlaca, obtenerVIM, obtenerMarca, obtenerModelo, obtenerAnio, obtenerVehiculoCompleto } = require('./vehiculo.controlador');
 
 const router = express.Router();
 
@@ -25,9 +27,8 @@ router.get('/direccion/auto/:idAuto', obtenerDireccionPorAuto);
 router.get('/ciudades/:idPais', obtenerCiudadesPorPais);
 router.get('/provincias/:idCiudad', obtenerProvinciasPorCiudad);
 router.get('/paises', obtenerPaises);
-
-// Nueva ruta: Obtener todos los datos del carro con respecto a la dirección
 router.get('/carro/direccion/:idCarro', obtenerCarroConDireccion);
+router.get('/carro/ciudades/:idCarro', obtenerCiudadesPorCarro);
 
 // Rutas relacionadas con vehículos
 router.post('/validar-placa', validarPlaca);
@@ -37,5 +38,6 @@ router.get('/vehiculo/:id/marca', obtenerMarca);
 router.get('/vehiculo/:id/modelo', obtenerModelo);
 router.get('/vehiculo/:id/anio', obtenerAnio);
 router.get('/vehiculo/:id/completo', obtenerVehiculoCompleto);
+router.get('/vehiculo/:id/caracteristicas', obtenerCaracteristicas);
 
 module.exports = router;
