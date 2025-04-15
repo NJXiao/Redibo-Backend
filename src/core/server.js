@@ -2,8 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 
-const testModule = require('../modules/prueba/prueba.module');
 const detailCarModule = require('../modules/detailCar/detailCar.module');
+const filterCarModule = require('../modules/filterCar/filterCar.module');
 
 const app = express();
 
@@ -12,8 +12,8 @@ app.use(morgan("dev"));
 app.use(cors());
 
 //RUTAS DEFINIDAS   
-app.use('/test', testModule.controller);
 
 app.use('/detailCar', detailCarModule.controller);
+app.use('/filterCar', filterCarModule.controller);
 
 module.exports = app;
