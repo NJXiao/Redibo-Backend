@@ -134,18 +134,41 @@ const obtenerCaracteristicasPorId = async (id) => {
     const caracteristicas = await prisma.carro.findUnique({
       where: { id: parseInt(id) },
       select: {
-        asientos: true,
         puertas: true,
-        transmicion: true, // Cambiado a "transmicion"
-        soat: true, // Incluye solo hasta "soat"
-      },
+        transmicion: true,
+        soat: true,
+        combustiblesporCarro: {
+          select: {
+            combustible: {
+              select: {
+                tipoDeCombustible: true
+              }
+            }
+          }
+        }
+      }
     });
-    return caracteristicas;
+
+    if (!caracteristicas) return null;
+
+    // Extraer tipo(s) de combustible
+    const tiposCombustible = caracteristicas.combustiblesporCarro.map(
+      (c) => c.combustible.tipoDeCombustible
+    );
+
+    // Retornar datos en el orden solicitado
+    return {
+      tipoDeCombustible: tiposCombustible.join(', '),
+      puertas: caracteristicas.puertas,
+      transmision: caracteristicas.transmicion,
+      soat: caracteristicas.soat
+    };
   } catch (error) {
-    console.error('Error al obtener las características del vehículo:', error);
+    console.error('Error al obtener características del vehículo:', error);
     throw error;
   }
 };
+
 
 
 module.exports = {
