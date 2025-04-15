@@ -129,5 +129,31 @@ const obtenerAnioPorId = async (id) => {
 };
 
 
+const obtenerCaracteristicasPorId = async (id) => {
+  try {
+    const caracteristicas = await prisma.carro.findUnique({
+      where: { id: parseInt(id) },
+      select: {
+        asientos: true,
+        puertas: true,
+        transmicion: true, // Cambiado a "transmicion"
+        soat: true, // Incluye solo hasta "soat"
+      },
+    });
+    return caracteristicas;
+  } catch (error) {
+    console.error('Error al obtener las características del vehículo:', error);
+    throw error;
+  }
+};
 
-module.exports = { obtenerPlacaPorId, obtenerVIMPorId, obtenerMarcaPorId, obtenerModeloPorId, obtenerAnioPorId, obtenerVehiculoCompletoPorId};
+
+module.exports = {
+  obtenerPlacaPorId,
+  obtenerVIMPorId,
+  obtenerMarcaPorId,
+  obtenerModeloPorId,
+  obtenerAnioPorId,
+  obtenerVehiculoCompletoPorId,
+  obtenerCaracteristicasPorId,
+};

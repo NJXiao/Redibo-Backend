@@ -1,4 +1,4 @@
-const { obtenerPlacaPorId, obtenerVIMPorId, obtenerMarcaPorId, obtenerModeloPorId, obtenerAnioPorId, obtenerVehiculoCompletoPorId  } = require('../modelo/vehiculo.modelo');
+const { obtenerPlacaPorId, obtenerVIMPorId, obtenerMarcaPorId, obtenerModeloPorId, obtenerAnioPorId, obtenerVehiculoCompletoPorId, obtenerCaracteristicasPorId  } = require('../modelo/vehiculo.modelo');
 
 const obtenerPlaca = async (req, res) => {
   try {
@@ -92,4 +92,20 @@ const obtenerVehiculoCompleto = async (req, res) => {
   }
 };
 
-module.exports = { obtenerPlaca, obtenerVIM, obtenerMarca, obtenerModelo,obtenerAnio, obtenerVehiculoCompleto };
+const obtenerCaracteristicas = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const caracteristicas = await obtenerCaracteristicasPorId(id);
+
+    if (!caracteristicas) {
+      return res.status(404).json({ mensaje: 'Características no encontradas' });
+    }
+
+    res.json(caracteristicas);
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error del servidor', error: error.message });
+  }
+};
+
+
+module.exports = { obtenerPlaca, obtenerVIM, obtenerMarca, obtenerModelo,obtenerAnio, obtenerVehiculoCompleto, obtenerCaracteristicas };

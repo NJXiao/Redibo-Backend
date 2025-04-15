@@ -8,7 +8,7 @@ const {
     obtenerMarca,
     obtenerModelo,
     obtenerAnio,
-    obtenerVehiculoCompleto // 👈 nuevo import
+    obtenerVehiculoCompleto, obtenerCaracteristicas // 👈 nuevo import
   } = require('./vehiculo.controlador');
 
 const router = express.Router();
@@ -21,6 +21,7 @@ router.get('/vehiculo/:id/marca', obtenerMarca);
 router.get('/vehiculo/:id/modelo', obtenerModelo);
 router.get('/vehiculo/:id/anio', obtenerAnio);
 router.get('/vehiculo/:id/completo', obtenerVehiculoCompleto);
+router.get('/vehiculo/:id/caracteristicas', obtenerCaracteristicas);
 
 
 module.exports = router;
