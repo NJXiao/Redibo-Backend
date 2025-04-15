@@ -18,7 +18,6 @@ const {
     obtenerAnio,
     obtenerVehiculoCompleto, obtenerCaracteristicas // 👈 nuevo import
 } = require('./vehiculo.controlador');
-const { obtenerPlaca, obtenerVIM, obtenerMarca, obtenerModelo, obtenerAnio, obtenerVehiculoCompleto } = require('./vehiculo.controlador');
 
 const router = express.Router();
 
