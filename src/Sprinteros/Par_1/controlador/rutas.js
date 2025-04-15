@@ -7,7 +7,7 @@ const {
     obtenerDireccionPorAuto 
 } = require('./controlCiudad');
 const { validarPlaca } = require('./validarPlaca');
-const { obtenerPlaca, obtenerVIM, obtenerMarca, obtenerModelo, obtenerAnio } = require('./vehiculo.controlador');
+const { obtenerPlaca, obtenerVIM, obtenerMarca, obtenerModelo, obtenerAnio, obtenerVehiculoCompleto } = require('./vehiculo.controlador');
 
 const router = express.Router();
 
@@ -22,5 +22,6 @@ router.get('/vehiculo/:id/vim', obtenerVIM);
 router.get('/vehiculo/:id/marca', obtenerMarca);
 router.get('/vehiculo/:id/modelo', obtenerModelo);
 router.get('/vehiculo/:id/anio', obtenerAnio);
+router.get('/vehiculo/:id/completo', obtenerVehiculoCompleto);
 
 module.exports = router;
