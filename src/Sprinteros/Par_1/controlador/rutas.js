@@ -24,7 +24,7 @@ const router = express.Router();
 
 const { actualizarVehiculo,
         actualizarCaracteristicas 
-      } = require('./vehiculo.controlador');
+    } = require('./vehiculo.controlador');
 // Rutas existentes
 router.get('/direccion/auto/:idAuto', obtenerDireccionPorAuto);
 router.get('/ciudades/:idPais', obtenerCiudadesPorPais);

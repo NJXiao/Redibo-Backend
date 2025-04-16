@@ -270,9 +270,13 @@ const actualizarVehiculoPorId = async (id, datosActualizados) => {
 
 const actualizarCaracteristicasPorId = async (id, datosActualizados) => {
   try {
-    const { asientos, puertas, transmicion, soat } = datosActualizados;
+    const { tipoDeCombustible, asientos, puertas, transmicion, soat } = datosActualizados;
 
     // Validaciones básicas
+    if (!Array.isArray(tipoDeCombustible) || tipoDeCombustible.length === 0) {
+      throw new Error("Debe proporcionar al menos un tipo de combustible en un array");
+    }
+
     if (typeof asientos !== "number" || asientos <= 0) {
       throw new Error("El número de asientos debe ser un número positivo");
     }
@@ -289,7 +293,7 @@ const actualizarCaracteristicasPorId = async (id, datosActualizados) => {
       throw new Error("El campo SOAT debe ser un valor booleano (true o false)");
     }
 
-    // Actualizar las características en la base de datos
+    // Actualizar las características principales del vehículo
     const caracteristicasActualizadas = await prisma.carro.update({
       where: { id: parseInt(id) },
       data: {
@@ -298,6 +302,22 @@ const actualizarCaracteristicasPorId = async (id, datosActualizados) => {
         transmicion,
         soat,
       },
+    });
+
+    // Actualizar los tipos de combustible asociados al vehículo
+    // Primero eliminamos los combustibles existentes
+    await prisma.combustibleCarro.deleteMany({
+      where: { id_carro: parseInt(id) },
+    });
+
+    // Luego agregamos los nuevos combustibles
+    const nuevosCombustibles = tipoDeCombustible.map((idCombustible) => ({
+      id_carro: parseInt(id),
+      id_combustible: idCombustible, // Asegúrate de que `idCombustible` sea el ID del combustible
+    }));
+
+    await prisma.combustibleCarro.createMany({
+      data: nuevosCombustibles,
     });
 
     return caracteristicasActualizadas;
