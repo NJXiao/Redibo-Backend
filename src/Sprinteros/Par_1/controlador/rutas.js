@@ -19,7 +19,8 @@ const {
 } = require('./vehiculo.controlador');
 const {  obtenerCaracteristicasAdicionales} = require('./vehiculo.controlador');
 const { obtenerImagenesCarro } = require('./validarImagen');
-        
+const { editarDireccionCarro } = require('./editarDirCarro'); 
+
 const router = express.Router();
 
 const { actualizarVehiculo,
@@ -49,4 +50,5 @@ router.get('/vehiculo/:id/caracteristicas-adicionales', obtenerCaracteristicasAd
 //PUT
 router.put('/vehiculo/:id', actualizarVehiculo);
 router.put("/vehiculo/:id/caracteristicas", actualizarCaracteristicas);
+router.put('/carro/direccion/:idCarro', editarDireccionCarro);
 module.exports = router;
