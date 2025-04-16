@@ -19,12 +19,14 @@ const {
 } = require('./vehiculo.controlador');
 const {  obtenerCaracteristicasAdicionales} = require('./vehiculo.controlador');
 const { obtenerImagenesCarro } = require('./validarImagen');
-        
+const { editarDireccionCarro } = require('./editarDirCarro'); 
+
 const router = express.Router();
 
 const { actualizarVehiculo,
-        actualizarCaracteristicas 
-      } = require('./vehiculo.controlador');
+        actualizarCaracteristicas, 
+        actualizarCaracteristicasAdicionales 
+    } = require('./vehiculo.controlador');
 // Rutas existentes
 router.get('/direccion/auto/:idAuto', obtenerDireccionPorAuto);
 router.get('/ciudades/:idPais', obtenerCiudadesPorPais);
@@ -49,4 +51,6 @@ router.get('/vehiculo/:id/caracteristicas-adicionales', obtenerCaracteristicasAd
 //PUT
 router.put('/vehiculo/:id', actualizarVehiculo);
 router.put("/vehiculo/:id/caracteristicas", actualizarCaracteristicas);
+router.put('/carro/direccion/:idCarro', editarDireccionCarro);
+router.put("/vehiculo/:id/caracteristicas-adicionales", actualizarCaracteristicasAdicionales);
 module.exports = router;
