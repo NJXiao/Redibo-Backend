@@ -52,5 +52,5 @@ router.get('/vehiculo/:id/caracteristicas-adicionales', obtenerCaracteristicasAd
 router.put('/vehiculo/:id', actualizarVehiculo);
 router.put("/vehiculo/:id/caracteristicas", actualizarCaracteristicas);
 router.put('/carro/direccion/:idCarro', editarDireccionCarro);
-router.put("/vehiculos/:id/caracteristicas-adicionales", actualizarCaracteristicasAdicionales);
+router.put("/vehiculo/:id/caracteristicas-adicionales", actualizarCaracteristicasAdicionales);
 module.exports = router;

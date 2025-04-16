@@ -1,5 +1,5 @@
 const { tipoCombustible } = require('../../../config/prisma');
-const { obtenerPlacaPorId, obtenerVIMPorId, obtenerMarcaPorId, obtenerModeloPorId, obtenerAnioPorId, obtenerVehiculoCompletoPorId, obtenerCaracteristicasPorId, obtenerCaracteristicasAdicionalesPorId, actualizarVehiculoPorId, actualizarCaracteristicasPorId  } = require('../modelo/vehiculo.modelo');
+const { obtenerPlacaPorId, obtenerVIMPorId, obtenerMarcaPorId, obtenerModeloPorId, obtenerAnioPorId, obtenerVehiculoCompletoPorId, obtenerCaracteristicasPorId, obtenerCaracteristicasAdicionalesPorId, actualizarVehiculoPorId, actualizarCaracteristicasPorId,actualizarCaracteristicasAdicionalesPorId } = require('../modelo/vehiculo.modelo');
 
 const obtenerPlaca = async (req, res) => {
   try {
@@ -193,7 +193,7 @@ const actualizarCaracteristicasAdicionales = async (req, res) => {
     }
 
     // Llamar al modelo para actualizar las características adicionales
-    const resultado = await actualizarCaracteristicasAdicionalesPorId(id, nuevasCaracteristicasAdicionales);
+    const resultado = await actualizarCaracteristicasAdicionalesPorId (id, nuevasCaracteristicasAdicionales);
 
     // Responder con las características adicionales actualizadas
     res.json(resultado);
@@ -205,4 +205,4 @@ const actualizarCaracteristicasAdicionales = async (req, res) => {
   }
 };
 
-module.exports = { obtenerPlaca, obtenerVIM, obtenerMarca, obtenerModelo,obtenerAnio, obtenerVehiculoCompleto, obtenerCaracteristicas, obtenerCaracteristicasAdicionales, actualizarVehiculo, actualizarCaracteristicas, actualizarCaracteristicasAdicionales};
+module.exports = { obtenerPlaca, obtenerVIM, obtenerMarca, obtenerModelo,obtenerAnio, obtenerVehiculoCompleto, obtenerCaracteristicas, obtenerCaracteristicasAdicionales, actualizarVehiculo, actualizarCaracteristicas, actualizarCaracteristicasAdicionales, };

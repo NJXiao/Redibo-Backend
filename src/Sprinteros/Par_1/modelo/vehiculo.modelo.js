@@ -369,11 +369,62 @@ const actualizarCaracteristicasPorId = async (id, datosActualizados) => {
   }
 };
 
+
 const actualizarCaracteristicasAdicionalesPorId = async (id, nuevasCaracteristicasAdicionales) => {
   try {
-    // Validación básica
-    if (!Array.isArray(nuevasCaracteristicasAdicionales) || nuevasCaracteristicasAdicionales.length === 0) {
-      throw new Error("Debe proporcionar al menos una característica adicional en un array");
+    // Validación básica: Si no se proporcionan características adicionales, elimina todas las existentes
+    if (!Array.isArray(nuevasCaracteristicasAdicionales)) {
+      throw new Error("El formato de las características adicionales debe ser un array");
+    }
+
+    if (nuevasCaracteristicasAdicionales.length === 0) {
+      // Si no se proporcionan características adicionales, elimina todas las existentes
+      await prisma.caracteristicasAdicionalesCarro.deleteMany({
+        where: { id_carro: parseInt(id) },
+      });
+
+      return {
+        mensaje: "Todas las características adicionales han sido eliminadas",
+        caracteristicasAdicionales: [],
+      };
+    }
+
+    // Si se envía "TODAS", selecciona todas las características adicionales disponibles
+    let idsCaracteristicas;
+    if (nuevasCaracteristicasAdicionales.includes("TODAS")) {
+      const todasCaracteristicas = await prisma.carasteristicasAdicionales.findMany({
+        select: { id: true },
+      });
+      idsCaracteristicas = todasCaracteristicas.map((caracteristica) => caracteristica.id);
+    } else {
+      // Buscar los IDs de las características adicionales proporcionadas en letras
+      const caracteristicas = await prisma.carasteristicasAdicionales.findMany({
+        where: {
+          nombre: {
+            in: nuevasCaracteristicasAdicionales, // Busca los nombres de las características adicionales
+          },
+        },
+        select: {
+          id: true, // Obtén solo los IDs
+          nombre: true, // Incluye el nombre para depuración
+        },
+      });
+
+      console.log("Características encontradas:", caracteristicas);
+
+      // Verificar si todas las características existen
+      const nombresEncontrados = caracteristicas.map((c) => c.nombre);
+      const nombresNoEncontrados = nuevasCaracteristicasAdicionales.filter(
+        (nombre) => !nombresEncontrados.includes(nombre)
+      );
+
+      if (nombresNoEncontrados.length > 0) {
+        throw new Error(
+          `Las siguientes características adicionales no existen en la base de datos: ${nombresNoEncontrados.join(", ")}`
+        );
+      }
+
+      idsCaracteristicas = caracteristicas.map((caracteristica) => caracteristica.id);
     }
 
     // Eliminar las características adicionales existentes asociadas al vehículo
@@ -382,9 +433,9 @@ const actualizarCaracteristicasAdicionalesPorId = async (id, nuevasCaracteristic
     });
 
     // Crear las nuevas características adicionales
-    const nuevasCaracteristicas = nuevasCaracteristicasAdicionales.map((nombreCaracteristica) => ({
+    const nuevasCaracteristicas = idsCaracteristicas.map((idCaracteristica) => ({
       id_carro: parseInt(id),
-      id_caracteristica: nombreCaracteristica, // Asegúrate de que `nombreCaracteristica` sea el ID de la característica adicional
+      id_carasteristicasAdicionales: idCaracteristica,
     }));
 
     await prisma.caracteristicasAdicionalesCarro.createMany({
@@ -392,11 +443,24 @@ const actualizarCaracteristicasAdicionalesPorId = async (id, nuevasCaracteristic
     });
 
     // Obtener las características adicionales actualizadas
-    const caracteristicasActualizadas = await obtenerCaracteristicasAdicionalesPorId(id);
+    const caracteristicasActualizadas = await prisma.caracteristicasAdicionalesCarro.findMany({
+      where: { id_carro: parseInt(id) },
+      include: {
+        carasteristicasAdicionales: {
+          select: {
+            nombre: true,
+          },
+        },
+      },
+    });
+
+    const nombresActualizados = caracteristicasActualizadas.map(
+      (item) => item.carasteristicasAdicionales.nombre
+    );
 
     return {
       mensaje: "Características adicionales actualizadas correctamente",
-      caracteristicasAdicionales: caracteristicasActualizadas,
+      caracteristicasAdicionales: nombresActualizados,
     };
   } catch (error) {
     console.error("Error al actualizar las características adicionales del vehículo:", error);
@@ -415,5 +479,5 @@ module.exports = {
   obtenerCaracteristicasAdicionalesPorId,
   actualizarVehiculoPorId,
   actualizarCaracteristicasPorId, 
-  actualizarCaracteristicasAdicionalesPorId 
+  actualizarCaracteristicasAdicionalesPorId
 };
