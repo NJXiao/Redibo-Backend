@@ -1,6 +1,5 @@
 //RUTA
 const express = require('express');
-const router = express.Router();
 const { 
     obtenerCiudadesPorPais, 
     obtenerProvinciasPorCiudad, 
@@ -13,7 +12,9 @@ const { validarPlaca } = require('./validarPlaca');
 const {  obtenerVehiculoCompleto,
          obtenerCaracteristicas, 
          obtenerCaracteristicasAdicionales} = require('./vehiculo.controlador');
-
+const { obtenerImagenesCarro } = require('./validarImagen');
+        
+const router = express.Router();
 
 const { actualizarVehiculo,
         actualizarCaracteristicas 
@@ -25,12 +26,15 @@ router.get('/provincias/:idCiudad', obtenerProvinciasPorCiudad);
 router.get('/paises', obtenerPaises);
 router.get('/carro/direccion/:idCarro', obtenerCarroConDireccion);
 router.get('/carro/ciudades/:idCarro', obtenerCiudadesPorCarro);
+router.get('/carro/imagenes/:idCarro', obtenerImagenesCarro);
 
-// Rutas relacionadas con vehículos GET
+// Rutas relacionadas con vehículos
 router.post('/validar-placa', validarPlaca);
 router.get('/vehiculo/:id/completo', obtenerVehiculoCompleto);
 router.get('/vehiculo/:id/caracteristicas', obtenerCaracteristicas);
 router.get('/vehiculo/:id/caracteristicas-adicionales', obtenerCaracteristicasAdicionales);
+
+
 //PUT
 router.put('/vehiculo/:id', actualizarVehiculo);
 router.put("/vehiculo/:id/caracteristicas", actualizarCaracteristicas);
