@@ -1,22 +1,4 @@
-//DEVUELVE TODOS LOS DATOS DE UN CARRO
-/*const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
 
-const obtenerPlacaPorId = async (id) => {
-  try {
-    console.log('ID recibido:', id);
-    const placa = await prisma.carro.findUnique({ // Cambiado a "carro"
-      where: { id: parseInt(id) }, // Asegúrate de que el campo 'id' exista en el modelo
-    });
-    console.log('Placa encontrada:', placa);
-    return placa;
-  } catch (error) {
-    console.error('Error al obtener la placa:', error);
-    throw error;
-  }
-};
-
-module.exports = { obtenerPlacaPorId };*/
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -200,7 +182,89 @@ const obtenerCaracteristicasAdicionalesPorId = async (id) => {
   }
 };
 
-module.exports = { obtenerCaracteristicasAdicionalesPorId };
+const actualizarVehiculoPorId = async (id, datosActualizados) => {
+  try {
+    const { vim, año, marca, modelo, placa } = datosActualizados;
+
+    // Validaciones básicas
+    if (!vim || !marca || !modelo || !año || !placa) {
+      throw new Error("Todos los campos son requeridos");
+    }
+
+    // Validación del VIN (17 caracteres alfanuméricos excluyendo I, O, Q)
+    const regexVin = /^[A-HJ-NPR-Z0-9]{17}$/; // Excluye I, O y Q
+    if (!regexVin.test(vim)) {
+      throw new Error("El VIN es inválido");
+    }
+
+    // Validación del formato de placa
+    const regexPlaca = /^[A-Z]{3}-\d{4}$/; // Ejemplo: ABC-1234 o ABC-123A
+    if (!regexPlaca.test(placa)) {
+      throw new Error("La placa es inválida");
+    }
+
+    // Validación del año del vehículo
+    if (typeof año !== "number" || año < 1900 || año > new Date().getFullYear()) {
+      throw new Error("El año del vehículo es inválido");
+    }
+
+    // Validación de marca y modelo
+    const validarMarcaYModelo = (texto) => {
+      const regex = /^[A-Za-z0-9\s\-]+$/; // Permite letras, números, espacios y guiones
+      return regex.test(texto);
+    };
+
+    if (!validarMarcaYModelo(marca)) {
+      throw new Error("La marca es inválida");
+    }
+
+    if (!validarMarcaYModelo(modelo)) {
+      throw new Error("El modelo es inválido");
+    }
+
+    // Verificar si el VIN ya existe en otro vehículo (excepto el vehículo actual)
+    const vinExistente = await prisma.carro.findFirst({
+      where: {
+        vim: vim,
+        NOT: { id: parseInt(id) }, // Excluir el vehículo actual
+      },
+    });
+
+    if (vinExistente) {
+      throw new Error("El VIN ya está registrado en otro vehículo");
+    }
+
+    // Verificar si la placa ya existe en otro vehículo (excepto el vehículo actual)
+    const placaExistente = await prisma.carro.findFirst({
+      where: {
+        placa: placa,
+        NOT: { id: parseInt(id) }, // Excluir el vehículo actual
+      },
+    });
+
+    if (placaExistente) {
+      throw new Error("La placa ya está registrada en otro vehículo");
+    }
+
+    // Actualizar el vehículo en la base de datos
+    const carroActualizado = await prisma.carro.update({
+      where: { id: parseInt(id) },
+      data: {
+        vim,
+        año,
+        marca,
+        modelo,
+        placa,
+      },
+    });
+
+    return carroActualizado;
+
+  } catch (error) {
+    console.error('Error al actualizar el vehículo:', error);
+    throw error;
+  }
+};
 
 module.exports = {
   obtenerPlacaPorId,
@@ -210,5 +274,6 @@ module.exports = {
   obtenerAnioPorId,
   obtenerVehiculoCompletoPorId,
   obtenerCaracteristicasPorId,
-  obtenerCaracteristicasAdicionalesPorId
+  obtenerCaracteristicasAdicionalesPorId,
+  actualizarVehiculoPorId
 };

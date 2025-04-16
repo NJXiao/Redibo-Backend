@@ -1,4 +1,4 @@
-const { obtenerPlacaPorId, obtenerVIMPorId, obtenerMarcaPorId, obtenerModeloPorId, obtenerAnioPorId, obtenerVehiculoCompletoPorId, obtenerCaracteristicasPorId, obtenerCaracteristicasAdicionalesPorId  } = require('../modelo/vehiculo.modelo');
+const { obtenerPlacaPorId, obtenerVIMPorId, obtenerMarcaPorId, obtenerModeloPorId, obtenerAnioPorId, obtenerVehiculoCompletoPorId, obtenerCaracteristicasPorId, obtenerCaracteristicasAdicionalesPorId, actualizarVehiculoPorId  } = require('../modelo/vehiculo.modelo');
 
 const obtenerPlaca = async (req, res) => {
   try {
@@ -125,4 +125,32 @@ const obtenerCaracteristicasAdicionales = async (req, res) => {
 };
 
 
-module.exports = { obtenerPlaca, obtenerVIM, obtenerMarca, obtenerModelo,obtenerAnio, obtenerVehiculoCompleto, obtenerCaracteristicas, obtenerCaracteristicasAdicionales};
+const actualizarVehiculo = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const datosActualizados = req.body;
+
+    // Llamar al modelo para actualizar el vehículo
+    const carroActualizado = await actualizarVehiculoPorId(id, datosActualizados);
+
+    // Responder con los campos específicos
+    res.json({
+      mensaje: 'Vehículo actualizado correctamente',
+      vehiculo: {
+        id: carroActualizado.id,
+        vim: carroActualizado.vim,
+        marca: carroActualizado.marca,
+        modelo: carroActualizado.modelo,
+        placa: carroActualizado.placa,
+      },
+    });
+  } catch (error) {
+    res.status(400).json({
+      mensaje: 'Error al actualizar el vehículo',
+      error: error.message,
+    });
+  }
+};
+
+
+module.exports = { obtenerPlaca, obtenerVIM, obtenerMarca, obtenerModelo,obtenerAnio, obtenerVehiculoCompleto, obtenerCaracteristicas, obtenerCaracteristicasAdicionales, actualizarVehiculo};
