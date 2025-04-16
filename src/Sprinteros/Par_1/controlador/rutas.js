@@ -15,7 +15,9 @@ const {  obtenerVehiculoCompleto,
          obtenerCaracteristicasAdicionales} = require('./vehiculo.controlador');
 
 
-const { actualizarVehiculo } = require('./vehiculo.controlador');
+const { actualizarVehiculo,
+        actualizarCaracteristicas 
+      } = require('./vehiculo.controlador');
 // Rutas existentes
 router.get('/direccion/auto/:idAuto', obtenerDireccionPorAuto);
 router.get('/ciudades/:idPais', obtenerCiudadesPorPais);
@@ -31,4 +33,5 @@ router.get('/vehiculo/:id/caracteristicas', obtenerCaracteristicas);
 router.get('/vehiculo/:id/caracteristicas-adicionales', obtenerCaracteristicasAdicionales);
 //PUT
 router.put('/vehiculo/:id', actualizarVehiculo);
+router.put("/vehiculo/:id/caracteristicas", actualizarCaracteristicas);
 module.exports = router;

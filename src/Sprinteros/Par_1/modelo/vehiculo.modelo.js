@@ -268,6 +268,45 @@ const actualizarVehiculoPorId = async (id, datosActualizados) => {
   }
 };
 
+const actualizarCaracteristicasPorId = async (id, datosActualizados) => {
+  try {
+    const { asientos, puertas, transmicion, soat } = datosActualizados;
+
+    // Validaciones básicas
+    if (typeof asientos !== "number" || asientos <= 0) {
+      throw new Error("El número de asientos debe ser un número positivo");
+    }
+
+    if (typeof puertas !== "number" || puertas <= 0) {
+      throw new Error("El número de puertas debe ser un número positivo");
+    }
+
+    if (typeof transmicion !== "string" || transmicion.trim() === "") {
+      throw new Error("La transmisión es requerida y debe ser una cadena de texto");
+    }
+
+    if (typeof soat !== "boolean") {
+      throw new Error("El campo SOAT debe ser un valor booleano (true o false)");
+    }
+
+    // Actualizar las características en la base de datos
+    const caracteristicasActualizadas = await prisma.carro.update({
+      where: { id: parseInt(id) },
+      data: {
+        asientos,
+        puertas,
+        transmicion,
+        soat,
+      },
+    });
+
+    return caracteristicasActualizadas;
+  } catch (error) {
+    console.error("Error al actualizar las características del vehículo:", error);
+    throw error;
+  }
+};
+
 module.exports = {
   obtenerPlacaPorId,
   obtenerVIMPorId,
@@ -277,5 +316,6 @@ module.exports = {
   obtenerVehiculoCompletoPorId,
   obtenerCaracteristicasPorId,
   obtenerCaracteristicasAdicionalesPorId,
-  actualizarVehiculoPorId
+  actualizarVehiculoPorId,
+  actualizarCaracteristicasPorId 
 };
