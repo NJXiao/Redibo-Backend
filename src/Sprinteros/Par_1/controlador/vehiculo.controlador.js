@@ -1,4 +1,4 @@
-const { obtenerPlacaPorId, obtenerVIMPorId, obtenerMarcaPorId, obtenerModeloPorId, obtenerAnioPorId, obtenerVehiculoCompletoPorId  } = require('../modelo/vehiculo.modelo');
+const { obtenerPlacaPorId, obtenerVIMPorId, obtenerMarcaPorId, obtenerModeloPorId, obtenerAnioPorId, obtenerVehiculoCompletoPorId, obtenerCaracteristicasPorId, obtenerCaracteristicasAdicionalesPorId, actualizarVehiculoPorId, actualizarCaracteristicasPorId  } = require('../modelo/vehiculo.modelo');
 
 const obtenerPlaca = async (req, res) => {
   try {
@@ -92,4 +92,91 @@ const obtenerVehiculoCompleto = async (req, res) => {
   }
 };
 
-module.exports = { obtenerPlaca, obtenerVIM, obtenerMarca, obtenerModelo,obtenerAnio, obtenerVehiculoCompleto };
+const obtenerCaracteristicas = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const caracteristicas = await obtenerCaracteristicasPorId(id);
+
+    if (!caracteristicas) {
+      return res.status(404).json({ mensaje: 'Características no encontradas' });
+    }
+
+    res.json(caracteristicas);
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error del servidor', error: error.message });
+  }
+};
+
+
+
+const obtenerCaracteristicasAdicionales = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const adicionales = await obtenerCaracteristicasAdicionalesPorId(id);
+
+    if (!adicionales || adicionales.length === 0) {
+      return res.status(404).json({ mensaje: 'Características adicionales no encontradas' });
+    }
+
+    res.json({ caracteristicasAdicionales: adicionales });
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error del servidor', error: error.message });
+  }
+};
+
+
+const actualizarVehiculo = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const datosActualizados = req.body;
+
+    // Llamar al modelo para actualizar el vehículo
+    const carroActualizado = await actualizarVehiculoPorId(id, datosActualizados);
+
+    // Responder con los campos específicos
+    res.json({
+      mensaje: 'Vehículo actualizado correctamente',
+      vehiculo: {
+        id: carroActualizado.id,
+        vim: carroActualizado.vim,
+        marca: carroActualizado.marca,
+        modelo: carroActualizado.modelo,
+        placa: carroActualizado.placa,
+      },
+    });
+  } catch (error) {
+    res.status(400).json({
+      mensaje: 'Error al actualizar el vehículo',
+      error: error.message,
+    });
+  }
+};
+
+
+const actualizarCaracteristicas = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const datosActualizados = req.body;
+
+    // Llamar al modelo para actualizar las características
+    const caracteristicasActualizadas = await actualizarCaracteristicasPorId(id, datosActualizados);
+
+    res.json({
+      mensaje: "Características del vehículo actualizadas correctamente",
+      caracteristicas: {
+        asientos: caracteristicasActualizadas.asientos,
+        puertas: caracteristicasActualizadas.puertas,
+        transmicion: caracteristicasActualizadas.transmicion,
+        soat: caracteristicasActualizadas.soat,
+      },
+    });
+  } catch (error) {
+    res.status(400).json({
+      mensaje: "Error al actualizar las características del vehículo",
+      error: error.message,
+    });
+  }
+};
+
+
+module.exports = { obtenerPlaca, obtenerVIM, obtenerMarca, obtenerModelo,obtenerAnio, obtenerVehiculoCompleto, obtenerCaracteristicas, obtenerCaracteristicasAdicionales, actualizarVehiculo, actualizarCaracteristicas};
