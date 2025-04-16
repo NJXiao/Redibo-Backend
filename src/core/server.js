@@ -4,6 +4,7 @@ const morgan = require('morgan');
 
 const testModule = require('../modules/prueba/prueba.module');
 const detailCarModule = require('../modules/detailCar/detailCar.module');
+const ordenarPrueba=require('../modules/pruebaOrdenar/ordenarPrueba.module');
 
 const app = express();
 
@@ -15,5 +16,7 @@ app.use(cors());
 app.use('/test', testModule.controller);
 
 app.use('/detailCar', detailCarModule.controller);
+
+app.use('/ordenarlo',ordenarPrueba.controller);
 
 module.exports = app;
