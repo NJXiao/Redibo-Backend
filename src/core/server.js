@@ -2,9 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 
-const testModule = require('../modules/prueba/prueba.module');
 const detailCarModule = require('../modules/detailCar/detailCar.module');
-const ordenarPrueba=require('../modules/pruebaOrdenar/ordenarPrueba.module');
+const filterCarModule = require('../modules/filterCar/filterCar.module');
+const searchCarModule = require('../modules/searchCar/searchCar.module');
 
 const app = express();
 
@@ -13,9 +13,10 @@ app.use(morgan("dev"));
 app.use(cors());
 
 //RUTAS DEFINIDAS   
-app.use('/test', testModule.controller);
 
 app.use('/detailCar', detailCarModule.controller);
+app.use('/filterCar', filterCarModule.controller);
+app.use('/searchCar', searchCarModule.controller);
 
 app.use('/ordenarlo',ordenarPrueba.controller);
 
