@@ -4,7 +4,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon --watch src --exec node src/index.js"
+    "dev": "nodemon --watch src --exec node src/index.js",
+    "seed": "ts-node prisma/send.ts",
+    "seed2": "ts-node prisma/send2.ts"
   },
   "keywords": [],
   "author": "",
@@ -14,10 +16,12 @@
   "dependencies": {
     "@prisma/client": "^6.5.0",
     "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
     "express": "^4.21.2",
     "express-validator": "^7.2.1",
     "morgan": "^1.10.0",
-    "prisma": "^6.5.0"
+    "prisma": "^6.5.0",
+    "sharp": "^0.34.1"
   },
   "devDependencies": {
     "@types/node": "^22.14.1",
