@@ -277,6 +277,10 @@ const actualizarCaracteristicasPorId = async (id, datosActualizados) => {
       throw new Error("Debe proporcionar al menos un tipo de combustible en un array");
     }
 
+    if (tipoDeCombustible.length > 2) {
+      throw new Error("Solo se permiten un máximo de 2 tipos de combustible");
+    }
+
     if (typeof asientos !== "number" || asientos <= 0) {
       throw new Error("El número de asientos debe ser un número positivo");
     }
@@ -293,6 +297,36 @@ const actualizarCaracteristicasPorId = async (id, datosActualizados) => {
       throw new Error("El campo SOAT debe ser un valor booleano (true o false)");
     }
 
+    // Buscar los IDs de los tipos de combustible proporcionados en letras
+    const combustibles = await prisma.tipoCombustible.findMany({
+      where: {
+        tipoDeCombustible: {
+          in: tipoDeCombustible, // Busca los nombres de los combustibles
+        },
+      },
+      select: {
+        id: true, // Obtén solo los IDs
+        tipoDeCombustible: true, // Incluye el nombre para depuración
+      },
+    });
+
+    console.log("Nombres de combustibles proporcionados:", tipoDeCombustible);
+    console.log("Combustibles encontrados en la base de datos:", combustibles);
+
+    // Verificar si todos los combustibles existen
+    const nombresEncontrados = combustibles.map((c) => c.tipoDeCombustible);
+    const nombresNoEncontrados = tipoDeCombustible.filter(
+      (nombre) => !nombresEncontrados.includes(nombre)
+    );
+
+    if (nombresNoEncontrados.length > 0) {
+      throw new Error(
+        `Los siguientes tipos de combustible no existen en la base de datos: ${nombresNoEncontrados.join(", ")}`
+      );
+    }
+
+    const idsCombustibles = combustibles.map((combustible) => combustible.id);
+
     // Actualizar las características principales del vehículo
     const caracteristicasActualizadas = await prisma.carro.update({
       where: { id: parseInt(id) },
@@ -305,24 +339,67 @@ const actualizarCaracteristicasPorId = async (id, datosActualizados) => {
     });
 
     // Actualizar los tipos de combustible asociados al vehículo
-    // Primero eliminamos los combustibles existentes
     await prisma.combustibleCarro.deleteMany({
       where: { id_carro: parseInt(id) },
     });
 
-    // Luego agregamos los nuevos combustibles
-    const nuevosCombustibles = tipoDeCombustible.map((idCombustible) => ({
+    const nuevosCombustibles = idsCombustibles.map((idCombustible) => ({
       id_carro: parseInt(id),
-      id_combustible: idCombustible, // Asegúrate de que `idCombustible` sea el ID del combustible
+      id_combustible: idCombustible,
     }));
 
     await prisma.combustibleCarro.createMany({
       data: nuevosCombustibles,
     });
 
-    return caracteristicasActualizadas;
+    // Construir la respuesta con las características actualizadas y los tipos de combustible
+    return {
+      mensaje: "Características del vehículo actualizadas correctamente",
+      caracteristicas: {
+        "tipo de combustible": tipoDeCombustible,
+        asientos: caracteristicasActualizadas.asientos,
+        puertas: caracteristicasActualizadas.puertas,
+        transmicion: caracteristicasActualizadas.transmicion,
+        soat: caracteristicasActualizadas.soat,
+      },
+    };
   } catch (error) {
     console.error("Error al actualizar las características del vehículo:", error);
+    throw error;
+  }
+};
+
+const actualizarCaracteristicasAdicionalesPorId = async (id, nuevasCaracteristicasAdicionales) => {
+  try {
+    // Validación básica
+    if (!Array.isArray(nuevasCaracteristicasAdicionales) || nuevasCaracteristicasAdicionales.length === 0) {
+      throw new Error("Debe proporcionar al menos una característica adicional en un array");
+    }
+
+    // Eliminar las características adicionales existentes asociadas al vehículo
+    await prisma.caracteristicasAdicionalesCarro.deleteMany({
+      where: { id_carro: parseInt(id) },
+    });
+
+    // Crear las nuevas características adicionales
+    const nuevasCaracteristicas = nuevasCaracteristicasAdicionales.map((nombreCaracteristica) => ({
+      id_carro: parseInt(id),
+      id_caracteristica: nombreCaracteristica, // Asegúrate de que `nombreCaracteristica` sea el ID de la característica adicional
+    }));
+
+    await prisma.caracteristicasAdicionalesCarro.createMany({
+      data: nuevasCaracteristicas,
+    });
+
+    // Obtener las características adicionales actualizadas
+    const caracteristicasActualizadas = await obtenerCaracteristicasAdicionalesPorId(id);
+
+    return {
+      mensaje: "Características adicionales actualizadas correctamente",
+      caracteristicasAdicionales: caracteristicasActualizadas,
+    };
+  } catch (error) {
+    console.error("Error al actualizar las características adicionales del vehículo:", error);
     throw error;
   }
 };
@@ -337,5 +414,6 @@ module.exports = {
   obtenerCaracteristicasPorId,
   obtenerCaracteristicasAdicionalesPorId,
   actualizarVehiculoPorId,
-  actualizarCaracteristicasPorId 
+  actualizarCaracteristicasPorId, 
+  actualizarCaracteristicasAdicionalesPorId 
 };

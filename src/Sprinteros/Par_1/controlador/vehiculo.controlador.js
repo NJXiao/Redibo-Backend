@@ -1,3 +1,4 @@
+const { tipoCombustible } = require('../../../config/prisma');
 const { obtenerPlacaPorId, obtenerVIMPorId, obtenerMarcaPorId, obtenerModeloPorId, obtenerAnioPorId, obtenerVehiculoCompletoPorId, obtenerCaracteristicasPorId, obtenerCaracteristicasAdicionalesPorId, actualizarVehiculoPorId, actualizarCaracteristicasPorId  } = require('../modelo/vehiculo.modelo');
 
 const obtenerPlaca = async (req, res) => {
@@ -164,6 +165,7 @@ const actualizarCaracteristicas = async (req, res) => {
     res.json({
       mensaje: "Características del vehículo actualizadas correctamente",
       caracteristicas: {
+        tipoCombustible: caracteristicasActualizadas.tipoCombustible, 
         asientos: caracteristicasActualizadas.asientos,
         puertas: caracteristicasActualizadas.puertas,
         transmicion: caracteristicasActualizadas.transmicion,
@@ -178,5 +180,29 @@ const actualizarCaracteristicas = async (req, res) => {
   }
 };
 
+const actualizarCaracteristicasAdicionales = async (req, res) => {
+  try {
+    const id = req.params.id; // ID del vehículo
+    const nuevasCaracteristicasAdicionales = req.body.nuevasCaracteristicasAdicionales; // Array de IDs de características adicionales
 
-module.exports = { obtenerPlaca, obtenerVIM, obtenerMarca, obtenerModelo,obtenerAnio, obtenerVehiculoCompleto, obtenerCaracteristicas, obtenerCaracteristicasAdicionales, actualizarVehiculo, actualizarCaracteristicas};
+    // Validar que se envíen las características adicionales
+    if (!Array.isArray(nuevasCaracteristicasAdicionales) || nuevasCaracteristicasAdicionales.length === 0) {
+      return res.status(400).json({
+        mensaje: "Debe proporcionar al menos una característica adicional en un array",
+      });
+    }
+
+    // Llamar al modelo para actualizar las características adicionales
+    const resultado = await actualizarCaracteristicasAdicionalesPorId(id, nuevasCaracteristicasAdicionales);
+
+    // Responder con las características adicionales actualizadas
+    res.json(resultado);
+  } catch (error) {
+    res.status(500).json({
+      mensaje: "Error al actualizar las características adicionales del vehículo",
+      error: error.message,
+    });
+  }
+};
+
+module.exports = { obtenerPlaca, obtenerVIM, obtenerMarca, obtenerModelo,obtenerAnio, obtenerVehiculoCompleto, obtenerCaracteristicas, obtenerCaracteristicasAdicionales, actualizarVehiculo, actualizarCaracteristicas, actualizarCaracteristicasAdicionales};
