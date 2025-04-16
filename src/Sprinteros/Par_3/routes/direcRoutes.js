@@ -28,15 +28,14 @@ router.route('/cities/:id')
 
 router.get('/paises/:countryId/cities', cityController.getCitiesByCountryId);
 
-// Rutas para Provincias (Provinces)
-// router.route('/provinces')
-// .get(provinceController.getProvinces)  // GET /api/v2/direc/provinces
-// .post(provinceController.createProvince); // POST /api/v2/direc/provinces
+router.route('/provinces')
+  .get(provinceController.getProvinces)    // GET /api/v2/direc/provinces
+  .post(provinceController.createProvince);  // POST /api/v2/direc/provinces
 
-// router.route('/provinces/:id')
-// .get(provinceController.getProvinceById)  // GET /api/v2/direc/provinces/:id
-// .put(provinceController.updateProvince)    // PUT /api/v2/direc/provinces/:id
-// .delete(provinceController.deleteProvince); // DELETE /api/v2/direc/provinces/:id
+router.route('/provinces/:id')
+  .get(provinceController.getProvinceById)  // GET /api/v2/direc/provinces/:id
+  .put(provinceController.updateProvince)    // PUT /api/v2/direc/provinces/:id
+  .delete(provinceController.deleteProvince); // DELETE /api/v2/direc/provinces/:id
 
 router.get('/cities/:cityId/provinces', provinceController.getProvincesByCityId);
 
