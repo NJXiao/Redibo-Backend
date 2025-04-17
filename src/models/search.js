@@ -9,4 +9,19 @@ export class searchModel {
       },
     })
   }
+
+  static async getSearchByUserId({ userId }) {
+    return await prisma.busqueda.findMany({
+      where: {
+        id_usuario: userId,
+      }, 
+      orderBy: {
+        fecha_creacion: "desc"
+      }, 
+      select: {
+        id: true,
+        criterio: true,
+      }
+    })
+  }
 }
