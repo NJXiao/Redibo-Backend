@@ -17,10 +17,6 @@ export class searchModel {
       }, 
       orderBy: {
         fecha_creacion: "desc"
-      }, 
-      select: {
-        id: true,
-        criterio: true,
       }
     })
   }
