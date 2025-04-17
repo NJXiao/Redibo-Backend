@@ -3,6 +3,7 @@ import morgan from "morgan";
 import cors from "cors";
 import { carRouter } from './routes/cars.js';
 import { reservationRouter } from './routes/reservation.js';
+import { searchRouter } from './routes/search.js';
 
 const app = express()
 
@@ -13,6 +14,7 @@ app.disable("x-powered-by")
 
 app.use('/api/cars', carRouter)
 app.use('/api/reservations', reservationRouter)
+app.use('/api/search', searchRouter)
 
 const PORT = process.env.PORT || 4000
 
