@@ -1,5 +1,5 @@
 import { searchModel } from "../models/search.js";
-import {validatePartialSearch, validateSearch } from "../validations/search.js";
+import { validateSearch } from "../validations/search.js";
 
 export class searchController {
   static async createSearch(req, res) {
@@ -40,6 +40,28 @@ export class searchController {
     } catch (error) {
       console.error("Error al obtener las busquedas: ", error)
       res.status(500).json({ error: "Error interno del servidor"})
+    }
+  }
+
+  static async deleteSearchById(req, res) {
+    try {
+      const { id } = req.params
+      
+      if (isNaN(Number(id))) {
+        return res.status(400).json({ error: "El id de la busqueda debe ser un numero" })
+      }
+
+      const deletedSearch = await searchModel.deleteSearchById({ id: Number(id) })
+      
+      if (!deletedSearch) {
+        return res.status(404).json({ error: "No se encontro la busqueda" })
+      }
+
+      res.json({ message: "Busqueda eliminada correctamente" })
+    } catch (error) {
+      console.error("Error al eliminar la busqueda: ", error)
+
+      res.status(500).json({ error: "Error interno del servidor" })
     }
   }
 

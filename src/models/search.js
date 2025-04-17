@@ -24,4 +24,12 @@ export class searchModel {
       }
     })
   }
+
+  static async deleteSearchById({ id }) {
+    return await prisma.busqueda.delete({
+      where: {
+        id: id,
+      }
+    })
+  } 
 }
