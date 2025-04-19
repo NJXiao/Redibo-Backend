@@ -14,7 +14,7 @@ exports.registerUser = async (req, res) => {
   try {
     console.log('Datos recibidos en req.body:', req.body);
     const userData = req.body;
-    let { nombre, correo, fecha_nacimiento, genero, id_ciudad, contrasena, telefono, rol } = userData;
+    let { nombre, correo, fecha_nacimiento, genero, ciudad, contrasena, telefono, rol } = userData;
     // Validar rol recibido
     const rolesValidos = ['HOST', 'RENTER', 'DRIVER'];
     if (!rol || !rolesValidos.includes(rol)) {
@@ -156,16 +156,6 @@ exports.completeGoogleRegistration = async (req, res) => {
     
     // Validar edad (mayor de 18)
     const birthDate = new Date(fechaNacimiento);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    
-    if (age < 18) {
-      return res.status(400).json({ error: 'Debes ser mayor de 18 años' });
-    }
 
     // Crear usuario
     const nuevoUsuario = await prisma.usuario.create({
@@ -258,21 +248,23 @@ exports.loginUser = async (req, res) => {
   }
 };
 
-// Función para manejar el callback de Google Auth
 exports.googleCallback = (req, res) => {
-  // Si el usuario es nuevo y necesita completar datos
-  if (req.user.isNewUser) {
-    return res.redirect(`/complete-registration?correo=${req.user.correo}&nombre=${req.user.nombre}&foto=${req.user.foto}`);
+  // usuario nuevo
+  if (req.user.isIncomplete) {
+    const mensaje = encodeURIComponent("Usuario nuevo. Perfil incompleto.");
+    // Redireccionamos al frontend con el ID del usuario y el mensaje
+    return res.redirect(`${process.env.FRONTEND_URL}/complete-profile/${req.user.id}?message=${mensaje}`);
   }
 
-  // Usuario existente
+  // Usuario existente con perfil completo, generamos token JWT y redireccionamos
   const token = generateToken({
     id: req.user.id,
-    correo: req.user.correo
+    correo: req.user.correo,
+    roles: req.user.roles || []
   });
 
   // Redirigir a frontend con token
-  return res.redirect(`/login-success?token=${token}`);
+  return res.redirect(`${process.env.FRONTEND_URL}/login-success?token=${token}`);
 };
 
 // Obtener perfil del usuario autenticado
@@ -304,6 +296,151 @@ exports.getUserProfile = async (req, res) => {
     return res.json(usuario);
   } catch (error) {
     console.error('Error al obtener perfil:', error);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
+
+// Función para completar perfil de usuario (Google u otros métodos)
+exports.completeUserProfile = async (req, res) => {
+  try {
+    const { 
+      id,          // ID del usuario existente a actualizar
+      fechaNacimiento, 
+      genero, 
+      ciudad, 
+      telefono, 
+      rol 
+    } = req.body;
+
+    // Validar rol
+    const rolesValidos = ['HOST', 'RENTER', 'DRIVER'];
+    if (!rolesValidos.includes(rol)) {
+      return res.status(400).json({ error: 'El rol debe ser HOST, RENTER o DRIVER' });
+    }
+
+    // Verificar si el usuario existe
+    const usuario = await prisma.usuario.findUnique({
+      where: { id: parseInt(id) }
+    });
+
+    if (!usuario) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    // Verificar si el teléfono ya existe en otro usuario
+    const telefonoExistente = await prisma.usuario.findFirst({
+      where: { 
+        telefono,
+        id: { not: parseInt(id) } // Excluir el usuario actual
+      }
+    });
+    
+    if (telefonoExistente) {
+      return res.status(400).json({ error: 'El teléfono ya está registrado' });
+    }
+
+    // Buscar ID del rol en la base de datos
+    const rolData = await prisma.rol.findFirst({ where: { rol } });
+    if (!rolData) {
+      return res.status(400).json({ error: 'Rol no encontrado en base de datos' });
+    }
+    const birthDate = new Date(fechaNacimiento);
+    // Actualizar perfil del usuario
+    const usuarioActualizado = await prisma.usuario.update({
+      where: { id: parseInt(id) },
+      data: {
+        fecha_nacimiento: birthDate,
+        genero,
+        ciudad: {
+          connect: { id: ciudad }
+        },
+        telefono
+        //perfil_completo: true
+      }
+    });
+
+    // Verificar si ya tiene el rol asignado
+    const rolExistente = await prisma.usuarioRol.findFirst({
+      where: {
+        id_usuario: parseInt(id),
+        id_rol: rolData.id
+      }
+    });
+
+    // Asignar rol al usuario si no lo tiene
+    if (!rolExistente) {
+      await prisma.usuarioRol.create({
+        data: {
+          id_usuario: parseInt(id),
+          id_rol: rolData.id
+        }
+      });
+    }
+
+    // Obtener todos los roles del usuario
+    const usuarioRoles = await prisma.usuarioRol.findMany({
+      where: { id_usuario: parseInt(id) },
+      include: { rol: true }
+    });
+
+    const roles = usuarioRoles.map(userRole => userRole.rol.rol);
+
+    // Generar token con los roles
+    const token = generateToken({
+      id: usuarioActualizado.id,
+      correo: usuarioActualizado.correo,
+      roles: roles
+    });
+    
+    return res.status(200).json({
+      mensaje: 'Perfil completado exitosamente',
+      usuario: {
+        nombre: usuarioActualizado.nombre,
+        correo: usuarioActualizado.correo,
+        fecha_nacimiento: usuarioActualizado.fecha_nacimiento,
+        genero: usuarioActualizado.genero,
+        id_ciudad: usuarioActualizado.ciudad,
+        foto: usuarioActualizado.foto,
+        telefono: usuarioActualizado.telefono
+      },
+      token
+    });
+  } catch (error) {
+    console.error('Error al completar perfil de usuario:', error);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
+// Endpoint para verificar si un usuario específico necesita completar su perfil
+exports.checkProfileStatus = async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    
+    const usuario = await prisma.usuario.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        nombre: true,
+        correo: true,
+        foto: true,
+        perfil_completo: true
+      }
+    });
+    
+    if (!usuario) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+    
+    return res.status(200).json({
+      id: usuario.id,
+      nombre: usuario.nombre,
+      correo: usuario.correo,
+      foto: usuario.foto,
+      perfil_completo: usuario.perfil_completo
+    });
+  } catch (error) {
+    console.error('Error al verificar estado del perfil:', error);
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 };

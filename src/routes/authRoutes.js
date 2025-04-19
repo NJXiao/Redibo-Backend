@@ -16,8 +16,11 @@ router.get('/google/callback',
   userController.googleCallback
 );
 
-// Completar registro con Google (desde frontend)
-router.post('/complete-google-registration', userController.completeGoogleRegistration);
+// Completar perfil de usuario (Google u otros métodos)
+router.post('/complete-profile', userController.completeUserProfile);
+
+// Verificar estado del perfil de un usuario
+router.get('/check-profile/:id', userController.checkProfileStatus);
 
 // Login con correo y contraseña
 router.post('/login', userController.loginUser);
