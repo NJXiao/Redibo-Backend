@@ -1,31 +1,46 @@
 const express = require('express');
-const morgan = require("morgan");
-const cors = require("cors");
-
-// Importamos la ruta de Par_1 (existente)
-const rutasPar1 = require('./sprinteros/Par_1/controlador/rutas');
-// Importamos la nueva ruta de Par_3
-const rutasPar3 = require('./sprinteros/Par_3/routes');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const { PrismaClient } = require('@prisma/client');
 
 const app = express();
+const prisma = new PrismaClient();
 
-// Middlewares globales
-app.use(express.json());
-app.use(morgan("dev"));
+// Aumentar límites para imágenes en base64
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 
-// Configuración de CORS para desarrollo
-app.use(cors({ origin: 'http://localhost:3000' }));
+// Configuración CORS
+app.use(cors({
+  origin: 'http://localhost:3000',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
-// Ruta base para verificar que el servidor esté funcionando
-app.get('/', (req, res) => {
-  res.send('server is running');
+// Rutas
+const carRoutes = require('./Sprinteros/Par_2/routes/carRoutes');
+app.use('/api/v3', carRoutes);
+const rutasPar1 = require('./Sprinteros/Par_1/controlador/rutas');
+app.use('/api', rutasPar1);
+const rutasPar3 = require('./Sprinteros/Par_3/routes');
+app.use('/api/v2', rutasPar3);
+
+// Manejo de errores
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ 
+    error: 'Error interno del servidor',
+    details: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
 });
 
-app.use('/api', rutasPar1); // Para Par_1
-app.use('/api/v2', rutasPar3); 
-
-// Inicia el servidor
+// Iniciar servidor
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+});
+
+process.on('SIGINT', async () => {
+  await prisma.$disconnect();
+  process.exit();
 });
