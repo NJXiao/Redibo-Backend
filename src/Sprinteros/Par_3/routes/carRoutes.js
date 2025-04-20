@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const carController = require('../controllers/carController');
+const fullCarController = require('../controllers/fullCarController'); // Importar el controlador para carros completos
 const { validateCreateCar } = require('../middlewares/validateCreateCar');
 const { validateUpdateCar } = require('../middlewares/validateUpdateCar');
+const validateNewCarFull = require('../middlewares/validateNewCarFull'); // Importar el middleware de validación
 const validateID = require('../middlewares/validateID');
 
 // En carRoutes.js, antes de definir las rutas
@@ -20,6 +22,9 @@ router.param('id', validateID);
 router.route('/')
   .get(carController.getCars)
   .post(validateCreateCar, carController.createCar);
+
+// Ruta para crear un carro completo con todas sus relaciones
+router.post('/full', validateNewCarFull, fullCarController.createFullCarHandler);
 
 // Rutas con ID /api/v2/cars/:id
 router.route('/:id')

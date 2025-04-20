@@ -88,6 +88,7 @@ model Carro {
   transmicion         String
   estado              String
   id_usuario_rol      Int
+  descripcion         String?
   usuario             Usuario?               @relation("CarrosPorUsuario", fields: [id_usuario_rol], references: [id])
   combustiblesporCarro        CombustibleCarro[]
   caracteristicasAdicionalesCarro caracteristicasAdicionalesCarro[]
