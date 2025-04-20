@@ -1,17 +1,31 @@
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
+const bodyParser = require('body-parser');
+const { PrismaClient } = require('@prisma/client');
 
 // Importamos las rutas de los módulos
-const rutasPar1 = require('./sprinteros/Par_1/controlador/rutas');
-const rutasPar3 = require('./sprinteros/Par_3/routes');
+const carRoutes = require('./Sprinteros/Par_2/routes/carRoutes');
+app.use('/api/v3', carRoutes);
+const rutasPar1 = require('./Sprinteros/Par_1/controlador/rutas');
+app.use('/api', rutasPar1);
+const rutasPar3 = require('./Sprinteros/Par_3/routes');
+app.use('/api/v2', rutasPar3);
+
+const bodyParser = require('body-parser');
+
+const { PrismaClient } = require('@prisma/client');
+
 
 const app = express();
+const prisma = new PrismaClient();
 
-// Middlewares globales
 app.use(express.json({ limit: '10mb' })); // o más si hace falta
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(morgan('dev'));
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
+
 
 // Configuración de CORS para desarrollo y despliegue
 const allowedOrigins = ['http://localhost:3000', 'http://localhost:4000'];
@@ -30,11 +44,6 @@ app.get('/', (req, res) => {
   res.send('Server is running');
 });
 
-// Montar las rutas de los módulos
-app.use('/api', rutasPar1); // Rutas para Par_1
-app.use('/api/v2', rutasPar3); // Rutas para Par_3
-
-// Middleware para manejar rutas no definidas
 app.use((req, res, next) => {
   res.status(404).json({
     success: false,
@@ -42,16 +51,15 @@ app.use((req, res, next) => {
   });
 });
 
-// Middleware global para manejar errores no capturados
+// Manejo de errores
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(err.status || 500).json({
-    success: false,
-    message: err.message || 'Error interno del servidor',
+  res.status(500).json({ 
+    error: 'Error interno del servidor',
+    details: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
 });
 
-// Validar variables de entorno antes de iniciar el servidor
 const PORT = process.env.PORT || 4000;
 if (!PORT) {
   console.error('Error: La variable de entorno PORT no está configurada.');
@@ -60,5 +68,10 @@ if (!PORT) {
 
 // Iniciar el servidor
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+});
+
+process.on('SIGINT', async () => {
+  await prisma.$disconnect();
+  process.exit();
 });
