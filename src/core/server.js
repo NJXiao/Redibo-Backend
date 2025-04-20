@@ -18,6 +18,4 @@ app.use('/detailCar', detailCarModule.controller);
 app.use('/filterCar', filterCarModule.controller);
 app.use('/searchCar', searchCarModule.controller);
 
-app.use('/ordenarlo',ordenarPrueba.controller);
-
 module.exports = app;

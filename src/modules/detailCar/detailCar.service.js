@@ -32,6 +32,15 @@ const carService = {
                 },
             },
         },
+        usuario_rol:{
+          select:{
+              usuario:{
+                  select:{
+                     nombre:true,
+                  }
+              }
+          }
+        },
           combustiblecarro:{
             select:{
               tipocombustible:{
