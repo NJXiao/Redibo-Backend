@@ -27,7 +27,7 @@ enum Roles {
 }
 
 model Usuario {
-  id               Int              @id @default(autoincrement())
+  id               Int              @id @default(autoincrement())             
   nombre           String
   correo           String           @unique
   fecha_nacimiento DateTime

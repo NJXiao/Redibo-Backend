@@ -14,7 +14,7 @@ exports.registerUser = async (req, res) => {
   try {
     console.log('Datos recibidos en req.body:', req.body);
     const userData = req.body;
-    let { nombre, correo, fecha_nacimiento, genero, ciudad, contrasena, telefono, rol } = userData;
+    let { nombre, correo, fechaNacimiento, genero, ciudad, contrasena, telefono, rol } = userData;
     // Validar rol recibido
     const rolesValidos = ['HOST', 'RENTER', 'DRIVER'];
     if (!rol || !rolesValidos.includes(rol)) {
@@ -155,7 +155,15 @@ exports.completeGoogleRegistration = async (req, res) => {
     }
     
     // Validar edad (mayor de 18)
+    console.log("🔍 Datos recibidos en el backend:", {
+      nombre, correo, fechaNacimiento, genero, ciudad, foto, telefono, rol
+    });
+    
     const birthDate = new Date(fechaNacimiento);
+if (isNaN(birthDate.getTime())) {
+  console.error("❌ Fecha inválida:", fechaNacimiento);
+  return res.status(400).json({ error: 'La fecha de nacimiento no es válida' });
+}
 
     // Crear usuario
     const nuevoUsuario = await prisma.usuario.create({
@@ -349,7 +357,7 @@ exports.completeUserProfile = async (req, res) => {
     // Actualizar perfil del usuario
     const usuarioActualizado = await prisma.usuario.update({
       where: { id: parseInt(id) },
-      data: {
+      data: { 
         fecha_nacimiento: birthDate,
         genero,
         ciudad: {
@@ -415,10 +423,10 @@ exports.completeUserProfile = async (req, res) => {
 // Endpoint para verificar si un usuario específico necesita completar su perfil
 exports.checkProfileStatus = async (req, res) => {
   try {
-    const userId = parseInt(req.params.id);
+    const userId = req.params.id;
     
     const usuario = await prisma.usuario.findUnique({
-      where: { id: userId },
+      where: { id: userId }, // id es string
       select: {
         id: true,
         nombre: true,
@@ -429,18 +437,43 @@ exports.checkProfileStatus = async (req, res) => {
     });
     
     if (!usuario) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
+      return res.status(404).json({ perfilCompleto: false });  //sasjncjan
     }
     
     return res.status(200).json({
-      id: usuario.id,
-      nombre: usuario.nombre,
-      correo: usuario.correo,
-      foto: usuario.foto,
-      perfil_completo: usuario.perfil_completo
+      perfilCompleto: usuario.perfil_completo
     });
   } catch (error) {
     console.error('Error al verificar estado del perfil:', error);
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
+}
+// Verificar si el perfil está completo usando el correo electrónico
+exports.checkProfileByEmail = async (req, res) => {
+  try {
+    const email = decodeURIComponent(req.params.email);
+
+    const usuario = await prisma.usuario.findUnique({
+      where: { correo: email },
+      select: {
+        id: true,
+        nombre: true,
+        correo: true,
+        foto: true,
+      },
+    });
+
+    if (!usuario) {
+      return res.status(404).json({ perfilCompleto: false });
+    }
+
+    // ✅ El usuario existe = perfil completo
+    return res.status(200).json({ perfilCompleto: true });
+  } catch (error) {
+    console.error("Error al verificar perfil por email:", error);
+    return res.status(500).json({ error: "Error interno del servidor" });
+  }
 };
+
+
+;

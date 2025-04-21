@@ -4,6 +4,8 @@ const userController = require('../controllers/userController');
 const { authenticate } = require('../middlewares/authMiddleware');
 
 const router = express.Router();
+const authController = require('../controllers/userController');
+
 
 // Ruta para iniciar el flujo de OAuth de Google
 router.get('/google',
@@ -27,5 +29,12 @@ router.post('/login', userController.loginUser);
 
 // Obtener perfil del usuario (protegido con JWT)
 router.get('/profile', authenticate, userController.getUserProfile);
+
+router.get("/check-profile/email/:email", userController.checkProfileByEmail);   //ssscsasascacscascsaacs
+
+router.post("/register-google", userController.completeGoogleRegistration);      //sssxsxsxsx
+
+
+
 
 module.exports = router;
