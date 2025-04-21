@@ -31,7 +31,7 @@ model Usuario {
   nombre           String
   correo           String           @unique
   fecha_nacimiento DateTime
-  genero           String
+  genero           Genero
   id_ciudad        Int
   ciudad           Ciudad           @relation(fields: [id_ciudad], references: [id])
   contraseña       String?
