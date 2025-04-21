@@ -35,7 +35,7 @@ class searchController {
       }
 
       const searchs = await searchModel.getSearchByUserId({ userId: Number(id) });
-      res.json(searchs)
+      res.status(200).json(searchs)
 
     } catch (error) {
       console.error("Error al obtener las busquedas: ", error)
@@ -57,7 +57,7 @@ class searchController {
         return res.status(404).json({ error: "No se encontro la busqueda" })
       }
 
-      res.json({ message: "Busqueda eliminada correctamente" })
+      res.status(200).json({ message: "Busqueda eliminada correctamente" })
     } catch (error) {
       console.error("Error al eliminar la busqueda: ", error)
 
@@ -111,7 +111,7 @@ class searchController {
         orderBy: { fecha_creacion: 'desc' }
       });
 
-      res.json(searches);
+      res.status(200).json(searches);
     } catch (error) {
       res.status(500).json({ error: 'Error al obtener búsquedas' });
     }
@@ -126,7 +126,7 @@ class searchController {
         where: { id: parseInt(id) }
       });
 
-      res.json({ message: 'Búsqueda eliminada' });
+      res.status(200).json({ message: 'Búsqueda eliminada' });
     } catch (error) {
       res.status(500).json({ error: 'Error al eliminar búsqueda' });
     }
@@ -136,7 +136,7 @@ class searchController {
   static async getAllSearchesD(req, res) {
     try {
       const allSearches = await prisma.busqueda.findMany();
-      res.json(allSearches);
+      res.status(200).json(allSearches);
     } catch (error) {
       res.status(500).json({ error: 'Error al obtener todas las búsquedas' });
     }

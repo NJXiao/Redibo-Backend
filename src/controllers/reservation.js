@@ -41,7 +41,7 @@ class ReservationController {
         estado: estado
       })
 
-      res.json(updatedReservation)
+      res.status(200).json(updatedReservation)
     } catch (error) {
       console.error(error)
       if (error instanceof Error) {
@@ -60,7 +60,7 @@ class ReservationController {
       if (!deletedReservation) {
         return res.status(404).json({ error: 'Reserva no encontrada' })
       }
-      res.json({ message: 'Reserva eliminada correctamente' })
+      res.status(200).json({ message: 'Reserva eliminada correctamente' })
 
     } catch (error) {
       console.error(error)

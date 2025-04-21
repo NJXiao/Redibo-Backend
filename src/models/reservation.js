@@ -37,7 +37,7 @@ class ReservationModel {
       }
 
       expirationDate = new Date()
-      expirationDate.setDate(expirationDate.getDate() + 3)
+      expirationDate.setDate(expirationDate.getDate() + 2)
     }
 
     const newReservation = await prisma.reserva.create({
