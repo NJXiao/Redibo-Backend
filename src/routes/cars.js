@@ -1,7 +1,9 @@
-import { Router } from "express";
-import { CarController } from "../controllers/cars.js";
+const Router = require("express");
+const { CarController } = require("../controllers/cars");
 
-export const carRouter = Router()
+const carRouter = Router()
 
 carRouter.get('/', CarController.getAll)
 carRouter.get('/most-rented', CarController.getMostRented)
+
+module.exports = { carRouter }

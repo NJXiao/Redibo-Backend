@@ -1,7 +1,7 @@
-import { prisma } from "../config/prisma.js";
+const { prisma } = require("../config/prisma");
 
-export class CarModel {
-  static async  getAll() {
+class CarModel {
+  static async getAll() {
     try {
       const cars = await prisma.carro.findMany({
         include: {
@@ -19,7 +19,7 @@ export class CarModel {
         modelo: car.modelo,
         anio: car.año,
         precio_por_dia: car.precio_por_dia,
-        imagenes: car.imagenes.map(img => img.url),
+        imagenes: car.imagenes?.[0]?.url || null,
         veces_alquilado: car.reservas.length,
       }))
     } catch (error) {
@@ -27,7 +27,7 @@ export class CarModel {
       throw new Error('Error al obtener autos')
     }
   }
-  
+
   static async getMostRented() {
     try {
       const cars = await prisma.carro.findMany({
@@ -41,12 +41,12 @@ export class CarModel {
         include: {
           imagenes: true,
           _count: {
-            select: { 
+            select: {
               reservas: {
                 where: {
                   estado: "confirmado",
                 }
-              } 
+              }
             }
           }
         },
@@ -63,7 +63,7 @@ export class CarModel {
         modelo: car.modelo,
         anio: car.año,
         precio_por_dia: car.precio_por_dia,
-        imagenes: car.imagenes[0].url || null,
+        imagenes: car.imagenes?.[0]?.url || null,
         veces_alquilado: car._count.reservas,
       }))
     } catch (error) {
@@ -71,5 +71,7 @@ export class CarModel {
       throw new Error('Error al obtener los autos más alquilados');
     }
   }
-} 
+}
+
+module.exports = { CarModel }
 

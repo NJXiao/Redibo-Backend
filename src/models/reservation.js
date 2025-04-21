@@ -1,8 +1,7 @@
-import { prisma } from "../config/prisma.js"
+const { prisma } = require("../config/prisma");
 
-
-export class ReservationModel {
-  static async createReservation ({ userId, carId, starDate, endDate, estado }) {
+class ReservationModel {
+  static async createReservation({ userId, carId, starDate, endDate, estado }) {
     const start = new Date(starDate)
     const end = new Date(endDate)
     if (start >= end) {
@@ -32,7 +31,7 @@ export class ReservationModel {
     if (estado === 'pendiente') {
       const now = new Date()
       const daysUntilReservation = (new Date(starDate) - now) / (1000 * 60 * 60 * 24)
-      
+
       if (daysUntilReservation < 3) {
         throw new Error('No se puede hacer la reserva al 0% para fechas tan cercanas')
       }
@@ -55,7 +54,7 @@ export class ReservationModel {
     return newReservation
   }
 
-  static async updateReservationState ({ id, estado }) {
+  static async updateReservationState({ id, estado }) {
     const reservation = await prisma.reserva.findUnique({
       where: { id: id }
     })
@@ -66,13 +65,13 @@ export class ReservationModel {
 
     const updated = await prisma.reserva.update({
       where: { id: id },
-      data: { estado: estado}
+      data: { estado: estado }
     })
 
     return updated
   }
 
-  static async deleteReservation ({ id }) {
+  static async deleteReservation({ id }) {
     const reservation = await prisma.reserva.findUnique({
       where: { id: id }
     })
@@ -87,3 +86,5 @@ export class ReservationModel {
     return deleted
   }
 }
+
+module.exports = { ReservationModel }

@@ -1,4 +1,4 @@
-import { z } from 'zod';
+const { z } = require("zod");
 
 const reservationSchema = z.object({
   userId: z.number({
@@ -21,10 +21,15 @@ const reservationSchema = z.object({
 })
 
 
-export function validateReservation(reservation) {
+function validateReservation(reservation) {
   return reservationSchema.safeParse(reservation)
 }
 
-export function validatePartialReservation(reservation) {
+function validatePartialReservation(reservation) {
   return reservationSchema.partial().safeParse(reservation)
+}
+
+module.exports = {
+  validateReservation,
+  validatePartialReservation
 }

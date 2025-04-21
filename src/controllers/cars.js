@@ -1,6 +1,6 @@
-import { CarModel } from "../models/cars.js";
+const { CarModel } = require("../models/cars");
 
-export class CarController {
+class CarController {
   static async getAll(req, res) {
     try {
       const cars = await CarModel.getAll()
@@ -18,5 +18,6 @@ export class CarController {
       res.status(500).json({ error: 'Error al obtener autos más alquilados' })
     }
   }
-
 }
+
+module.exports = { CarController }
