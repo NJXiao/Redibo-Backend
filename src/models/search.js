@@ -1,6 +1,6 @@
-import { prisma } from "../config/prisma.js";
+const { prisma } = require("../config/prisma");
 
-export class searchModel {
+class searchModel {
   static async createSearch({ userId, criterio }) {
     return await prisma.busqueda.create({
       data: {
@@ -14,7 +14,7 @@ export class searchModel {
     return await prisma.busqueda.findMany({
       where: {
         id_usuario: userId,
-      }, 
+      },
       orderBy: {
         fecha_creacion: "desc"
       }
@@ -27,5 +27,7 @@ export class searchModel {
         id: id,
       }
     })
-  } 
+  }
 }
+
+module.exports = { searchModel }

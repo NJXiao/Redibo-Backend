@@ -1,14 +1,15 @@
-import express, { json } from 'express';
-import morgan from "morgan";
-import cors from "cors";
-import { carRouter } from './routes/cars.js';
-import { reservationRouter } from './routes/reservation.js';
-import { searchRouter } from './routes/search.js';
+const express = require("express");
+const morgan = require("morgan");
+const cors = require("cors");
+
+const { carRouter } = require("./routes/cars");
+const { reservationRouter } = require("./routes/reservation");
+const { searchRouter } = require("./routes/search");
 
 const app = express()
 
 app.use(cors())
-app.use(json())
+app.use(express.json())
 app.use(morgan("dev"))
 app.disable("x-powered-by")
 

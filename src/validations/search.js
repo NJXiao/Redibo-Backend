@@ -1,4 +1,4 @@
-import { z } from "zod";
+const { z } = require("zod");
 
 const searchSchema = z.object({
   userId: z.number({
@@ -10,10 +10,16 @@ const searchSchema = z.object({
   })
 })
 
-export function  validateSearch(data) {
+function validateSearch(data) {
   return searchSchema.safeParse(data)
 }
 
-export function validatePartialSearch(data) {
+function validatePartialSearch(data) {
   return searchSchema.partial().safeParse(data)
+}
+
+
+module.exports = {
+  validateSearch,
+  validatePartialSearch
 }

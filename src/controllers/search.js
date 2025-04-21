@@ -1,7 +1,7 @@
-import { searchModel } from "../models/search.js";
-import { validateSearch } from "../validations/search.js";
+const { searchModel } = require("../models/search");
+const { validateSearch } = require("../validations/search");
 
-export class searchController {
+class searchController {
   static async createSearch(req, res) {
     try {
       const parseResult = validateSearch(req.body)
@@ -18,7 +18,7 @@ export class searchController {
       console.error("Error al guardar la busqueda: ", error)
 
       if (error instanceof Error) {
-        res.status(400).json({ error: error.message})
+        res.status(400).json({ error: error.message })
       } else {
         res.status(500).json({ error: "Error interno del servidor" })
       }
@@ -39,20 +39,20 @@ export class searchController {
 
     } catch (error) {
       console.error("Error al obtener las busquedas: ", error)
-      res.status(500).json({ error: "Error interno del servidor"})
+      res.status(500).json({ error: "Error interno del servidor" })
     }
   }
 
   static async deleteSearchById(req, res) {
     try {
       const { id } = req.params
-      
+
       if (isNaN(Number(id))) {
         return res.status(400).json({ error: "El id de la busqueda debe ser un numero" })
       }
 
       const deletedSearch = await searchModel.deleteSearchById({ id: Number(id) })
-      
+
       if (!deletedSearch) {
         return res.status(404).json({ error: "No se encontro la busqueda" })
       }
@@ -66,3 +66,5 @@ export class searchController {
   }
 
 }
+
+module.exports = { searchController }

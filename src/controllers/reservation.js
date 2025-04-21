@@ -1,13 +1,13 @@
-import { validatePartialReservation, validateReservation } from "../validations/reservation.js";
-import { ReservationModel } from "../models/reservation.js";
+const { validatePartialReservation, validateReservation } = require("../validations/reservation");
+const { ReservationModel } = require("../models/reservation");
 
-export class ReservationController {
+class ReservationController {
   static async createReservation(req, res) {
     try {
       const parseResult = validateReservation(req.body)
 
       if (!parseResult.success) {
-        return res.status(400).json({ error: JSON.parse(parseResult.error.message)})
+        return res.status(400).json({ error: JSON.parse(parseResult.error.message) })
       }
 
       const { userId, carId, starDate, endDate, estado } = parseResult.data
@@ -15,7 +15,7 @@ export class ReservationController {
       const newReservation = await ReservationModel.createReservation({ userId, carId, starDate, endDate, estado })
       res.status(201).json(newReservation)
 
-    }  catch (error){
+    } catch (error) {
       console.error(error)
       if (error instanceof Error) {
         res.status(400).json({ error: error.message })
@@ -32,11 +32,11 @@ export class ReservationController {
       const result = validatePartialReservation(req.body)
 
       if (!result.success) {
-        return res.status(400).json({ error: JSON.parse(result.error.message)})
+        return res.status(400).json({ error: JSON.parse(result.error.message) })
       }
       const { estado } = result.data
 
-      const updatedReservation = await ReservationModel.updateReservationState({ 
+      const updatedReservation = await ReservationModel.updateReservationState({
         id: Number(id),
         estado: estado
       })
@@ -60,7 +60,7 @@ export class ReservationController {
       if (!deletedReservation) {
         return res.status(404).json({ error: 'Reserva no encontrada' })
       }
-      res.json({message: 'Reserva eliminada correctamente'})
+      res.json({ message: 'Reserva eliminada correctamente' })
 
     } catch (error) {
       console.error(error)
@@ -72,3 +72,5 @@ export class ReservationController {
     }
   }
 }
+
+module.exports = { ReservationController }
