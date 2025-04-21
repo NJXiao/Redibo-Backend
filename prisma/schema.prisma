@@ -20,9 +20,16 @@ enum Genero {
   OTRO
 }
 
+enum Roles {
+  HOST
+  RENTER
+  DRIVER
+}
+
 model Usuario {
   id               Int              @id @default(autoincrement())
   nombre           String
+  correo           String           @unique
   fecha_nacimiento DateTime
   genero           Genero
   id_ciudad        Int
@@ -37,7 +44,9 @@ model Usuario {
   notificaciones   Notificacion[]
   reservas         Reserva[]
   carros           Carro[]          @relation("CarrosPorUsuario")
+  busquedas        Busqueda[]
 }
+
 
 model UsuarioRol {
   id         Int         @id @default(autoincrement())
@@ -103,7 +112,6 @@ model CombustibleCarro {
   carro          Carro  @relation(fields: [id_carro], references: [id])
   id_combustible Int
   combustible    TipoCombustible @relation(fields: [id_combustible], references: [id])
-
 }
 
 model TipoCombustible {
@@ -129,7 +137,7 @@ model CarasteristicasAdicionales {
 
 model Imagen {
   id        Int    @id @default(autoincrement())
-  data      Bytes
+  data      Bytes?
   id_carro  Int
   carro     Carro  @relation(fields: [id_carro], references: [id])
 }
@@ -149,7 +157,11 @@ model Reserva {
   id             Int         @id @default(autoincrement())
   id_carro       Int
   id_usuario     Int
-  fecha          DateTime
+  fecha_creacion DateTime @default(now())
+  fecha_inicio   DateTime
+  fecha_fin      DateTime
+  fecha_expiracion DateTime?
+  estado         String @default("pendiente")
   id_descuento   Int?
   carro          Carro       @relation(fields: [id_carro], references: [id])
   descuento      Descuento?  @relation(fields: [id_descuento], references: [id])
@@ -177,6 +189,7 @@ model Ciudad{
   id_pais Int
   usuarios Usuario[]
   provincias Provincia[]
+
 }
 
 model Pais {
@@ -195,6 +208,7 @@ model Direccion {
   carros      Carro[]
   ubicacion   Ubicacion[]
 }
+
 model Ubicacion {
   id               Int       @id @default(autoincrement())
   direccion       Direccion @relation(fields: [id_direccion], references: [id])
@@ -209,4 +223,21 @@ model Provincia {
   ciudad    Ciudad @relation(fields: [id_ciudad], references: [id])   
   id_ciudad Int
   direcciones Direccion[]
+}
+
+model Busqueda {
+  id              Int       @id @default(autoincrement())
+  criterio        String
+  fecha_creacion  DateTime  @default(now())
+  id_usuario      Int
+  usuario         Usuario   @relation(fields: [id_usuario], references: [id])
+}
+
+
+model Ejemplo {
+  id        Int    @id @default(autoincrement())
+  nombre    String
+  apellido  String
+  edad      Int
+  id_ciudad Int
 }
