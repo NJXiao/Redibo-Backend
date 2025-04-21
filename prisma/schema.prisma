@@ -177,11 +177,13 @@ model Ciudad{
   id_pais Int
   usuarios Usuario[]
   provincias Provincia[]
+
+  @@unique([nombre, id_pais], map: "Ciudad_nombre_pais_uq")
 }
 
 model Pais {
   id         Int         @id @default(autoincrement())
-  nombre     String
+  nombre     String       @unique
   ciudad     Ciudad[]
 }
 
@@ -189,7 +191,7 @@ model Direccion {
   id          Int      @id @default(autoincrement())
   id_provincia Int
   calle       String
-  zona        String
+  zona        String?
   num_casa    String?
   provincia   Provincia @relation(fields: [id_provincia], references: [id])
   carros      Carro[]
@@ -209,4 +211,6 @@ model Provincia {
   ciudad    Ciudad @relation(fields: [id_ciudad], references: [id])   
   id_ciudad Int
   direcciones Direccion[]
+
+  @@unique([nombre, id_ciudad], map: "Provincia_nombre_ciudad_uq")
 }

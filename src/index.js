@@ -7,7 +7,7 @@ const { PrismaClient } = require('@prisma/client');
 // Importamos las rutas de los módulos
 const rutasPar1 = require('./sprinteros/Par_1/controlador/rutas');
 const rutasPar3 = require('./sprinteros/Par_3/routes');
-const carRoutes = require('./sprinteros/Par_2/routes/carRoutes');
+const carRoutes = require('./Sprinteros/Par_2/routes/carRoutes');
 
 const app = express();
 const prisma = new PrismaClient();
