@@ -8,44 +8,39 @@ const fullCarService = require('../services/fullCarService');
  * @param {Object} res - Objeto de respuesta HTTP.
  */
 const createFullCarHandler = asyncHandler(async (req, res) => {
-  // 1) Extraer id_usuario_rol de req.user o de req.body
-  let id_usuario_rol = req.user?.id_usuario_rol;
-  if (!id_usuario_rol && req.body.id_usuario_rol) {
-    id_usuario_rol = Number(req.body.id_usuario_rol);
-  }
+  // 1) Extraer id_usuario_rol de req.user
+  const id_usuario_rol = req.user?.id_usuario_rol;
+
   if (!id_usuario_rol) {
-    return res
-      .status(403)
-      .json({ success: false, message: 'No se proporcionó id_usuario_rol válido.' });
+    return res.status(403).json({ success: false, message: 'No tienes permiso para realizar esta acción.' });
   }
 
-  // 2) Validación Joi (ahora incluye id_usuario_rol)
+  // 2) Validación Joi
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ success: false, errors: errors.array() });
   }
 
-  // 3) Desestructurar del body, incluyendo id_usuario_rol
+  // 3) Desestructurar del body
   const {
-    id_usuario_rol: _bodyId, // ya lo reasignamos a la variable
     provinciaId, calle, zona, num_casa,
-    vim, año, marca, modelo, placa,
+    vim, anio, marca, modelo, placa,
     asientos, puertas, soat,
     combustibleIds, extraIds, imagesBase64,
     precio_por_dia, num_mantenimientos,
     transmicion, estado, descripcion,
   } = req.body;
 
-  // 4) Construir DTO con la propiedad correcta
+  // 4) Construir DTO
   const dto = {
     direccion: { provinciaId, calle, zona, num_casa },
     carro: {
       vim,
-      año,
+      anio,
       marca,
       modelo,
       placa,
-      id_usuario_rol, // la variable que garantiza que siempre existe
+      id_usuario_rol, // Usar el id_usuario_rol del token
       asientos,
       puertas,
       soat,

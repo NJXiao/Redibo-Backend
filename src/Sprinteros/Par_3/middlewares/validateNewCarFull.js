@@ -4,10 +4,6 @@ const Joi = require('joi');
  * Esquema de validación para un carro completo con Joi.
  */
 const newCarSchema = Joi.object({
-  id_usuario_rol: Joi.number().integer().min(1)
-    .required()
-    .messages({ 'any.required': '"id_usuario_rol" es obligatorio' }),
-
   provinciaId: Joi.number().integer().required(),
   calle: Joi.string().required(),
   zona: Joi.string().required(),
