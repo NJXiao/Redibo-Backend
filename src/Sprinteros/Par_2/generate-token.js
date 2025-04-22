@@ -11,7 +11,7 @@ dotenv.config();
 //    Reemplaza el '1' con el ID de un usuario REAL que exista
 //    en tu tabla 'Usuario' de la base de datos.
 //    Tu controlador 'createCar' usa 'req.user.id'.
-const userId = 1; // <--- CAMBIA ESTO por un ID de usuario válido en tu BD
+const userId = 2; // <--- CAMBIA ESTO por un ID de usuario válido en tu BD
 
 // 2. Payload del Token:
 //    Incluye la información que tu middleware 'authenticateUser'
