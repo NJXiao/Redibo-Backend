@@ -108,7 +108,7 @@ model CombustibleCarro {
 
 model TipoCombustible {
   id             Int    @id @default(autoincrement())
-  tipoDeCombustible String
+  tipoDeCombustible String    @unique
   id_carro       Int
   combustibleCarro CombustibleCarro[]
 }
@@ -123,7 +123,7 @@ model caracteristicasAdicionalesCarro {
 
 model CarasteristicasAdicionales {
   id        Int    @id @default(autoincrement())
-  nombre    String
+  nombre    String    @unique
   caracteristicasAdicionalesCarro caracteristicasAdicionalesCarro[]
 }
 
