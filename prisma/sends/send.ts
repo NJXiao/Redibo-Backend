@@ -53,6 +53,7 @@ async function main() {
       contraseña: '1234',
       telefono: '78912345',
       id_ciudad: ciudadesBD.find((d) => d.nombre === 'La Paz')!.id,
+      correo: 'ana.perez@example.com', // Añadido correo
     },
     {
       nombre: 'Carlos Gómez',
@@ -61,6 +62,7 @@ async function main() {
       contraseña: 'abcd',
       telefono: '71234567',
       id_ciudad: ciudadesBD.find((d) => d.nombre === 'Cochabamba')!.id,
+      correo: 'carlos.gomez@example.com', // Añadido correo
     },
     {
       nombre: 'Luis Flores',
@@ -69,6 +71,7 @@ async function main() {
       contraseña: 'qwerty',
       telefono: '70123456',
       id_ciudad: ciudadesBD.find((d) => d.nombre === 'Santa Cruz')!.id,
+      correo: 'luis.flores@example.com', // Añadido correo
     },
     {
       nombre: 'María Rojas',
@@ -77,6 +80,7 @@ async function main() {
       contraseña: 'pass',
       telefono: '76543210',
       id_ciudad: ciudadesBD.find((d) => d.nombre === 'Oruro')!.id,
+      correo: 'maria.rojas@example.com', // Añadido correo
     },
     {
       nombre: 'Patricia Díaz',
@@ -85,6 +89,7 @@ async function main() {
       contraseña: 'pat123',
       telefono: '73456789',
       id_ciudad: ciudadesBD.find((d) => d.nombre === 'Potosí')!.id,
+      correo: 'patricia.diaz@example.com', // Añadido correo
     },
   ] as const;
 
