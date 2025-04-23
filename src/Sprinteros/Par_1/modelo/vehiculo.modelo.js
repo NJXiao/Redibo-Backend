@@ -189,7 +189,7 @@ const actualizarVehiculoPorId = async (id, datosActualizados) => {
     const { vim, año, marca, modelo, placa } = datosActualizados;
 
     // Validaciones básicas
-    if (!vim || !marca || !modelo || !año || !placa) {
+    if (!vim || !año || !marca || !modelo || !placa) {
       throw new Error("Todos los campos son requeridos");
     }
 
@@ -200,18 +200,18 @@ const actualizarVehiculoPorId = async (id, datosActualizados) => {
     }
 
     // Validación del formato de placa
-    const regexPlaca = /^[A-Z]{3}-\d{4}$/; // Ejemplo: ABC-1234 o ABC-123A
+    const regexPlaca = /^[0-9]{3,4}-[A-Z]{0,3}$/; // Ejemplo: ABC-1234 o ABC-123A
     if (!regexPlaca.test(placa)) {
       throw new Error("La placa es inválida");
     }
 
     // Validación del año del vehículo
-    if (typeof año !== "number" || año < 1900 || año > new Date().getFullYear()) {
+    /* if (typeof año !== "number" || año < 1900 || año > new Date().getFullYear()) {
       throw new Error("El año del vehículo es inválido");
-    }
+    } */
 
     // Validación de marca y modelo
-    const validarMarcaYModelo = (texto) => {
+    /* const validarMarcaYModelo = (texto) => {
       const regex = /^[A-Za-z0-9\s\-]+$/; // Permite letras, números, espacios y guiones
       return regex.test(texto);
     };
@@ -222,10 +222,10 @@ const actualizarVehiculoPorId = async (id, datosActualizados) => {
 
     if (!validarMarcaYModelo(modelo)) {
       throw new Error("El modelo es inválido");
-    }
+    } */
 
     // Verificar si el VIN ya existe en otro vehículo (excepto el vehículo actual)
-    const vinExistente = await prisma.carro.findFirst({
+    /* const vinExistente = await prisma.carro.findFirst({
       where: {
         vim: vim,
         NOT: { id: parseInt(id) }, // Excluir el vehículo actual
@@ -234,10 +234,10 @@ const actualizarVehiculoPorId = async (id, datosActualizados) => {
 
     if (vinExistente) {
       throw new Error("El VIN ya está registrado en otro vehículo");
-    }
+    } */
 
     // Verificar si la placa ya existe en otro vehículo (excepto el vehículo actual)
-    const placaExistente = await prisma.carro.findFirst({
+    /* const placaExistente = await prisma.carro.findFirst({
       where: {
         placa: placa,
         NOT: { id: parseInt(id) }, // Excluir el vehículo actual
@@ -246,7 +246,7 @@ const actualizarVehiculoPorId = async (id, datosActualizados) => {
 
     if (placaExistente) {
       throw new Error("La placa ya está registrada en otro vehículo");
-    }
+    } */
 
     // Actualizar el vehículo en la base de datos
     const carroActualizado = await prisma.carro.update({
@@ -267,6 +267,7 @@ const actualizarVehiculoPorId = async (id, datosActualizados) => {
     throw error;
   }
 };
+
 
 const actualizarCaracteristicasPorId = async (id, datosActualizados) => {
   try {
@@ -468,6 +469,53 @@ const actualizarCaracteristicasAdicionalesPorId = async (id, nuevasCaracteristic
   }
 };
 
+const eliminarVehiculoPorId = async (id) => {
+  try {
+    // Validar que el ID sea un número válido
+    if (!id || isNaN(id)) {
+      throw new Error("El ID del vehículo es inválido");
+    }
+
+    // Eliminar las relaciones asociadas al vehículo en las tablas dependientes
+    await prisma.caracteristicasAdicionalesCarro.deleteMany({
+      where: { id_carro: parseInt(id) },
+    });
+
+    await prisma.combustibleCarro.deleteMany({
+      where: { id_carro: parseInt(id) },
+    });
+
+    await prisma.imagen.deleteMany({
+      where: { id_carro: parseInt(id) },
+    });
+
+    await prisma.favorito.deleteMany({
+      where: { id_carro: parseInt(id) },
+    });
+
+    await prisma.calificacion.deleteMany({
+      where: { id_carro: parseInt(id) },
+    });
+
+    await prisma.reserva.deleteMany({
+      where: { id_carro: parseInt(id) },
+    });
+
+    // Eliminar el vehículo de la base de datos
+    const vehiculoEliminado = await prisma.carro.delete({
+      where: { id: parseInt(id) },
+    });
+
+    return {
+      mensaje: "Vehículo eliminado correctamente",
+      vehiculo: vehiculoEliminado,
+    };
+  } catch (error) {
+    console.error("Error al eliminar el vehículo:", error);
+    throw error;
+  }
+};
+
 module.exports = {
   obtenerPlacaPorId,
   obtenerVIMPorId,
@@ -479,5 +527,5 @@ module.exports = {
   obtenerCaracteristicasAdicionalesPorId,
   actualizarVehiculoPorId,
   actualizarCaracteristicasPorId, 
-  actualizarCaracteristicasAdicionalesPorId
+  actualizarCaracteristicasAdicionalesPorId, eliminarVehiculoPorId
 };
