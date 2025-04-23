@@ -1,6 +1,4 @@
 const {
-  getDireccionByCarroId,
-  getCiudadesPorCarroId,
   getCarroConDireccion,
   getPaises,
   getCiudades,
@@ -42,36 +40,6 @@ const obtenerProvinciasPorCiudad = async (req, res) => {
   }
 };
 
-// Obtener dirección completa por ID del auto
-const obtenerDireccionPorAuto = async (req, res) => {
-  try {
-    const { idAuto } = req.params;
-    if (!idAuto || isNaN(idAuto)) {
-      return res.status(400).json({ error: 'ID inválido' });
-    }
-    const direccion = await getDireccionByCarroId(parseInt(idAuto));
-    res.status(200).json(direccion);
-  } catch (error) {
-    console.error('Error al obtener dirección del auto:', error);
-    res.status(500).json({ error: 'Error al obtener la dirección del auto' });
-  }
-};
-
-// Obtener la ciudad actual y otras ciudades relacionadas por ID del carro
-const obtenerCiudadesPorCarro = async (req, res) => {
-  try {
-    const { idCarro } = req.params;
-    if (!idCarro || isNaN(idCarro)) {
-      return res.status(400).json({ error: 'ID inválido' });
-    }
-    const ciudades = await getCiudadesPorCarroId(parseInt(idCarro));
-    res.status(200).json(ciudades);
-  } catch (error) {
-    console.error('Error al obtener ciudades por carro:', error);
-    res.status(500).json({ error: 'Error al obtener ciudades por carro' });
-  }
-};
-
 // Obtener todos los datos del carro con respecto a la dirección
 const obtenerCarroConDireccion = async (req, res) => {
   try {
@@ -86,12 +54,11 @@ const obtenerCarroConDireccion = async (req, res) => {
       return res.status(404).json({ error: 'Carro no encontrado o sin dirección asociada' });
     }
 
-    const direccion = carro.direccion;
-    const provincia = direccion.provincia;
-    const ciudad = provincia.ciudad;
-    const pais = ciudad.pais;
+    const { provincia, calle, num_casa } = carro.direccion;
+    const { ciudad } = provincia;
+    const { pais } = ciudad;
 
-    // Devolvemos los datos mapeados
+    // Datos mapeados
     const result = {
       paisId: pais.id,
       paisNombre: pais.nombre,
@@ -99,8 +66,8 @@ const obtenerCarroConDireccion = async (req, res) => {
       ciudadNombre: ciudad.nombre,
       provinciaId: provincia.id,
       provinciaNombre: provincia.nombre,
-      calle: direccion.calle,
-      num_casa: direccion.num_casa
+      calle,
+      num_casa
     };
 
     res.status(200).json(result);
@@ -114,7 +81,5 @@ module.exports = {
   obtenerPaises,
   obtenerCiudadesPorPais,
   obtenerProvinciasPorCiudad,
-  obtenerDireccionPorAuto,
-  obtenerCiudadesPorCarro,
   obtenerCarroConDireccion,
 };

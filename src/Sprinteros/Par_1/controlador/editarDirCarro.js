@@ -1,42 +1,34 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const { updateDireccionCarro } = require('../modelo/editDirCarro');
 
-// Función que actúa como controlador Express
 const editarDireccionCarro = async (req, res) => {
   try {
     const id_carro = req.params.idCarro;
     const { id_provincia, calle, num_casa } = req.body;
 
+    // Validar campos obligatorios
     if (!id_provincia || !calle || !num_casa) {
       return res.status(400).json({ error: 'Todos los campos son obligatorios' });
     }
 
-    // Buscar carro y su dirección
-    const carro = await prisma.carro.findUnique({
-      where: { id: parseInt(id_carro) },
-      select: { direccion: { select: { id: true } } }
-    });
-
-    if (!carro || !carro.direccion) {
-      return res.status(404).json({ error: 'Carro o dirección no encontrada' });
+    // Validar que num_casa solo contenga números
+    if (!/^\d+$/.test(num_casa)) {
+      return res.status(400).json({ error: 'El número de casa debe contener solo dígitos numéricos' });
     }
 
-    const id_direccion = carro.direccion.id;
+    // Validar que calle contenga solo letras, números, espacios y puntos
+    if (!/^[\w\s.]+$/.test(calle)) {
+      return res.status(400).json({ error: 'La calle solo puede contener letras, números, espacios y puntos' });
+    }
 
-    // Actualizar la dirección
-    const direccionActualizada = await prisma.direccion.update({
-      where: { id: id_direccion },
-      data: {
-        id_provincia,
-        calle,
-        num_casa
-      }
-    });
+    // Llamada del modelo
+    const direccionActualizada = await updateDireccionCarro(id_carro, id_provincia, calle, num_casa);
 
-    return res.status(200).json({
-      message: 'Dirección actualizada con éxito',
-      direccion: direccionActualizada
-    });
+    if (!direccionActualizada) {
+      return res.status(404).json({ error: 'Carro o dirección no encontrada o no se pudo actualizar' });
+    }
+
+    return res.status(200).json({ message: 'Dirección actualizada con éxito' });
+
   } catch (error) {
     console.error('Error al actualizar la dirección:', error);
     return res.status(500).json({ error: error.message });
