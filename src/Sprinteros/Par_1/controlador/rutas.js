@@ -23,8 +23,11 @@ const router = express.Router();
 
 const { actualizarVehiculo,
         actualizarCaracteristicas, 
-        actualizarCaracteristicasAdicionales 
+        actualizarCaracteristicasAdicionales,
+        eliminarVehiculo
     } = require('./vehiculo.controlador');
+
+
 // Rutas existentes
 router.get('/ciudades/:idPais', obtenerCiudadesPorPais);
 router.get('/provincias/:idCiudad', obtenerProvinciasPorCiudad);
@@ -49,4 +52,6 @@ router.put('/vehiculo/:id', actualizarVehiculo);
 router.put("/vehiculo/:id/caracteristicas", actualizarCaracteristicas);
 router.put('/carro/direccion/:idCarro', editarDireccionCarro);
 router.put("/vehiculo/:id/caracteristicas-adicionales", actualizarCaracteristicasAdicionales);
+
+router.delete('/vehiculo/:id', eliminarVehiculo);
 module.exports = router;

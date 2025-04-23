@@ -189,7 +189,7 @@ const actualizarVehiculoPorId = async (id, datosActualizados) => {
     const { vim, año, marca, modelo, placa } = datosActualizados;
 
     // Validaciones básicas
-    if (!vim || !marca || !modelo || !año || !placa) {
+    if (!vim || !año || !marca || !modelo || !placa) {
       throw new Error("Todos los campos son requeridos");
     }
 
@@ -468,6 +468,53 @@ const actualizarCaracteristicasAdicionalesPorId = async (id, nuevasCaracteristic
   }
 };
 
+const eliminarVehiculoPorId = async (id) => {
+  try {
+    // Validar que el ID sea un número válido
+    if (!id || isNaN(id)) {
+      throw new Error("El ID del vehículo es inválido");
+    }
+
+    // Eliminar las relaciones asociadas al vehículo en las tablas dependientes
+    await prisma.caracteristicasAdicionalesCarro.deleteMany({
+      where: { id_carro: parseInt(id) },
+    });
+
+    await prisma.combustibleCarro.deleteMany({
+      where: { id_carro: parseInt(id) },
+    });
+
+    await prisma.imagen.deleteMany({
+      where: { id_carro: parseInt(id) },
+    });
+
+    await prisma.favorito.deleteMany({
+      where: { id_carro: parseInt(id) },
+    });
+
+    await prisma.calificacion.deleteMany({
+      where: { id_carro: parseInt(id) },
+    });
+
+    await prisma.reserva.deleteMany({
+      where: { id_carro: parseInt(id) },
+    });
+
+    // Eliminar el vehículo de la base de datos
+    const vehiculoEliminado = await prisma.carro.delete({
+      where: { id: parseInt(id) },
+    });
+
+    return {
+      mensaje: "Vehículo eliminado correctamente",
+      vehiculo: vehiculoEliminado,
+    };
+  } catch (error) {
+    console.error("Error al eliminar el vehículo:", error);
+    throw error;
+  }
+};
+
 module.exports = {
   obtenerPlacaPorId,
   obtenerVIMPorId,
@@ -479,5 +526,5 @@ module.exports = {
   obtenerCaracteristicasAdicionalesPorId,
   actualizarVehiculoPorId,
   actualizarCaracteristicasPorId, 
-  actualizarCaracteristicasAdicionalesPorId
+  actualizarCaracteristicasAdicionalesPorId, eliminarVehiculoPorId
 };

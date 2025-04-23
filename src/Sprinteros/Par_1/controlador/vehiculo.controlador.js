@@ -1,5 +1,5 @@
 const { tipoCombustible } = require('../../../config/prisma');
-const { obtenerPlacaPorId, obtenerVIMPorId, obtenerMarcaPorId, obtenerModeloPorId, obtenerAnioPorId, obtenerVehiculoCompletoPorId, obtenerCaracteristicasPorId, obtenerCaracteristicasAdicionalesPorId, actualizarVehiculoPorId, actualizarCaracteristicasPorId,actualizarCaracteristicasAdicionalesPorId } = require('../modelo/vehiculo.modelo');
+const { obtenerPlacaPorId, obtenerVIMPorId, obtenerMarcaPorId, obtenerModeloPorId, obtenerAnioPorId, obtenerVehiculoCompletoPorId, obtenerCaracteristicasPorId, obtenerCaracteristicasAdicionalesPorId, actualizarVehiculoPorId, actualizarCaracteristicasPorId,actualizarCaracteristicasAdicionalesPorId, eliminarVehiculoPorId } = require('../modelo/vehiculo.modelo');
 
 const obtenerPlaca = async (req, res) => {
   try {
@@ -205,4 +205,32 @@ const actualizarCaracteristicasAdicionales = async (req, res) => {
   }
 };
 
-module.exports = { obtenerPlaca, obtenerVIM, obtenerMarca, obtenerModelo,obtenerAnio, obtenerVehiculoCompleto, obtenerCaracteristicas, obtenerCaracteristicasAdicionales, actualizarVehiculo, actualizarCaracteristicas, actualizarCaracteristicasAdicionales, };
+//const { eliminarVehiculoPorId } = require('../modelo/vehiculo.modelo');
+
+const eliminarVehiculo = async (req, res) => {
+  try {
+    const id = req.params.id; // Obtener el ID del vehículo desde los parámetros de la URL
+
+    // Validar que el ID sea un número válido
+    if (!id || isNaN(id)) {
+      return res.status(400).json({
+        mensaje: "El ID del vehículo es inválido",
+      });
+    }
+
+    // Llamar al modelo para eliminar el vehículo
+    const resultado = await eliminarVehiculoPorId(id);
+
+    // Responder con el resultado
+    res.json(resultado);
+  } catch (error) {
+    res.status(500).json({
+      mensaje: "Error al eliminar el vehículo",
+      error: error.message,
+    });
+  }
+};
+
+
+
+module.exports = { obtenerPlaca, obtenerVIM, obtenerMarca, obtenerModelo,obtenerAnio, obtenerVehiculoCompleto, obtenerCaracteristicas, obtenerCaracteristicasAdicionales, actualizarVehiculo, actualizarCaracteristicas, actualizarCaracteristicasAdicionales, eliminarVehiculo};
