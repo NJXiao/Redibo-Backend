@@ -79,8 +79,11 @@ async function createFullCar(dto) {
             create: combustibles.map((id_combustible) => ({ id_combustible })),
           },
           caracteristicasAdicionalesCarro: {
-            create: caracteristicas.map((id_caracteristica) => ({ id_caracteristica })),
+            create: caracteristicas.map((id) => ({
+              id_carasteristicasAdicionales: id
+            })),
           },
+          
           imagenes: {
             create: imagesBase64.map((base64) => ({
               data: Buffer.from(base64, 'base64'),
@@ -88,10 +91,13 @@ async function createFullCar(dto) {
           },
         },
         include: {
-          combustiblesporCarro: { include: { combustible: true } },
-          caracteristicasAdicionalesCarro: { include: { carasteristicasAdicionales: true } },
+          combustiblesporCarro:    { include: { combustible: true } },
+          caracteristicasAdicionalesCarro: {
+            include: { carasteristicasAdicionales: true }
+          },
           imagenes: true,
         },
+        
       });
 
       return { direccion: newDireccion, carro: newCar };

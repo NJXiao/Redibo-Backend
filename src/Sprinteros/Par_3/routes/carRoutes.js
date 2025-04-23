@@ -21,6 +21,7 @@ if (process.env.NODE_ENV !== 'production') {
   router.get('/dev-token', generateDevToken);
 }
 // Middleware para validar ID en todas las rutas que usen :id
+router.post('/full', authenticateToken, validateNewCarFull, fullCarController.createFullCarHandler);
 router.param('id', validateID);
 
 // Ruta base /api/v2/cars
@@ -29,7 +30,7 @@ router.route('/')
   .post(validateCreateCar, carController.createCar);
 
 // Ruta para crear un carro completo con todas sus relaciones
-router.post('/full', authenticateToken, validateNewCarFull, fullCarController.createFullCarHandler);
+
 
 // Rutas con ID /api/v2/cars/:id
 router.route('/:id')

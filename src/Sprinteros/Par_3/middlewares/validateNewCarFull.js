@@ -4,13 +4,13 @@ const Joi = require('joi');
  * Esquema de validación para un carro completo con Joi.
  */
 const newCarSchema = Joi.object({
-  provinciaId: Joi.number().integer().required(),
+  id_provincia: Joi.number().integer().required(),
   calle: Joi.string().required(),
   zona: Joi.string().required(),
   num_casa: Joi.string().allow(null, ''),
 
   vim: Joi.string().required(),
-  anio: Joi.number().integer().min(1900).max(new Date().getFullYear()).required(),
+  año: Joi.number().integer().min(1900).max(new Date().getFullYear()).required(),
   marca: Joi.string().required(),
   modelo: Joi.string().required(),
   placa: Joi.string().required(),

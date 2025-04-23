@@ -23,8 +23,8 @@ const createFullCarHandler = asyncHandler(async (req, res) => {
 
   // 3) Desestructurar del body
   const {
-    provinciaId, calle, zona, num_casa,
-    vim, anio, marca, modelo, placa,
+    id_provincia, calle, zona, num_casa,
+    vim, año, marca, modelo, placa,
     asientos, puertas, soat,
     combustibleIds, extraIds, imagesBase64,
     precio_por_dia, num_mantenimientos,
@@ -33,10 +33,10 @@ const createFullCarHandler = asyncHandler(async (req, res) => {
 
   // 4) Construir DTO
   const dto = {
-    direccion: { provinciaId, calle, zona, num_casa },
+    direccion: { id_provincia, calle, zona, num_casa },
     carro: {
       vim,
-      anio,
+      año,
       marca,
       modelo,
       placa,
