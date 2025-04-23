@@ -30,14 +30,14 @@ model Usuario {
   id               Int              @id @default(autoincrement())
   nombre           String
   correo           String           @unique
-  fecha_nacimiento DateTime
-  genero           Genero
-  id_ciudad        Int
-  ciudad           Ciudad           @relation(fields: [id_ciudad], references: [id])
+  fecha_nacimiento DateTime?
+  genero           Genero?
+  id_ciudad        Int?
+  ciudad           Ciudad?           @relation(fields: [id_ciudad], references: [id])
   contraseña       String?
-  google_id       String?
-  foto            String?
-  telefono         String
+  google_id        String?
+  foto             String?
+  telefono         String?
   roles            UsuarioRol[]
   favoritos        Favorito[]
   calificaciones   Calificacion[]
@@ -127,8 +127,8 @@ model caracteristicasAdicionalesCarro {
   id             Int    @id @default(autoincrement())
   id_carro       Int
   carro          Carro  @relation(fields: [id_carro], references: [id])
-  id_carasteristicasAdicionales Int
-  carasteristicasAdicionales CarasteristicasAdicionales @relation(fields: [id_carasteristicasAdicionales], references: [id])
+  id_caracteristicasAdicionales Int
+  carasteristicasAdicionales CarasteristicasAdicionales @relation(fields: [id_caracteristicasAdicionales], references: [id])
 }
 
 model CarasteristicasAdicionales {
