@@ -200,18 +200,18 @@ const actualizarVehiculoPorId = async (id, datosActualizados) => {
     }
 
     // Validación del formato de placa
-    const regexPlaca = /^[A-Z]{3}-\d{4}$/; // Ejemplo: ABC-1234 o ABC-123A
+    const regexPlaca = /^[0-9]{3,4}-[A-Z]{0,3}$/; // Ejemplo: ABC-1234 o ABC-123A
     if (!regexPlaca.test(placa)) {
       throw new Error("La placa es inválida");
     }
 
     // Validación del año del vehículo
-    if (typeof año !== "number" || año < 1900 || año > new Date().getFullYear()) {
+    /* if (typeof año !== "number" || año < 1900 || año > new Date().getFullYear()) {
       throw new Error("El año del vehículo es inválido");
-    }
+    } */
 
     // Validación de marca y modelo
-    const validarMarcaYModelo = (texto) => {
+    /* const validarMarcaYModelo = (texto) => {
       const regex = /^[A-Za-z0-9\s\-]+$/; // Permite letras, números, espacios y guiones
       return regex.test(texto);
     };
@@ -222,10 +222,10 @@ const actualizarVehiculoPorId = async (id, datosActualizados) => {
 
     if (!validarMarcaYModelo(modelo)) {
       throw new Error("El modelo es inválido");
-    }
+    } */
 
     // Verificar si el VIN ya existe en otro vehículo (excepto el vehículo actual)
-    const vinExistente = await prisma.carro.findFirst({
+    /* const vinExistente = await prisma.carro.findFirst({
       where: {
         vim: vim,
         NOT: { id: parseInt(id) }, // Excluir el vehículo actual
@@ -234,10 +234,10 @@ const actualizarVehiculoPorId = async (id, datosActualizados) => {
 
     if (vinExistente) {
       throw new Error("El VIN ya está registrado en otro vehículo");
-    }
+    } */
 
     // Verificar si la placa ya existe en otro vehículo (excepto el vehículo actual)
-    const placaExistente = await prisma.carro.findFirst({
+    /* const placaExistente = await prisma.carro.findFirst({
       where: {
         placa: placa,
         NOT: { id: parseInt(id) }, // Excluir el vehículo actual
@@ -246,7 +246,7 @@ const actualizarVehiculoPorId = async (id, datosActualizados) => {
 
     if (placaExistente) {
       throw new Error("La placa ya está registrada en otro vehículo");
-    }
+    } */
 
     // Actualizar el vehículo en la base de datos
     const carroActualizado = await prisma.carro.update({
@@ -267,6 +267,7 @@ const actualizarVehiculoPorId = async (id, datosActualizados) => {
     throw error;
   }
 };
+
 
 const actualizarCaracteristicasPorId = async (id, datosActualizados) => {
   try {
