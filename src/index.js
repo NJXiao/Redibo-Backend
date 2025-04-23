@@ -16,14 +16,42 @@ app.get('/', (req, res) => {
 });
 
 
-app.get('/departamento', async (req, res) => {
+app.get('/usuario', async (req, res) => {
   try {
-    const departamento = await prisma.departamento.findMany();
-    res.json(departamento);
+    const usuario = await prisma.usuario.findMany();
+    console.log(usuario)
+    res.json(usuario);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch departamento' });
   }
 });
+
+app.get('/automovil', async (req,res)=>{
+  try{
+      const automovil = await prisma.automovil.findMany();
+      res.json(automovil);
+  }catch(error){
+    console.log('Faile:', error)
+  }
+})
+
+app.get('/notificacion' , async (req, res)=> {
+  try{
+    const notificacion = await prisma.notificacion.findMany();
+    res.json(notificacion);
+  }catch(error){
+    console.log(error);
+  }
+})
+
+app.get('/pago' , async (req, res) =>{
+  try {
+    const pago = await prisma.pago.findMany();
+    res.json(pago)
+  } catch (error) {
+    console.log(error)
+  }
+})
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
