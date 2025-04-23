@@ -143,6 +143,16 @@ const departamentos: Departamento[] = [
       'Cordillera',
       'Florida',
       'Germán Busch',
+      'Ichilo',
+      'Guarayos',
+      'Ñuflo de Chávez',
+      'Obispo Santistevan',
+      'Sara',
+      'Vallegrande',
+      'Velasco',
+      'Ángel Sandoval',
+      'Manuel María Caballero',
+      'Warnes'
     ],
   },
   {
