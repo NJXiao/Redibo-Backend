@@ -1,6 +1,6 @@
 const { verifyToken } = require('../services/jwtService');
 
-exports.authenticate = (req, res, next) => {
+exports.authenticateToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {

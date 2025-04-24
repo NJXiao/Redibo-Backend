@@ -1,7 +1,7 @@
 const express = require('express');
 const passport = require('passport');
 const userController = require('../controllers/userController');
-const { authenticate } = require('../middlewares/authMiddleware');
+const { authenticateToken } = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 const authController = require('../controllers/userController');
@@ -28,7 +28,7 @@ router.get('/check-profile/:id', userController.checkProfileStatus);
 router.post('/login', userController.loginUser);
 
 // Obtener perfil del usuario (protegido con JWT)
-router.get('/profile', authenticate, userController.getUserProfile);
+router.get('/profile', authenticateToken, userController.getUserProfile);
 
 router.get("/check-profile/email/:email", userController.checkProfileByEmail);   //ssscsasascacscascsaacs
 
