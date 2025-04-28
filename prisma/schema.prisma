@@ -102,6 +102,8 @@ model Carro {
   ingresoTotal        Float?                 @default(0)
   NumeroViajes        Int?                    @default(0)
   usuario             Usuario?               @relation("CarrosPorUsuario", fields: [id_usuario_rol], references: [id])
+  id_seguro          Int?
+  seguro             Seguro?                @relation(fields: [id_seguro], references: [id])
   combustiblesporCarro        CombustibleCarro[]
   caracteristicasAdicionalesCarro caracteristicasAdicionalesCarro[]
   contratosAlquiler   contratodeAlquiler[]
@@ -110,6 +112,15 @@ model Carro {
   calificaciones      Calificacion[]
   reservas            Reserva[]
 }
+model Seguro {
+  id             Int    @id @default(autoincrement())
+  nombreEmpresa  String
+  fechaInicio   DateTime
+  fechaFin      DateTime
+  carro         Carro[]
+}
+
+
 
 model CombustibleCarro {
   id             Int    @id @default(autoincrement())
