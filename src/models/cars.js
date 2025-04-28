@@ -63,7 +63,7 @@ class CarModel {
         modelo: car.modelo,
         anio: car.año,
         precio_por_dia: car.precio_por_dia,
-        imagenes: car.imagenes?.[0]?.data ? Buffer.from(car.imagenes[0].data).toString('utf-8') : null,
+        imagenes: car.imagenes?.[0]?.data | null,
         veces_alquilado: car._count.reservas,
       }))
     } catch (error) {
