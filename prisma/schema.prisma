@@ -105,6 +105,11 @@ model Carro {
   usuario             Usuario?               @relation("CarrosPorUsuario", fields: [id_usuario_rol], references: [id])
   id_seguro          Int?
   seguro             Seguro?                @relation(fields: [id_seguro], references: [id])
+  id_tipodeDescuento Int?  //este tiene el proposito de que cuando le estes registrando una reserva le pase este id
+  //y de esta forma pueda saber si el carro tiene un descuento o no y en la tabla de descuentos
+  //pasará este id y de esta forma se mantendrá un registro de que carro fue reservado con este descuento.
+  //ademas no hay un problema con los id debido al manejo de estos evitando en todo momento generar conflicto, analiza y podras notar esto.
+  tipodeDescuento    tipodeDescuento?      @relation(fields: [id_tipodeDescuento], references: [id])
   combustiblesporCarro        CombustibleCarro[]
   caracteristicasAdicionalesCarro caracteristicasAdicionalesCarro[]
   contratosAlquiler   contratodeAlquiler[]
@@ -176,21 +181,35 @@ model Reserva {
   id_usuario     Int
   fecha_creacion DateTime @default(now())
   fecha_inicio   DateTime
-  fecha_fin      DateTime
+  montoPagoInicial   Float?
+  montoTotalConDescuento Float?
+  hora_inicio   Int?
+  hora_fin      Int?
+  fecha_fin      DateTime?
   fecha_expiracion DateTime?
   estado         String @default("pendiente")
-  id_descuento   Int?
-  carro          Carro       @relation(fields: [id_carro], references: [id])
-  descuento      Descuento?  @relation(fields: [id_descuento], references: [id])
+  carro          Carro      @relation(fields: [id_carro], references: [id])
   usuario        Usuario?    @relation(fields: [id_usuario], references: [id])
   garantia       Garantia[]
+  descuento      Descuento[]  //porque un carro puede tener varios descuentos, por ejemplo, un descuento por ser cliente frecuente y otro por una promocion de la empresa.
 }
 
 model Descuento {
   id         Int       @id @default(autoincrement())
-  fecha      DateTime
-  porcentaje Float
+  montoDescontado     Float?  //para hayar este monto primero se consulta ah tipo de descuento y se calcula en base al porsentaje.
+  id_descuentoTipo Int?
+  tipodeDescuento tipodeDescuento? @relation(fields: [id_descuentoTipo], references: [id])
   reservas   Reserva[]
+}
+
+model tipodeDescuento {
+  id         Int       @id @default(autoincrement())
+  nombre     String
+  porcentaje Float
+  fecha_inicio DateTime?
+  fecha_fin   DateTime?
+  descuentos  Descuento[]
+  carros      Carro[]
 }
 
 model Garantia {
