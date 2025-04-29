@@ -30,14 +30,14 @@ model Usuario {
   id               Int              @id @default(autoincrement())             
   nombre           String
   correo           String           @unique
-  fecha_nacimiento DateTime?
-  genero           Genero?
-  id_ciudad        Int?
-  ciudad           Ciudad?           @relation(fields: [id_ciudad], references: [id])
+  fecha_nacimiento DateTime
+  genero           Genero
+  id_ciudad        Int
+  ciudad           Ciudad           @relation(fields: [id_ciudad], references: [id])
   contraseña       String?
-  google_id        String?
-  foto             String?
-  telefono         String?
+  google_id       String?
+  foto            String?
+  telefono         String
   roles            UsuarioRol[]
   favoritos        Favorito[]
   calificaciones   Calificacion[]
@@ -91,6 +91,7 @@ model Carro {
   direccion           Direccion              @relation(fields: [id_direccion], references: [id])
   asientos            Int
   puertas             Int
+  //capacidad_tanque     Int?
   soat                Boolean
   precio_por_dia      Float
   num_mantenimientos  Int
@@ -98,14 +99,33 @@ model Carro {
   estado              String
   id_usuario_rol      Int
   descripcion         String?
+  ingresoTotal        Float?                 @default(0)
+  NumeroViajes        Int?                    @default(0)
   usuario             Usuario?               @relation("CarrosPorUsuario", fields: [id_usuario_rol], references: [id])
+  id_seguro          Int?
+  seguro             Seguro?                @relation(fields: [id_seguro], references: [id])
+  id_tipodeDescuento Int?  //este tiene el proposito de que cuando le estes registrando una reserva le pase este id
+  //y de esta forma pueda saber si el carro tiene un descuento o no y en la tabla de descuentos
+  //pasará este id y de esta forma se mantendrá un registro de que carro fue reservado con este descuento.
+  //ademas no hay un problema con los id debido al manejo de estos evitando en todo momento generar conflicto, analiza y podras notar esto.
+  tipodeDescuento    tipodeDescuento?      @relation(fields: [id_tipodeDescuento], references: [id])
   combustiblesporCarro        CombustibleCarro[]
   caracteristicasAdicionalesCarro caracteristicasAdicionalesCarro[]
+  contratosAlquiler   contratodeAlquiler[]
   imagenes            Imagen[]
   favoritos           Favorito[]
   calificaciones      Calificacion[]
   reservas            Reserva[]
 }
+model Seguro {
+  id             Int    @id @default(autoincrement())
+  nombreEmpresa  String
+  fechaInicio   DateTime
+  fechaFin      DateTime
+  carro         Carro[]
+}
+
+
 
 model CombustibleCarro {
   id             Int    @id @default(autoincrement())
@@ -113,7 +133,6 @@ model CombustibleCarro {
   carro          Carro  @relation(fields: [id_carro], references: [id])
   id_combustible Int
   combustible    TipoCombustible @relation(fields: [id_combustible], references: [id])
-
 }
 
 model TipoCombustible {
@@ -127,8 +146,8 @@ model caracteristicasAdicionalesCarro {
   id             Int    @id @default(autoincrement())
   id_carro       Int
   carro          Carro  @relation(fields: [id_carro], references: [id])
-  id_caracteristicasAdicionales Int
-  carasteristicasAdicionales CarasteristicasAdicionales @relation(fields: [id_caracteristicasAdicionales], references: [id])
+  id_carasteristicasAdicionales Int
+  carasteristicasAdicionales CarasteristicasAdicionales @relation(fields: [id_carasteristicasAdicionales], references: [id])
 }
 
 model CarasteristicasAdicionales {
@@ -139,7 +158,7 @@ model CarasteristicasAdicionales {
 
 model Imagen {
   id        Int    @id @default(autoincrement())
-  data      Bytes?
+  data      String?
   id_carro  Int
   carro     Carro  @relation(fields: [id_carro], references: [id])
 }
@@ -161,28 +180,58 @@ model Reserva {
   id_usuario     Int
   fecha_creacion DateTime @default(now())
   fecha_inicio   DateTime
-  fecha_fin      DateTime
+  montoPagoInicial   Float?
+  montoTotalConDescuento Float?
+  hora_inicio   Int?
+  hora_fin      Int?
+  fecha_fin      DateTime?
   fecha_expiracion DateTime?
   estado         String @default("pendiente")
-  id_descuento   Int?
-  carro          Carro       @relation(fields: [id_carro], references: [id])
-  descuento      Descuento?  @relation(fields: [id_descuento], references: [id])
+  carro          Carro      @relation(fields: [id_carro], references: [id])
   usuario        Usuario?    @relation(fields: [id_usuario], references: [id])
+  garantia       Garantia[]
+  descuento      Descuento[]  //porque un carro puede tener varios descuentos, por ejemplo, un descuento por ser cliente frecuente y otro por una promocion de la empresa.
 }
 
 model Descuento {
   id         Int       @id @default(autoincrement())
-  fecha      DateTime
-  porcentaje Float
+  montoDescontado     Float?  //para hayar este monto primero se consulta ah tipo de descuento y se calcula en base al porsentaje.
+  id_descuentoTipo Int?
+  tipodeDescuento tipodeDescuento? @relation(fields: [id_descuentoTipo], references: [id])
   reservas   Reserva[]
+}
+
+model tipodeDescuento {
+  id         Int       @id @default(autoincrement())
+  nombre     String
+  porcentaje Float
+  fecha_inicio DateTime?
+  fecha_fin   DateTime?
+  descuentos  Descuento[]
+  carros      Carro[]
 }
 
 model Garantia {
   id           Int       @id @default(autoincrement())
   precio       Float
   fecha_limite DateTime
+  descripcion  String?
   pagado       Boolean
+  //documentacion Boolean
+  pagoPorDaños Boolean?
+  id_reserva   Int?
+  reserva      Reserva?   @relation(fields: [id_reserva], references: [id])
 }
+
+model contratodeAlquiler {
+  id             Int         @id @default(autoincrement())
+  id_reserva     Int
+  kilometraje    Int
+  id_carro       Int
+  carro          Carro       @relation(fields: [id_carro], references: [id])
+  estado         String      @default("pendiente")
+}
+
 
 model Ciudad {
   id      Int      @id @default(autoincrement())
@@ -191,6 +240,16 @@ model Ciudad {
   id_pais Int?
   usuarios Usuario[]
   provincia Provincia[]
+  aueropuerto aeropuerto[]
+}
+
+model aeropuerto {
+  id        Int    @id @default(autoincrement())
+  nombre    String
+  latitud   Float?
+  longitud  Float?
+  ciudad    Ciudad @relation(fields: [id_ciudad], references: [id])
+  id_ciudad Int
 }
 
 model Pais {
@@ -203,8 +262,10 @@ model Direccion {
   id          Int      @id @default(autoincrement())
   id_provincia Int
   calle       String
-  zona        String
+  zona        String?
   num_casa    String?
+  latitud    Float?
+  longitud   Float?
   provincia   Provincia @relation(fields: [id_provincia], references: [id])
   carros      Carro[]
   ubicacion   Ubicacion[]
@@ -232,13 +293,4 @@ model Busqueda {
   fecha_creacion  DateTime  @default(now())
   id_usuario      Int
   usuario         Usuario   @relation(fields: [id_usuario], references: [id])
-}
-
-
-model Ejemplo {
-  id        Int    @id @default(autoincrement())
-  nombre    String
-  apellido  String
-  edad      Int
-  id_ciudad Int
 }
