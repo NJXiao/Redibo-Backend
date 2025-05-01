@@ -1,7 +1,7 @@
-import fs from 'fs/promises';
-import path from 'path';
-import sharp from 'sharp';
-import { PrismaClient } from '@prisma/client';
+const fs = require('fs/promises');
+const path = require('path');
+const { PrismaClient } = require('@prisma/client');
+const { uploadCarImage } = require('../../src/Sprinteros/Par_3/services/imageService.js'); // Ruta correcta al servicio
 
 const prisma = new PrismaClient();
 
@@ -15,7 +15,6 @@ async function main() {
     { id: 8, placa: '6399JKL4' },
   ];
   const imagenesPorCarro = 3; // Número máximo de imágenes por carro
-  const maxSize = 2 * 1024 * 1024; // 2MB en bytes
 
   // Definición de la ruta base de imágenes usando una ruta relativa dentro del repositorio
   const imagenesBasePath = path.join(__dirname, '..', 'sends', 'imagen');
@@ -28,43 +27,35 @@ async function main() {
       });
 
       if (imagenesExistentes.length >= imagenesPorCarro) {
-        console.log(`El carro ${carro.placa} ya tiene imágenes.`);
+        console.log(`El carro ${carro.placa} ya tiene ${imagenesExistentes.length} imágenes.`);
         continue;
       }
 
+      // Calcular cuántas imágenes necesitamos añadir
+      const imagenesNecesarias = imagenesPorCarro - imagenesExistentes.length;
+
       // Procesar imágenes para el carro
-      for (let i = 1; i <= imagenesPorCarro; i++) {
+      for (let i = 1; i <= imagenesNecesarias; i++) {
         // Construir la ruta usando la estructura: idhost_1/idcard_<carro.id>/imagen<i>.jpg
         const imagePath = path.join(imagenesBasePath, 'idhost_1', `idcard_${carro.id}`, `imagen${i}.jpg`);
 
         try {
-          // Verificar si la imagen existe y obtener sus estadísticas
-          const stats = await fs.stat(imagePath);
-          let imageBuffer = await fs.readFile(imagePath);
+          // Leer el archivo de imagen
+          const imageBuffer = await fs.readFile(imagePath);
 
-          // Si la imagen supera los 2MB, proceder a comprimir/redimensionar
-          if (stats.size > maxSize) {
-            console.log(`La imagen ${imagePath} supera los 2MB. Comprimiendo...`);
-            imageBuffer = await sharp(imageBuffer)
-              .resize({ width: 1920, withoutEnlargement: true })
-              .jpeg({ quality: 80 })
-              .toBuffer();
+          // Usar el nuevo servicio uploadCarImage para subir a Cloudinary
+          const result = await uploadCarImage(imageBuffer, carro.id);
+
+          if (result.success) {
+            console.log(`Imagen ${i} añadida para carro ${carro.placa}: ${result.data.data}`);
+          } else {
+            console.warn(`No se pudo subir la imagen ${i} para el carro ${carro.placa}`);
           }
-
-          // Crear el registro de la imagen en la base de datos
-          await prisma.imagen.create({
-            data: {
-              data: imageBuffer,
-              id_carro: carro.id,
-            },
-          });
-
-          console.log(`Imagen ${i} añadida para carro ${carro.placa}`);
-        } catch (error: any) {
+        } catch (error) {
           console.warn(`No se pudo cargar imagen ${imagePath}: ${error.message}`);
         }
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error(`Error procesando el carro ${carro.placa}: ${error.message}`);
     }
   }

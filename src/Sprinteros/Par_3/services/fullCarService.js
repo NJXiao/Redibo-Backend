@@ -1,118 +1,129 @@
+// backend/services/fullCarService.js
+
 const prisma = require('../../../config/prisma');
 const { CarServiceError } = require('../errors/customErrors');
-const direccionService = require('../services/direccionService');
-const imageService = require('../services/imageService');
+const direccionService = require('./direccionService');
+const imageService = require('./imageService');
 
 /**
- * Crea un carro junto con sus imágenes asociadas en una transacción.
+ * Crea un carro junto con sus imágenes asociadas.
  * @param {Object} carData - Datos del carro.
- * @param {Array<string>} imagesBase64 - Lista de imágenes en formato base64.
+ * @param {Array<string>} imagesBase64 - Lista de imágenes en Base64.
  * @returns {Object} El carro creado junto con sus imágenes.
  */
 async function createCarWithImages(carData, imagesBase64) {
   try {
-    const result = await prisma.$transaction(async (prisma) => {
-      // Crear el carro
-      const newCar = await prisma.carro.create({
-        data: carData,
-      });
-
-      // Insertar las imágenes asociadas al carro
-      const images = await Promise.all(
-        imagesBase64.map((base64) =>
-          prisma.imagen.create({
-            data: {
-              id_carro: newCar.id,
-              data: Buffer.from(base64, 'base64'), // Convertir base64 a Buffer
-            },
-          })
-        )
-      );
-
-      return { car: newCar, images };
+    // 1. Crear solo el carro
+    const newCar = await prisma.carro.create({
+      data: carData,
     });
 
-    return result;
+    // 2. Subir cada imagen a Cloudinary y guardar la URL en DB
+    const uploadedImages = await Promise.all(
+      imagesBase64.map(async (base64) => {
+        const buffer = Buffer.from(base64, 'base64');
+        const { data: savedImage } = await imageService.uploadCarImage(buffer, newCar.id);
+        return savedImage;
+      })
+    );
+
+    return { car: newCar, images: uploadedImages };
   } catch (error) {
-    throw new CarServiceError(`Error al crear el carro con imágenes: ${error.message}`, 'TRANSACTION_ERROR', error);
+    throw new CarServiceError(
+      `Error al crear el carro con imágenes: ${error.message}`,
+      'TRANSACTION_ERROR',
+      error
+    );
   }
 }
 
 /**
  * Crea un carro completo desde un DTO, gestionando todas las entidades y relaciones necesarias.
  * @param {Object} dto - Datos del carro y sus relaciones.
- * @returns {Object} El carro creado junto con sus relaciones.
+ * @returns {Object} El carro creado junto con sus relaciones e imágenes.
  */
 async function createFullCar(dto) {
   const {
     direccion,
     carro,
-    imagesBase64,
-    combustibles,
-    caracteristicas,
+    imagesBase64 = [],
+    combustibles = [],
+    caracteristicas = [],
   } = dto;
 
-  // Validación mínima del DTO
+  // Validaciones básicas
   if (!Array.isArray(combustibles) || combustibles.some((id) => !Number.isInteger(id))) {
-    throw new CarServiceError('Los combustibles proporcionados son inválidos.', 'VALIDATION_ERROR');
+    throw new CarServiceError('Combustibles inválidos.', 'VALIDATION_ERROR');
   }
   if (!Array.isArray(caracteristicas) || caracteristicas.some((id) => !Number.isInteger(id))) {
-    throw new CarServiceError('Las características adicionales proporcionadas son inválidas.', 'VALIDATION_ERROR');
+    throw new CarServiceError('Características inválidas.', 'VALIDATION_ERROR');
   }
 
-  console.info(`Iniciando creación de carro ${carro.vim} por usuarioRol ${carro.id_usuario_rol}`);
+  console.info(`Iniciando creación de carro ${carro.vim}`);
   const start = Date.now();
 
+  let newDireccion, newCar;
   try {
-    const result = await prisma.$transaction(async (tx) => {
-      // Crear la dirección
-      const newDireccion = await tx.direccion.create({
-        data: direccion,
-      });
-
-      // Crear el carro con relaciones anidadas
-      const newCar = await tx.carro.create({
+    // 1. Transacción para crear dirección + carro + relaciones sin imágenes
+    const txResult = await prisma.$transaction(async (tx) => {
+      const dir = await tx.direccion.create({ data: direccion });
+      const c = await tx.carro.create({
         data: {
-          ...carro, // Desplegar el objeto dto.carro
-          id_direccion: newDireccion.id,
+          ...carro,
+          id_direccion: dir.id,
           combustiblesporCarro: {
-            create: combustibles.map((id_combustible) => ({ id_combustible })),
+            create: combustibles.map((idComb) => ({ id_combustible: idComb })),
           },
           caracteristicasAdicionalesCarro: {
-            create: caracteristicas.map((id) => ({
-              id_carasteristicasAdicionales: id
-            })),
-          },
-          
-          imagenes: {
-            create: imagesBase64.map((base64) => ({
-              data: Buffer.from(base64, 'base64'),
+            create: caracteristicas.map((idCar) => ({
+              id_carasteristicasAdicionales: idCar,
             })),
           },
         },
         include: {
-          combustiblesporCarro:    { include: { combustible: true } },
+          combustiblesporCarro: { include: { combustible: true } },
           caracteristicasAdicionalesCarro: {
-            include: { carasteristicasAdicionales: true }
+            include: { carasteristicasAdicionales: true },
           },
-          imagenes: true,
         },
-        
       });
-
-      return { direccion: newDireccion, carro: newCar };
+      return { dir, c };
     });
 
-    console.info(`Transacción fullCar completada en ${Date.now() - start} ms`);
-    return result;
+    newDireccion = txResult.dir;
+    newCar = txResult.c;
   } catch (error) {
+    console.error('Error en transacción fullCar:', error);
     if (error.code === 'P2002') {
       throw new CarServiceError('Violación de restricción única.', 'CONFLICT_ERROR', error);
     }
-    const err = new CarServiceError('Error al crear el carro completo.', 'TRANSACTION_ERROR');
-    err.cause = error;
-    throw err;
+    throw new CarServiceError('Error al crear el carro completo.', 'TRANSACTION_ERROR', error);
   }
+
+  // 2. Subir imágenes solo si la creación anterior fue exitosa
+  let uploadedImages = [];
+  if (imagesBase64.length) {
+    try {
+      uploadedImages = await Promise.all(
+        imagesBase64.map(async (base64) => {
+          const buffer = Buffer.from(base64, 'base64');
+          const { data: img } = await imageService.uploadCarImage(buffer, newCar.id);
+          return img;
+        })
+      );
+    } catch (error) {
+      // Aquí podrías decidir si revertir el carro/dirección o solo reportar el fallo
+      console.error('Error al subir imágenes post-transaction:', error);
+      throw new CarServiceError('Error al subir las imágenes del carro.', 'IMAGE_UPLOAD_ERROR', error);
+    }
+  }
+
+  console.info(`fullCar completado en ${Date.now() - start} ms`);
+  return {
+    direccion: newDireccion,
+    carro: newCar,
+    images: uploadedImages,
+  };
 }
 
 module.exports = { createCarWithImages, createFullCar };

@@ -1,82 +1,118 @@
-const prisma = require('../../../config/prisma');
-const { CarServiceError } = require('../errors/customErrors');
+// backend/services/imageService.js
+
+import cloudinary from '../config/cloudinary';
+import { PrismaClient } from '@prisma/client';
+import { Readable } from 'stream';
+import { URL } from 'url';
+
+const prisma = new PrismaClient();
 
 /**
- * Obtiene las imágenes asociadas a un carro por su ID.
- * @param {number|string} carId - ID del carro.
- * @returns {Array<Object>} Lista de imágenes asociadas al carro.
+ * Extrae el public_id de Cloudinary a partir de la URL
+ * @param {string} imageUrl 
+ * @returns {string} publicId (p. ej. 'car-images/abc123_def')
  */
-async function getImagesByCarId(carId) {
+function extractPublicId(imageUrl) {
+  try {
+    const parsed = new URL(imageUrl);
+    // path: '/di86sws6b/image/upload/v1610000000/car-images/abc123_def.jpg'
+    const parts = parsed.pathname.split('/');
+    // eliminar 'v{timestamp}'
+    const withoutVersion = parts.filter(p => !/^v\d+$/.test(p));
+    // quedarnos desde 'car-images/...'
+    const idx = withoutVersion.indexOf('car-images');
+    const publicPath = withoutVersion.slice(idx).join('/');
+    // quitar extensión
+    return publicPath.replace(/\.[a-zA-Z]+$/, '');
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Sube una imagen a Cloudinary y guarda la URL en la base de datos
+ * @param {Buffer} imageBuffer - Buffer de la imagen
+ * @param {number} carId - ID del carro asociado a la imagen
+ * @returns {Promise<{ success: boolean, data: import('@prisma/client').Imagen }>}
+ */
+export async function uploadCarImage(imageBuffer, carId) {
+  try {
+    // 1. Subir la imagen a Cloudinary
+    const result = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'car-images',
+          resource_type: 'image',
+        },
+        (error, res) => {
+          if (error) return reject(error);
+          resolve(res);
+        }
+      );
+
+      Readable.from(imageBuffer).pipe(uploadStream);
+    });
+
+    // 2. Guardar sólo la URL en la base de datos
+    const savedImage = await prisma.imagen.create({
+      data: {
+        data: result.secure_url, 
+        id_carro: carId,
+      },
+    });
+
+    return { success: true, data: savedImage };
+  } catch (error) {
+    console.error('Error al subir imagen:', error);
+    throw new Error('Error al procesar la imagen');
+  }
+}
+
+/**
+ * Obtiene las imágenes de un carro específico
+ * @param {number} carId 
+ * @returns {Promise<{ success: boolean, data: import('@prisma/client').Imagen[], total: number }>}
+ */
+export async function getCarImages(carId) {
   try {
     const images = await prisma.imagen.findMany({
-      where: { id_carro: Number(carId) },
-      orderBy: { id: 'asc' }, // Ordenar las imágenes por ID
+      where: { id_carro: carId },
+      orderBy: { id: 'asc' },
     });
-    return images;
+    return { success: true, data: images, total: images.length };
   } catch (error) {
-    throw new CarServiceError(`Error al obtener las imágenes del carro: ${error.message}`, 'PRISMA_ERROR', error);
+    console.error('Error al obtener imágenes:', error);
+    throw new Error('Error al recuperar las imágenes');
   }
 }
 
 /**
- * Crea una nueva imagen asociada a un carro.
- * @param {number|string} carId - ID del carro.
- * @param {Buffer} imageData - Datos de la imagen en formato Buffer.
- * @returns {Object} La imagen creada.
+ * Elimina una imagen de Cloudinary y de la base de datos
+ * @param {number} imageId 
+ * @returns {Promise<{ success: boolean, message: string }>}
  */
-async function createImage(carId, imageData) {
+export async function deleteCarImage(imageId) {
   try {
-    const newImage = await prisma.imagen.create({
-      data: {
-        id_carro: Number(carId),
-        data: imageData,
-      },
+    // 1. Obtener la imagen para conseguir la URL
+    const image = await prisma.imagen.findUnique({
+      where: { id: imageId },
     });
-    return newImage;
+    if (!image) {
+      throw new Error('Imagen no encontrada');
+    }
+
+    // 2. Extraer public_id y eliminar de Cloudinary (si lo logramos)
+    const publicId = extractPublicId(image.data || '');
+    if (publicId) {
+      await cloudinary.uploader.destroy(publicId);
+    }
+
+    // 3. Eliminar la referencia de la base de datos
+    await prisma.imagen.delete({ where: { id: imageId } });
+
+    return { success: true, message: 'Imagen eliminada correctamente' };
   } catch (error) {
-    throw new CarServiceError(`Error al crear la imagen del carro: ${error.message}`, 'PRISMA_ERROR', error);
+    console.error('Error al eliminar imagen:', error);
+    throw new Error('Error al eliminar la imagen');
   }
 }
-
-/**
- * Elimina una imagen por su ID.
- * @param {number|string} imageId - ID de la imagen a eliminar.
- * @returns {Object} Resultado de la eliminación.
- */
-async function deleteImage(imageId) {
-  try {
-    const deletedImage = await prisma.imagen.delete({
-      where: { id: Number(imageId) },
-    });
-    return deletedImage;
-  } catch (error) {
-    throw new CarServiceError(`Error al eliminar la imagen: ${error.message}`, 'PRISMA_ERROR', error);
-  }
-}
-
-/**
- * Actualiza una imagen existente.
- * @param {number|string} imageId - ID de la imagen a actualizar.
- * @param {Buffer} newImageData - Nuevos datos de la imagen en formato Buffer.
- * @returns {Object} La imagen actualizada.
- */
-async function updateImage(imageId, newImageData) {
-  try {
-    const updatedImage = await prisma.imagen.update({
-      where: { id: Number(imageId) },
-      data: {
-        data: newImageData,
-      },
-    });
-    return updatedImage;
-  } catch (error) {
-    throw new CarServiceError(`Error al actualizar la imagen: ${error.message}`, 'PRISMA_ERROR', error);
-  }
-}
-
-module.exports = {
-  getImagesByCarId,
-  createImage,
-  deleteImage,
-  updateImage,
-};
