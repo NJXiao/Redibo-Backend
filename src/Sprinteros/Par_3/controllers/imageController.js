@@ -1,4 +1,4 @@
-// backend/controllers/imageController.js
+///controllers/imageController.js
 
 const imageService = require('../services/imageService');
 
