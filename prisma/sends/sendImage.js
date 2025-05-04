@@ -42,7 +42,7 @@ async function main() {
     try {
       // Verificar imágenes existentes
       const existing = await prisma.imagen.count({ where: { id_carro: carId } });
-      const needed = IMAGES_PER_CAR - existing;
+      const needed = IMAGES_PER_CAR;
 
       if (needed <= 0) {
         console.log(`✔ Carro ${placa} (ID ${carId}) ya tiene ${existing}/${IMAGES_PER_CAR} imágenes.`);
@@ -59,9 +59,8 @@ async function main() {
       // Leer y procesar archivos
       const files = await fs.readdir(cardDir);
       const imageFiles = files
-        .filter(f => /^imagen[1-3]\.(jpe?g|png)$/i.test(f)) // Filtra específicamente imagen1, imagen2, imagen3
+        .filter(f => /^imagen[1-3]\.(jpe?g|png)$/i.test(f))
         .sort((a, b) => {
-          // Ordenar por número de imagen
           const numA = parseInt(a.match(/\d+/)[0]);
           const numB = parseInt(b.match(/\d+/)[0]);
           return numA - numB;
@@ -69,7 +68,7 @@ async function main() {
 
       console.log(`📸 Encontradas ${imageFiles.length} imágenes para carro ${placa}`);
 
-      for (let i = 0; i < Math.min(needed, imageFiles.length); i++) {
+      for (let i = 0; i < Math.min(IMAGES_PER_CAR, imageFiles.length); i++) {
         const filename = imageFiles[i];
         const filepath = path.join(cardDir, filename);
         
