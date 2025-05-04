@@ -1,21 +1,21 @@
 // backend/routes/imageRoutes.js
 
-const express = require('express');
+const express         = require('express');
 const imageController = require('../controllers/imageController');
-const validateImage = require('../middlewares/validateImage');
+const validateImage   = require('../middlewares/validateImage');
 
 const router = express.Router();
 
-// Listar todas las imágenes de un carro
+// GET  /api/images/:carId
 router.get('/:carId', imageController.getImagesByCarId);
 
-// Subir una nueva imagen para un carro
+// POST /api/images/:carId
 router.post('/:carId', validateImage, imageController.createImage);
 
-// Reemplazar una imagen existente
+// PUT  /api/images/:imageId
 router.put('/:imageId', validateImage, imageController.updateImage);
 
-// Eliminar una imagen
+// DELETE /api/images/:imageId
 router.delete('/:imageId', imageController.deleteImage);
 
 module.exports = router;

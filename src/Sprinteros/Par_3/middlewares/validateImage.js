@@ -1,34 +1,30 @@
 // backend/middlewares/validateImage.js
 
 const multer = require('multer');
+const storage = multer.memoryStorage();
 
-// Configuración de multer para manejar archivos en memoria
+// límite ejemplo: 5 MB, solo imágenes
 const upload = multer({
-  limits: {
-    fileSize: 2 * 1024 * 1024, // 2MB
-  },
-  fileFilter: (req, file, cb) => {
+  storage,
+  limits: { fileSize: 3 * 1024 * 1024 },
+  fileFilter(req, file, cb) {
     if (!file.mimetype.startsWith('image/')) {
-      return cb(new Error('El archivo debe ser una imagen válida.'));
+      return cb(new Error('Sólo se permiten archivos de imagen'));
     }
     cb(null, true);
-  },
-}).single('image'); // El campo 'image'
+  }
+});
 
-/**
- * Middleware para validar imágenes antes de procesarlas.
- */
-function validateImage(req, res, next) {
-  upload(req, res, (err) => {
+module.exports = [
+  upload.single('file'),
+  (err, req, res, next) => {
+    // manejar errores de Multer
     if (err) {
-      const msg =
-        err instanceof multer.MulterError
-          ? 'La imagen excede el tamaño máximo permitido de 2MB.'
-          : err.message;
-      return res.status(400).json({ success: false, error: msg });
+      return res.status(400).json({ success: false, message: err.message });
+    }
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'Archivo requerido' });
     }
     next();
-  });
-}
-
-module.exports = validateImage;
+  }
+];

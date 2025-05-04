@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors'); // <--- IMPORTANTE
 const dotenv = require('dotenv');
 const sprinterosRoutes = require('./Sprinteros'); // Importar las rutas de sprinteros
 
@@ -6,6 +7,8 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 4000;
+
+app.use(cors()); // <--- Habilita CORS para todas las rutas
 
 // Middleware para parsear JSON
 app.use(express.json());

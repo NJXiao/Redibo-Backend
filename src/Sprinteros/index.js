@@ -7,9 +7,9 @@ const par3Routes = require('./Par_3/routes/index'); // Rutas de Par_3
 const router = express.Router();
 
 // Montar las rutas de cada módulo
-router.use('/api/v1', par1Routes); // Prefijo para las rutas de Par_1
-router.use('/api/v3', par2Routes); // Prefijo para las rutas de Par_2
-router.use('/api/v2', par3Routes); // Prefijo para las rutas de Par_3
+router.use('/v1', par1Routes); // Prefijo para las rutas de Par_1
+router.use('/v3', par2Routes); // Prefijo para las rutas de Par_2
+router.use('/v2', par3Routes); // Prefijo para las rutas de Par_3
 
 // Middleware global para manejar errores específicos de sprinteros
 router.use((err, req, res, next) => {

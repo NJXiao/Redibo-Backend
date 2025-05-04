@@ -1,89 +1,74 @@
-///controllers/imageController.js
+// backend/controllers/imageController.js
 
-const imageService = require('../services/imageService');
-
-/**
- * Obtiene las imágenes de un carro por su ID.
- * @route GET /api/v2/images/:carId
- */
-async function getImagesByCarId(req, res) {
-  const carId = Number(req.params.carId);
-  try {
-    const { success, data, total } = await imageService.getCarImages(carId);
-    return res
-      .status(200)
-      .json({ success, data, total });
-  } catch (error) {
-    console.error('Error en getImagesByCarId:', error);
-    return res.status(500).json({ success: false, error: error.message });
-  }
-}
-
-/**
- * Crea una nueva imagen asociada a un carro.
- * @route POST /api/v2/images/:carId
- */
-async function createImage(req, res) {
-  const carId = Number(req.params.carId);
-  const fileBuffer = req.file && req.file.buffer;
-  if (!fileBuffer) {
-    return res.status(400).json({ success: false, error: 'No se proporcionó una imagen válida.' });
-  }
-
-  try {
-    const { success, data } = await imageService.uploadCarImage(fileBuffer, carId);
-    return res.status(201).json({ success, data });
-  } catch (error) {
-    console.error('Error en createImage:', error);
-    return res.status(500).json({ success: false, error: error.message });
-  }
-}
-
-/**
- * Actualiza una imagen existente (sube una nueva y reemplaza).
- * @route PUT /api/v2/images/:imageId
- */
-async function updateImage(req, res) {
-  const imageId = Number(req.params.imageId);
-  const fileBuffer = req.file && req.file.buffer;
-  if (!fileBuffer) {
-    return res.status(400).json({ success: false, error: 'No se proporcionó una imagen válida para actualizar.' });
-  }
-
-  try {
-    // borramos la antigua y subimos la nueva
-    const { success: deleted } = await imageService.deleteCarImage(imageId);
-    if (!deleted) throw new Error('No se pudo eliminar la imagen anterior.');
-
-    // obtenemos el carId de la imagen borrada para re-subir
-    const carId = Number(req.body.carId);
-    const { success, data } = await imageService.uploadCarImage(fileBuffer, carId);
-
-    return res.status(200).json({ success, data });
-  } catch (error) {
-    console.error('Error en updateImage:', error);
-    return res.status(500).json({ success: false, error: error.message });
-  }
-}
-
-/**
- * Elimina una imagen por su ID.
- * @route DELETE /api/v2/images/:imageId
- */
-async function deleteImage(req, res) {
-  const imageId = Number(req.params.imageId);
-  try {
-    const { success, message } = await imageService.deleteCarImage(imageId);
-    return res.status(200).json({ success, message });
-  } catch (error) {
-    console.error('Error en deleteImage:', error);
-    return res.status(500).json({ success: false, error: error.message });
-  }
-}
-
-module.exports = {
-  getImagesByCarId,
-  createImage,
-  updateImage,
-  deleteImage,
-};
+const {
+    uploadCarImage,
+    getCarImages,
+    deleteCarImage,
+  } = require('../services/imageService');
+  const asyncHandler = require('../middlewares/asyncHandler');
+  
+  exports.getImagesByCarId = asyncHandler(async (req, res) => {
+    const carId = Number(req.params.carId);
+    // opcional: paginación vía query ?page=1&pageSize=20
+    const page     = parseInt(req.query.page)     || 1;
+    const pageSize = parseInt(req.query.pageSize) || 20;
+  
+    const result = await getCarImages(carId, { page, pageSize });
+    res.json(result);
+  });
+  
+  exports.createImage = asyncHandler(async (req, res) => {
+    const carId = Number(req.params.carId);
+    // validateImage ya llenó req.file.buffer
+    const { success, data: image } = await uploadCarImage(req.file.buffer, carId);
+    res.status(201).json({ success, image });
+  });
+  
+  /**
+   * Reemplaza una imagen existente:
+   * 1. Sube la nueva
+   * 2. Actualiza ese registro en BD con la URL y public_id nuevos
+   * 3. Elimina el asset antiguo de Cloudinary
+   */
+  exports.updateImage = asyncHandler(async (req, res) => {
+    const imageId = Number(req.params.imageId);
+    if (!req.file || !req.file.buffer) {
+      return res.status(400).json({ success: false, message: 'No hay archivo en la petición' });
+    }
+  
+    // 1) obtenemos la fila actual para recuperar public_id y carId
+    const existing = await require('../services/imageService').prisma.imagen.findUnique({
+      where: { id: imageId },
+      select: { public_id: true, id_carro: true }
+    });
+    if (!existing) {
+      return res.status(404).json({ success: false, message: 'Imagen no encontrada' });
+    }
+  
+    // 2) subimos la nueva
+    const { data: uploadResult } = await uploadCarImage(req.file.buffer, existing.id_carro);
+  
+    // 3) actualizamos el registro
+    const updated = await require('../services/imageService').prisma.imagen.update({
+      where: { id: imageId },
+      data: {
+        data:      uploadResult.data,
+        public_id: uploadResult.public_id,
+        width:     uploadResult.width,
+        height:    uploadResult.height,
+        format:    uploadResult.format,
+      },
+    });
+  
+    // 4) eliminamos el asset antiguo
+    await require('../config/cloudinary').uploader.destroy(existing.public_id);
+  
+    res.json({ success: true, image: updated });
+  });
+  
+  exports.deleteImage = asyncHandler(async (req, res) => {
+    const imageId = Number(req.params.imageId);
+    await deleteCarImage(imageId);
+    res.status(204).end();
+  });
+  

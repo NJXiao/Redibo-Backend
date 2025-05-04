@@ -1,63 +1,98 @@
-  const fs = require('fs/promises');
-  const path = require('path');
-  const { PrismaClient } = require('@prisma/client');
-  const { uploadCarImage } = require('../../src/Sprinteros/Par_3/services/imageService.js');
+const fs = require('fs/promises');
+const path = require('path');
+const { PrismaClient } = require('@prisma/client');
+const { uploadCarImage } = require('../../src/Sprinteros/Par_3/services/imageService');
 
-  const prisma = new PrismaClient();
+const prisma = new PrismaClient();
 
-  async function main() {
-    const carrosHost1 = [
-      { id: 1, placa: '1234ABC' },
-      { id: 5, placa: '1234ABC1' },
-      { id: 6, placa: '5678DEF2' },
-      { id: 7, placa: '3456GHI3' },
-      { id: 8, placa: '6399JKL4' },
-    ];
-    const imagenesPorCarro = 3;
-    const imagenesBasePath = path.join(__dirname, '..', 'sends', 'imagen');
+// Configuración:
+const IMAGES_PER_CAR = 3;
+const BASE_IMAGES_DIR = path.join(__dirname, 'imagen', 'idhost_1');
 
-    for (const carro of carrosHost1) {
-      try {
-        const imagenesExistentes = await prisma.imagen.findMany({
-          where: { id_carro: carro.id },
-        });
+async function verifyDirectory(dir) {
+  try {
+    await fs.access(dir);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
-        if (imagenesExistentes.length >= imagenesPorCarro) {
-          console.log(`El carro ${carro.placa} ya tiene ${imagenesExistentes.length} imágenes.`);
-          continue;
-        }
-
-        const imagenesNecesarias = imagenesPorCarro - imagenesExistentes.length;
-
-        for (let i = 1; i <= imagenesNecesarias; i++) {
-          const imagePath = path.join(imagenesBasePath, 'idhost_1', `idcard_${carro.id}`, `imagen${i}.jpg`);
-
-          try {
-            const imageBuffer = await fs.readFile(imagePath);
-
-            const result = await uploadCarImage(imageBuffer, carro.id);
-
-            if (result.success) {
-              console.log(`Imagen ${i} añadida para carro ${carro.placa}: ${result.data.data}`);
-            } else {
-              console.warn(`No se pudo subir la imagen ${i} para el carro ${carro.placa}`);
-            }
-          } catch (error) {
-            console.warn(`Error al procesar la imagen ${imagePath}: ${error.message}`);
-          }
-        }
-      } catch (error) {
-        console.error(`Error procesando el carro ${carro.placa}: ${error.message}`);
-      }
-    }
+async function main() {
+  // Verificación inicial del directorio base
+  const baseExists = await verifyDirectory(BASE_IMAGES_DIR);
+  if (!baseExists) {
+    console.error(`❌ Error: El directorio base no existe: ${BASE_IMAGES_DIR}`);
+    return;
   }
 
-  main()
-    .then(() => {
-      console.log('Proceso completado.');
-      prisma.$disconnect();
-    })
-    .catch((error) => {
-      console.error('Error al procesar las imágenes:', error.message);
-      prisma.$disconnect();
-    });
+  console.log(`📁 Usando directorio base: ${BASE_IMAGES_DIR}`);
+  
+  await prisma.$connect();
+
+  const carros = [
+    { id: 1, placa: '1234ABC' },
+    { id: 5, placa: '1234ABC1' },
+    { id: 6, placa: '5678DEF2' },
+    { id: 7, placa: '3456GHI3' },
+    { id: 8, placa: '6399JKL4' },
+  ];
+
+  for (const { id: carId, placa } of carros) {
+    try {
+      // Verificar imágenes existentes
+      const existing = await prisma.imagen.count({ where: { id_carro: carId } });
+      const needed = IMAGES_PER_CAR - existing;
+
+      if (needed <= 0) {
+        console.log(`✔ Carro ${placa} (ID ${carId}) ya tiene ${existing}/${IMAGES_PER_CAR} imágenes.`);
+        continue;
+      }
+
+      const cardDir = path.join(BASE_IMAGES_DIR, `idcard_${carId}`);
+      
+      if (!await verifyDirectory(cardDir)) {
+        console.warn(`⚠ No existe carpeta para carro ${placa}: ${cardDir}`);
+        continue;
+      }
+
+      // Leer y procesar archivos
+      const files = await fs.readdir(cardDir);
+      const imageFiles = files
+        .filter(f => /^imagen[1-3]\.(jpe?g|png)$/i.test(f)) // Filtra específicamente imagen1, imagen2, imagen3
+        .sort((a, b) => {
+          // Ordenar por número de imagen
+          const numA = parseInt(a.match(/\d+/)[0]);
+          const numB = parseInt(b.match(/\d+/)[0]);
+          return numA - numB;
+        });
+
+      console.log(`📸 Encontradas ${imageFiles.length} imágenes para carro ${placa}`);
+
+      for (let i = 0; i < Math.min(needed, imageFiles.length); i++) {
+        const filename = imageFiles[i];
+        const filepath = path.join(cardDir, filename);
+        
+        try {
+          console.log(`⏳ Procesando ${filename} para carro ${placa}...`);
+          const buffer = await fs.readFile(filepath);
+          const { success, data: savedImage } = await uploadCarImage(buffer, carId);
+          
+          if (success) {
+            console.log(`✅ Subida exitosa: ${filename} -> ${savedImage.data}`);
+          } else {
+            console.warn(`❌ Falló la subida de ${filename}`);
+          }
+        } catch (err) {
+          console.error(`❌ Error procesando ${filename}: ${err.message}`);
+        }
+      }
+    } catch (err) {
+      console.error(`❌ Error general para carro ${placa}: ${err.message}`);
+    }
+  }
+}
+
+main()
+  .catch(err => console.error('Error en el script:', err))
+  .finally(() => prisma.$disconnect());
