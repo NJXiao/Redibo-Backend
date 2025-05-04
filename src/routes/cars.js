@@ -5,5 +5,5 @@ const carRouter = Router()
 
 carRouter.get('/', CarController.getAll)
 carRouter.get('/most-rented', CarController.getMostRented)
-
+carRouter.post('/available-map', CarController.getCarsAvailableMap)
 module.exports = { carRouter }
