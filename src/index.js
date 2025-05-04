@@ -4,6 +4,7 @@ const morgan = require("morgan");
 const cors = require("cors");
 const passport = require('./config/passport');
 const dotenv = require('dotenv');
+const cookieParser = require('cookie-parser');
 
 // Cargar variables de entorno
 dotenv.config();
@@ -15,11 +16,17 @@ const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 const prisma = new PrismaClient();
-
-// Middlewares
+app.use(cookieParser(process.env.COOKIE_SECRET || 'redibo-secret'));
+app.use(cors({
+  origin: process.env.FRONTEND_URL,
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+  exposedHeaders: ['Set-Cookie', 'Cookie', 'Date', 'ETag']
+}));
 app.use(express.json());
 app.use(morgan("dev"));
-app.use(cors());
+
 app.use(passport.initialize());
 
 // Ruta principal

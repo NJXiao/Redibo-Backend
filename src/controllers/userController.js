@@ -2,17 +2,17 @@ const { PrismaClient } = require('@prisma/client');
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcrypt');
 const { generateToken } = require('../services/jwtService');
-const { use } = require('passport');
+//const { use } = require('passport');
+const jwt = require('jsonwebtoken');
 
 const prisma = new PrismaClient();
 
 exports.registerUser = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(422).json({ errores: errors.array() });
+    return res.status(422).json({ errores: errors.array()[0] });
   }
   try {
-    console.log('Datos recibidos en req.body:', req.body);
     const userData = req.body;
     let { nombre, correo, fechaNacimiento, genero, ciudad, contrasena, telefono, rol } = userData;
     // Validar rol recibido
@@ -71,17 +71,12 @@ exports.registerUser = async (req, res) => {
         return res.status(400).json({ error: 'La contraseña es obligatoria' });
       }
       
-      // Validar requisitos de contraseña
-      const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.{8,})/;
-      if (!passwordRegex.test(contrasena)) {
-        return res.status(400).json({ 
-          error: 'La contraseña debe tener al menos 8 caracteres, una mayúscula y un símbolo' 
-        });
-      }
       
       // Hash de la contraseña
       const hashedPassword = await bcrypt.hash(contrasena, 10);
-      
+      const usuario = {}; // Inicializar objeto usuario
+      usuario.primer_nombre = userData.nombre.split(" ")[0]; // Solo el primer nombre
+      usuario.primer_apellido = userData.nombre.split(" ")[1]; // Solo el primer apellido
       // Crear usuario normal
       newUser = await prisma.usuario.create({
         data: {
@@ -91,7 +86,8 @@ exports.registerUser = async (req, res) => {
           genero,
           id_ciudad: parseInt(userData.ciudad),
           contraseña: hashedPassword,
-          telefono
+          telefono,
+          foto: `https://ui-avatars.com/api/?name=${usuario.primer_nombre}+${usuario.primer_apellido}`
         }
       });
     }
@@ -160,10 +156,10 @@ exports.completeGoogleRegistration = async (req, res) => {
     });
     
     const birthDate = new Date(fechaNacimiento);
-if (isNaN(birthDate.getTime())) {
-  console.error("❌ Fecha inválida:", fechaNacimiento);
-  return res.status(400).json({ error: 'La fecha de nacimiento no es válida' });
-}
+    if (isNaN(birthDate.getTime())) {
+      console.error("❌ Fecha inválida:", fechaNacimiento);
+      return res.status(400).json({ error: 'La fecha de nacimiento no es válida' });
+    }
 
     // Crear usuario
     const nuevoUsuario = await prisma.usuario.create({
@@ -214,7 +210,31 @@ exports.loginUser = async (req, res) => {
 
   try {
     const usuario = await prisma.usuario.findFirst({
-      where: { correo }
+      where: { correo },
+      select: {
+        nombre: true,
+        correo: true,
+        contraseña: true,
+        telefono: true,
+        fecha_nacimiento: true,
+        genero: true,
+        foto: true,
+        google_id: true,
+        ciudad: {
+          select: {
+            nombre: true
+          }
+        },
+        roles: {
+          select: {
+            rol: {
+              select: {
+                rol: true
+              }
+            }
+          }
+        }
+      }
     });
 
     if (!usuario || !usuario.contraseña) {
@@ -228,25 +248,27 @@ exports.loginUser = async (req, res) => {
     }
 
     // Obtener roles del usuario
-    const usuarioRoles = await prisma.usuarioRol.findMany({
-      where: { id_usuario: usuario.id },
-      include: { rol: true }
-    });
-
-    const roles = usuarioRoles.map(ur => ur.rol.rol);
-
+    const roles = usuario.roles.map(userRole => userRole.rol.rol);
+    console.log("Roles del usuario:", roles);
     // Generar token JWT
     const token = generateToken({
       id: usuario.id,
       correo: usuario.correo,
       roles
     });
-
     return res.json({
       usuario: {
         id: usuario.id,
         nombre: usuario.nombre,
-        correo: usuario.correo
+        correo: usuario.correo,
+        telefono: usuario.telefono || "No especificado",
+        fecha_nacimiento: usuario.fecha_nacimiento 
+          ? new Date(usuario.fecha_nacimiento).toISOString()
+          : "No especificada",
+        genero: usuario.genero || "No especificado",
+        ciudad: usuario.ciudad.nombre,
+        foto: usuario.foto,
+        roles: roles || []
       },
       token
     });
@@ -257,22 +279,76 @@ exports.loginUser = async (req, res) => {
 };
 
 exports.googleCallback = (req, res) => {
-  // usuario nuevo
-  if (req.user.isIncomplete) {
-    const mensaje = encodeURIComponent("Usuario nuevo. Perfil incompleto.");
-    // Redireccionamos al frontend con el ID del usuario y el mensaje
-    return res.redirect(`${process.env.FRONTEND_URL}/complete-profile/${req.user.id}?message=${mensaje}`);
+  try {
+    //console.log("Google callback ejecutado", req.user);
+    
+    // Verificar si tenemos datos de usuario
+    if (!req.user) {
+      console.error("No se recibieron datos de usuario en el callback de Google");
+      return res.redirect(`${process.env.FRONTEND_URL}/login?error=no_user_data`);
+    }
+    
+    // Si el usuario necesita completar su perfil
+    if (req.user.isIncomplete) {
+      //console.log("Usuario con perfil incompleto:", req.user.correo);
+      
+      const nombre = req.user.nombre;
+      const email = req.user.correo;
+      const foto = req.user.foto;
+      
+      // Crear token para completar registro
+      const token = jwt.sign(
+        { nombre, email, foto },
+        process.env.JWT_SECRET, 
+        { expiresIn: '15m' } // Aumentamos a 15 minutos
+      );
+      const cookieOptions = {
+        httpOnly: true, // Previene acceso desde JS
+        secure: process.env.NODE_ENV === 'production', // true en producción
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        maxAge: 900000, // 5 minutos
+        //path: '/',
+        domain: process.env.COOKIE_DOMAIN || 'localhost' // Define COOKIE_DOMAIN en .env
+      };
+  
+      // Establecer cookie con el token
+      res.cookie('temp_auth', token, cookieOptions);
+      
+      // También pasar token como parámetro de URL como respaldo
+      return res.redirect(`${process.env.FRONTEND_URL}/login/completeRegister?token=${token}`);
+    }
+    
+    // Usuario existente con perfil completo
+    //console.log("Usuario con perfil completo:", req.user.correo);
+    console.log("Datos del rol:", req.user.roles);
+    const userData = {
+      nombre: req.user.nombre,
+      correo: req.user.correo,
+      telefono: req.user.telefono || "No especificado",
+      fecha_nacimiento: req.user.fecha_nacimiento 
+        ? new Date(req.user.fecha_nacimiento).toISOString()
+        : "No especificada",
+      genero: req.user.genero || "No especificado",
+      ciudad: req.user.ciudad,
+      foto: req.user.foto,
+      roles: req.user.roles || []
+    };
+    //console.log(userData)
+    const token = generateToken(userData);
+
+    // 2. Codificar datos para URL
+    const encodedData = Buffer.from(JSON.stringify(userData)).toString('base64');
+
+    // 3. Redirigir con parámetros
+    return res.redirect(
+      `${process.env.FRONTEND_URL}/login?token=${token}&data=${encodedData}`
+    );
+
+    
+  } catch (error) {
+    console.error("Error en Google callback:", error);
+    return res.redirect(`${process.env.FRONTEND_URL}/login?error=callback_error`);
   }
-
-  // Usuario existente con perfil completo, generamos token JWT y redireccionamos
-  const token = generateToken({
-    id: req.user.id,
-    correo: req.user.correo,
-    roles: req.user.roles || []
-  });
-
-  // Redirigir a frontend con token
-  return res.redirect(`${process.env.FRONTEND_URL}/login-success?token=${token}`);
 };
 
 // Obtener perfil del usuario autenticado
@@ -312,8 +388,9 @@ exports.getUserProfile = async (req, res) => {
 // Función para completar perfil de usuario (Google u otros métodos)
 exports.completeUserProfile = async (req, res) => {
   try {
+    console.log('Datos recibidos' , req.body)
     const { 
-      id,          // ID del usuario existente a actualizar
+      correo,          // ID del usuario existente a actualizar
       fechaNacimiento, 
       genero, 
       ciudad, 
@@ -326,28 +403,27 @@ exports.completeUserProfile = async (req, res) => {
     if (!rolesValidos.includes(rol)) {
       return res.status(400).json({ error: 'El rol debe ser HOST, RENTER o DRIVER' });
     }
-
+    //console.log(req.body)
     // Verificar si el usuario existe
     const usuario = await prisma.usuario.findUnique({
-      where: { id: parseInt(id) }
+      where: { correo: correo }
     });
-
+    console.log('Perfil completado exitosamente')
     if (!usuario) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
-
+    
     // Verificar si el teléfono ya existe en otro usuario
     const telefonoExistente = await prisma.usuario.findFirst({
       where: { 
         telefono,
-        id: { not: parseInt(id) } // Excluir el usuario actual
+        id: { not: usuario.id } // Excluir el usuario actual
       }
     });
     
     if (telefonoExistente) {
       return res.status(400).json({ error: 'El teléfono ya está registrado' });
     }
-
     // Buscar ID del rol en la base de datos
     const rolData = await prisma.rol.findFirst({ where: { rol } });
     if (!rolData) {
@@ -356,7 +432,7 @@ exports.completeUserProfile = async (req, res) => {
     const birthDate = new Date(fechaNacimiento);
     // Actualizar perfil del usuario
     const usuarioActualizado = await prisma.usuario.update({
-      where: { id: parseInt(id) },
+      where: { id: usuario.id },
       data: { 
         fecha_nacimiento: birthDate,
         genero,
@@ -371,7 +447,7 @@ exports.completeUserProfile = async (req, res) => {
     // Verificar si ya tiene el rol asignado
     const rolExistente = await prisma.usuarioRol.findFirst({
       where: {
-        id_usuario: parseInt(id),
+        id_usuario: usuario.id,
         id_rol: rolData.id
       }
     });
@@ -380,7 +456,7 @@ exports.completeUserProfile = async (req, res) => {
     if (!rolExistente) {
       await prisma.usuarioRol.create({
         data: {
-          id_usuario: parseInt(id),
+          id_usuario: usuario.id,
           id_rol: rolData.id
         }
       });
@@ -388,19 +464,26 @@ exports.completeUserProfile = async (req, res) => {
 
     // Obtener todos los roles del usuario
     const usuarioRoles = await prisma.usuarioRol.findMany({
-      where: { id_usuario: parseInt(id) },
+      where: { id_usuario: usuario.id },
       include: { rol: true }
     });
-
     const roles = usuarioRoles.map(userRole => userRole.rol.rol);
-
+    if (!roles || roles.length === 0) {
+      console.error("❌ El usuario no tiene roles asignados");
+      return res.status(400).json({ error: "El usuario no tiene roles asignados" });
+    }
     // Generar token con los roles
     const token = generateToken({
       id: usuarioActualizado.id,
       correo: usuarioActualizado.correo,
       roles: roles
     });
-    
+    const nombreCiudad = await prisma.ciudad.findFirst({
+      where: { 
+        id: ciudad // Excluir el usuario actual
+      }
+    });
+    console.log(nombreCiudad)
     return res.status(200).json({
       mensaje: 'Perfil completado exitosamente',
       usuario: {
@@ -408,7 +491,7 @@ exports.completeUserProfile = async (req, res) => {
         correo: usuarioActualizado.correo,
         fecha_nacimiento: usuarioActualizado.fecha_nacimiento,
         genero: usuarioActualizado.genero,
-        id_ciudad: usuarioActualizado.ciudad,
+        ciudad: nombreCiudad.nombre,
         foto: usuarioActualizado.foto,
         telefono: usuarioActualizado.telefono
       },
@@ -426,22 +509,43 @@ exports.checkProfileStatus = async (req, res) => {
     const userId = req.params.id;
     
     const usuario = await prisma.usuario.findUnique({
-      where: { id: userId }, // id es string
+      where: { id: parseInt(userId) },
       select: {
         id: true,
         nombre: true,
         correo: true,
         foto: true,
-        perfil_completo: true
+        fecha_nacimiento: true,
+        genero: true,
+        telefono: true,
+        id_ciudad: true,
+        roles: {
+          select: {
+            id: true // o el campo que necesites validar
+          }
+        }
       }
     });
     
     if (!usuario) {
-      return res.status(404).json({ perfilCompleto: false });  //sasjncjan
+      return res.status(404).json({ error: 'Usuario no encontrado' });
     }
+    // Verificar si hay campos vacíos o nulos
+
+    const camposRequeridos = [
+      usuario.fecha_nacimiento,
+      usuario.genero,
+      usuario.telefono,
+      usuario.id_ciudad
+    ];
     
+    const isIncomplete = camposRequeridos.some(campo => campo === null || campo === "" || campo === undefined) || !usuario.roles?.length;
     return res.status(200).json({
-      perfilCompleto: usuario.perfil_completo
+      id: usuario.id,
+      nombre: usuario.nombre,
+      correo: usuario.correo,
+      foto: usuario.foto,
+      isIncomplete
     });
   } catch (error) {
     console.error('Error al verificar estado del perfil:', error);
@@ -475,5 +579,41 @@ exports.checkProfileByEmail = async (req, res) => {
   }
 };
 
-
-;
+// función checkTokenCompleteRegister
+exports.checkTokenCompleteRegister = async (req, res) => {
+  try {
+    //console.log("Validando token para completar registro");
+    //console.log("Cookies recibidas:", req.cookies);
+    //console.log("Query params:", req.query);
+    
+    // Intentar obtener el token de varias fuentes
+    const token = req.cookies.temp_auth || req.query.token || req.headers.authorization?.split(' ')[1];
+    
+    if (!token) {
+      //console.log("No se encontró token en la solicitud");
+      return res.status(401).json({
+        success: false,
+        message: 'No se encontró token de autenticación'
+      });
+    }
+    
+    // Verificar y decodificar token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    //console.log("Token verificado correctamente:", decoded);
+    //res.header('Access-Control-Allow-Credentials', 'true');
+    // Devolver datos del usuario
+    res.json({
+      success: true,
+      nombre: decoded.nombre,
+      email: decoded.email,
+      foto: decoded.foto
+    });
+    
+  } catch (error) {
+    console.error('Error al validar token:', error);
+    res.status(401).json({
+      success: false,
+      message: 'Token inválido o expirado'
+    });
+  }
+};

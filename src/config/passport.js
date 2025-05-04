@@ -33,16 +33,34 @@ passport.use(
         });
 
         if (existingUser) {
-          // Si el usuario existe pero no tiene google_id, actualizar ese campo
+          // Si el usuario existe pero no tiene google_id o foto, actualizar esos campos
+          const updateData = {};
           if (!existingUser.google_id) {
+            updateData.google_id = profile.id;
+          }
+          if (!existingUser.foto || existingUser.foto.startsWith('https://ui-avatars.com/api/')) {
+            updateData.foto = profile.photos && profile.photos.length > 0 ? profile.photos[0].value : null;
+          }
+          if (Object.keys(updateData).length > 0) {
             await prisma.usuario.update({
               where: { id: existingUser.id },
-              data: { google_id: profile.id }
+              data: updateData
             });
           }
+
+          // Verificar si el perfil está incompleto según campos clave
+          const camposRequeridos = [
+            existingUser.fecha_nacimiento,
+            existingUser.genero,
+            existingUser.telefono,
+            existingUser.id_ciudad
+          ];
+
+          const perfilIncompleto = 
+            camposRequeridos.some(campo => campo === null || campo === "" || campo === undefined) || !existingUser.roles?.length;
           
           // Verificar si el perfil está completo
-          if (!existingUser.perfil_completo) {
+          if (perfilIncompleto) {
             // El usuario existe pero su perfil está incompleto
             return done(null, {
               isNewUser: false,
@@ -53,17 +71,52 @@ passport.use(
               foto: existingUser.foto
             });
           }
-          
+          const userComplete = await prisma.usuario.findFirst({
+            where: {
+              OR: [
+                { correo: email },
+                { google_id: profile.id }
+              ]
+            },
+            select: {
+              id: true,
+              nombre: true,
+              correo: true,
+              telefono: true,
+              fecha_nacimiento: true,
+              genero: true,
+              foto: true,
+              google_id: true,
+              ciudad: {
+                select: {
+                  nombre: true
+                }
+              },
+              roles: {
+                select: {
+                  rol: {
+                    select: {
+                      rol: true
+                    }
+                  }
+                }
+              }
+            }
+          });
           // Extraer roles para el token JWT
-          const roles = existingUser.roles.map(userRole => userRole.rol.rol);
-          
+          const roles = userComplete.roles.map(userRole => userRole.rol.rol);
           // Usuario ya existe y su perfil está completo
+          console.log('User roles', roles);
           return done(null, {
             isNewUser: false,
             isIncomplete: false,
-            id: existingUser.id,
-            correo: existingUser.correo,
-            nombre: existingUser.nombre,
+            nombre: userComplete.nombre,
+            correo: userComplete.correo,
+            telefono: userComplete.telefono,
+            fecha_nacimiento: userComplete.fecha_nacimiento,
+            genero: userComplete.genero,
+            ciudad: userComplete.ciudad.nombre,
+            foto: userComplete.foto,
             roles: roles
           });
         }
@@ -74,11 +127,10 @@ passport.use(
             google_id: profile.id,
             correo: email,
             nombre: profile.displayName,
-            foto: profile.photos && profile.photos.length > 0 ? profile.photos[0].value : null,
-            perfil_completo: false
+            foto: profile.photos && profile.photos.length > 0 ? profile.photos[0].value : null
           }
         });
-
+        
         // Retornamos el nuevo usuario con flag de incompleto
         return done(null, {
           isNewUser: true,
