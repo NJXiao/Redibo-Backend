@@ -148,7 +148,7 @@ class CarModel {
         }
       })
       return carsAvailable
-        //.filter(car => car.direccion?.latitud !== null && car.direccion?.longitud !== null)
+        .filter(car => car.direccion?.latitud !== null && car.direccion?.longitud !== null)
         .map(car => ({
           id: car.id,
           marca: car.marca,
