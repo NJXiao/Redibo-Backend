@@ -103,13 +103,15 @@ model Carro {
   ingresoTotal        Float?                 @default(0)
   NumeroViajes        Int?                    @default(0)
   usuario             Usuario?               @relation("CarrosPorUsuario", fields: [id_usuario_rol], references: [id])
-  id_seguro          Int?
-  seguro             Seguro?                @relation(fields: [id_seguro], references: [id])
+  //id_seguro          Int?
+  //seguroCarro        SeguroCarro?                @relation(fields: [id_seguro], references: [id])
   id_tipodeDescuento Int?  //este tiene el proposito de que cuando le estes registrando una reserva le pase este id
   //y de esta forma pueda saber si el carro tiene un descuento o no y en la tabla de descuentos
   //pasará este id y de esta forma se mantendrá un registro de que carro fue reservado con este descuento.
   //ademas no hay un problema con los id debido al manejo de estos evitando en todo momento generar conflicto, analiza y podras notar esto.
   tipodeDescuento    tipodeDescuento?      @relation(fields: [id_tipodeDescuento], references: [id])
+  disponible_desde DateTime?  //campo añadido para filtros
+  disponible_hasta DateTime?  //campo añadido para filtros
   combustiblesporCarro        CombustibleCarro[]
   caracteristicasAdicionalesCarro caracteristicasAdicionalesCarro[]
   contratosAlquiler   contratodeAlquiler[]
@@ -117,14 +119,26 @@ model Carro {
   favoritos           Favorito[]
   calificaciones      Calificacion[]
   reservas            Reserva[]
+  seguroCarro         SeguroCarro[]
+}
+
+model SeguroCarro {
+  id             Int    @id @default(autoincrement())
+  fechaInicio   DateTime
+  fechaFin      DateTime
+  id_carro      Int
+  carro         Carro  @relation(fields: [id_carro], references: [id])
+  id_seguro     Int
+  seguro        Seguro @relation(fields: [id_seguro], references: [id])
+
 }
 
 model Seguro {
-  id             Int    @id @default(autoincrement())
-  nombreEmpresa  String
-  fechaInicio   DateTime
-  fechaFin      DateTime
-  carro         Carro[]
+  id                  Int    @id @default(autoincrement())
+  nombre              String
+  tipoSeguro          String
+  empresa             String
+  seguroCarro         SeguroCarro[]
 }
 
 
