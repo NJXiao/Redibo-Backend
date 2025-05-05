@@ -110,6 +110,8 @@ model Carro {
   //pasará este id y de esta forma se mantendrá un registro de que carro fue reservado con este descuento.
   //ademas no hay un problema con los id debido al manejo de estos evitando en todo momento generar conflicto, analiza y podras notar esto.
   tipodeDescuento    tipodeDescuento?      @relation(fields: [id_tipodeDescuento], references: [id])
+  disponible_desde DateTime?  //campo añadido para filtros
+  disponible_hasta DateTime?  //campo añadido para filtros
   combustiblesporCarro        CombustibleCarro[]
   caracteristicasAdicionalesCarro caracteristicasAdicionalesCarro[]
   contratosAlquiler   contratodeAlquiler[]
