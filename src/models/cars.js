@@ -63,7 +63,7 @@ class CarModel {
         modelo: car.modelo,
         anio: car.año,
         precio_por_dia: car.precio_por_dia,
-        imagenes: car.imagenes?.[0]?.data | null,
+        imagenes: car.imagenes && car.imagenes.length > 0 ? car.imagenes[0].data : '',
         veces_alquilado: car._count.reservas,
       }))
     } catch (error) {
