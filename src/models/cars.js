@@ -154,7 +154,7 @@ class CarModel {
           marca: car.marca,
           modelo: car.modelo,
           anio: car.año,
-          precio_por_dia: car.precio_por_dia,
+          precio: car.precio_por_dia,
           latitud: car.direccion.latitud,
           longitud: car.direccion.longitud
         }))
