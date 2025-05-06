@@ -1,6 +1,42 @@
 const Joi = require('joi');
 
 /**
+ * 
+ *Esquema de validación para un objeto de seguro adicional.
+ */
+const seguroAdicionalSchema = Joi.object({
+  // El frontend envía 'id' pero el backend espera 'seguroId'
+  // Podríamos mapearlo en el controlador o ajustar el schema aquí.
+  // Ajustaremos el schema para que coincida con lo que espera el servicio.
+  // Si el frontend *absolutamente* debe enviar 'id', necesitarías mapearlo
+  // en el controlador antes de pasarlo al DTO del servicio.
+  // Asumiendo que podemos hacer que el frontend envíe 'seguroId' o que mapeamos:
+  seguroId: Joi.number().integer().required().messages({
+    'number.base': 'El ID del seguro adicional debe ser un número.',
+    'number.integer': 'El ID del seguro adicional debe ser un entero.',
+    'any.required': 'El ID del seguro adicional es requerido.',
+  }),
+  fechaInicio: Joi.date().iso().required().messages({
+    'date.base': 'La fecha de inicio del seguro debe ser una fecha válida.',
+    'date.format': 'La fecha de inicio del seguro debe estar en formato ISO (YYYY-MM-DD).',
+    'any.required': 'La fecha de inicio del seguro es requerida.',
+  }),
+  // En el frontend, fechaFin es opcional, pero en el backend lo requerimos
+  // si se envía el seguro. Joi puede manejar esto.
+  // Si la lógica es que *puede* no tener fecha fin, ajusta la DB y el schema.
+  // Asumiendo que si se añade un seguro, debe tener fecha de fin:
+  fechaFin: Joi.date().iso().required().greater(Joi.ref('fechaInicio')).messages({
+    'date.base': 'La fecha de fin del seguro debe ser una fecha válida.',
+    'date.format': 'La fecha de fin del seguro debe estar en formato ISO (YYYY-MM-DD).',
+    'any.required': 'La fecha de fin del seguro es requerida.',
+    'date.greater': 'La fecha de fin del seguro debe ser posterior a la fecha de inicio.',
+  }),
+  // Los campos nombre, tipoSeguro, empresa vienen del frontend pero no se usan
+  // directamente para la creación en el backend (se usan solo los IDs y fechas).
+  // No los validamos aquí a menos que sean necesarios para algo más.
+});
+
+/**
  * Esquema de validación para un carro completo con Joi.
  */
 const newCarSchema = Joi.object({
