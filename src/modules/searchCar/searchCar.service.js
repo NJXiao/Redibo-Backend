@@ -2,71 +2,103 @@ const prisma = require('../../config/prisma');
 
 const findAll = async () => {
   try {
-    return await prisma.carro.findMany({
+    const carros = await prisma.carro.findMany({
       select: {
         id: true,
-        modelo: true,
+        vim: true,
+        año: true,
         marca: true,
-        asientos:true,
-        puertas:true,
-        transmision:true,
+        modelo: true,
+        placa: true,
+        asientos: true,
+        puertas: true,
+        soat: true,
         precio_por_dia: true,
-        combustiblecarro:{
-            select:{
-            tipocombustible:{
-              select:{
-                tipo_de_combustible:true,
-              }
-            },
-          },},
-        estado:true,
-        usuario_rol:{
-            select:{
-                usuario:{
-                    select:{
-                       nombre:true,
-                    }
-                }
-            }
-        },
+        num_mantenimientos: true,
+        transmicion: true,
+        estado: true,
+        descripcion: true,
+        ingresoTotal: true,
+        NumeroViajes: true,
+        disponible_desde: true,
+        disponible_hasta: true,
         direccion: {
-          select:{
-              calle:true,
-              provincia:{
-                  select:{
-                      ciudad:{
-                          select:{
-                              nombre:true,
-                          }
-                      }
-                  },
-              },
-          },
-        },
-        imagen: {
-            take: 1,
-            orderBy: {
-              id: 'asc'
-            },
-            select: {
-                id: true,
-                data: true,
-                id_carro: true
-            }
-        },
-        caracteristicasadicionalescarro: {
           select: {
-            caracteristicas_adicionales: {
+            calle: true,
+            zona: true,
+            num_casa: true,
+            latitud: true,
+            longitud: true,
+            provincia: {
+              select: {
+                nombre: true,
+                ciudad: {
+                  select: {
+                    nombre: true
+                  }
+                }
+              }
+            }
+          }
+        },
+        usuario: {
+          select: {
+            nombre: true,
+            correo: true,
+            telefono: true
+          }
+        },
+        combustiblesporCarro: {
+          select: {
+            combustible: {
+              select: {
+                tipoDeCombustible: true
+              }
+            }
+          }
+        },
+        caracteristicasAdicionalesCarro: {
+          select: {
+            carasteristicasAdicionales: {
               select: {
                 nombre: true
-              },
-            },
-          },
+              }
+            }
+          }
         },
-    }
+        imagenes: {
+          take: 1,
+          orderBy: {
+            id: 'asc'
+          },
+          select: {
+            id: true,
+            data: true,
+            public_id: true,
+            width: true,
+            height: true,
+            format: true
+          }
+        },
+        tipodeDescuento: {
+          select: {
+            nombre: true,
+            porcentaje: true,
+            fecha_inicio: true,
+            fecha_fin: true
+          }
+        }
+      }
     });
+
+    if (!carros || carros.length === 0) {
+      return null;
+    }
+
+    return carros;
   } catch (error) {
     console.error('Error al obtener los carros:', error);
+    throw error;
   }
 };
 
