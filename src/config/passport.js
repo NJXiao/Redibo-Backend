@@ -110,6 +110,7 @@ passport.use(
           return done(null, {
             isNewUser: false,
             isIncomplete: false,
+            id: userComplete.id,
             nombre: userComplete.nombre,
             correo: userComplete.correo,
             telefono: userComplete.telefono,

@@ -42,6 +42,6 @@ const registerValidations = [
 router.post('/registro', registerValidations, userController.registerUser);
 
 // Ruta para obtener el perfil del usuario
-router.get('/profile', authenticateToken, userController.getUserProfile);
+router.get('/perfil', authenticateToken, userController.getUserProfile);
 
 module.exports = router;

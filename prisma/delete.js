@@ -23,7 +23,8 @@ async function cleanOrphanUsers() {
       console.log('⚠️ No hay usuarios huérfanos para eliminar');
       return;
     }
-
+    // Paso 2: Eliminar en transacción
+    await prisma.$transaction(async (prisma) => {
     // Eliminar registros en PasswordRecoveryCode antes de borrar usuarios
     await prisma.passwordRecoveryCode.deleteMany({
       where: {
@@ -31,8 +32,7 @@ async function cleanOrphanUsers() {
       }
     });
 
-    // Paso 2: Eliminar en transacción
-    await prisma.$transaction(async (prisma) => {
+    
       // Eliminar UsuarioRol de estos usuarios
       await prisma.usuarioRol.deleteMany({
         where: {

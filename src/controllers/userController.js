@@ -216,6 +216,7 @@ exports.loginUser = async (req, res) => {
     const usuario = await prisma.usuario.findFirst({
       where: { correo },
       select: {
+        id: true,
         nombre: true,
         correo: true,
         contraseña: true,
@@ -262,17 +263,17 @@ exports.loginUser = async (req, res) => {
     });
     return res.json({
       usuario: {
-        id: usuario.id,
+        // id: usuario.id,
         nombre: usuario.nombre,
-        correo: usuario.correo,
-        telefono: usuario.telefono || "No especificado",
-        fecha_nacimiento: usuario.fecha_nacimiento 
-          ? new Date(usuario.fecha_nacimiento).toISOString()
-          : "No especificada",
-        genero: usuario.genero || "No especificado",
-        ciudad: usuario.ciudad.nombre,
-        foto: usuario.foto,
-        roles: roles || []
+        // correo: usuario.correo,
+        // telefono: usuario.telefono || "No especificado",
+        // fecha_nacimiento: usuario.fecha_nacimiento 
+        //   ? new Date(usuario.fecha_nacimiento).toISOString()
+        //   : "No especificada",
+        // genero: usuario.genero || "No especificado",
+        // ciudad: usuario.ciudad.nombre,
+        foto: usuario.foto
+        // roles: roles || []
       },
       token
     });
@@ -327,18 +328,22 @@ exports.googleCallback = (req, res) => {
     console.log("Datos del rol:", req.user.roles);
     const userData = {
       nombre: req.user.nombre,
-      correo: req.user.correo,
-      telefono: req.user.telefono || "No especificado",
-      fecha_nacimiento: req.user.fecha_nacimiento 
-        ? new Date(req.user.fecha_nacimiento).toISOString()
-        : "No especificada",
-      genero: req.user.genero || "No especificado",
-      ciudad: req.user.ciudad,
-      foto: req.user.foto,
-      roles: req.user.roles || []
+      // correo: req.user.correo,
+      // telefono: req.user.telefono || "No especificado",
+      // fecha_nacimiento: req.user.fecha_nacimiento 
+      //   ? new Date(req.user.fecha_nacimiento).toISOString()
+      //   : "No especificada",
+      // genero: req.user.genero || "No especificado",
+      // ciudad: req.user.ciudad,
+      foto: req.user.foto
+      // roles: req.user.roles || []
     };
     //console.log(userData)
-    const token = generateToken(userData);
+    const token = generateToken({
+      id: req.user.id,
+      correo: req.user.correo,
+      roles: req.user.roles
+    });
 
     // 2. Codificar datos para URL
     const encodedData = Buffer.from(JSON.stringify(userData)).toString('base64');
@@ -373,6 +378,15 @@ exports.getUserProfile = async (req, res) => {
           select: {
             nombre: true
           }
+        },
+        roles: {
+          select: {
+            rol: {
+              select: {
+                rol: true
+              }
+            }
+          }
         }
       }
     });
@@ -380,8 +394,8 @@ exports.getUserProfile = async (req, res) => {
     if (!usuario) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
-
-    return res.json(usuario);
+    const roles = usuario.roles.map(userRole => userRole.rol.rol);
+    return res.json({ ...usuario, roles });
   } catch (error) {
     console.error('Error al obtener perfil:', error);
     return res.status(500).json({ error: 'Error interno del servidor' });
