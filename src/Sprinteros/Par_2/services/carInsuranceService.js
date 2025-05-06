@@ -12,7 +12,7 @@ const { CarServiceError } = require('../errors/customErrors'); // Reutiliza o cr
 async function linkInsurancesToCar(tx, carId, segurosData) {
   // Si no hay seguros adicionales para agregar, no hacer nada.
   if (!segurosData || segurosData.length === 0) {
-    console.info(`No hay seguros adicionales para vincular al carro ID: ${carId}`);
+    console.info(`No hay seguros adicionales para vincular al Carro ID: ${carId}`);
     return;
   }
 
