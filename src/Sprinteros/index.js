@@ -2,6 +2,7 @@ const express = require('express');
 const par1Routes = require('./Par_1/controlador/rutas'); // Rutas de Par_1
 const par2Routes = require('./Par_2/routes/segurosRoutes'); // Rutas de Par_2
 const par3Routes = require('./Par_3/routes/index'); // Rutas de Par_3
+const par2Seguros = require('./Par_2/routes/insuranceRoutes'); // <-- NUEVAS RUTAS DE SEGUROS
 
 const router = express.Router();
 
@@ -9,6 +10,7 @@ const router = express.Router();
 router.use('/v1', par1Routes);
 router.use('/v3', par2Routes); // Esto hará que las rutas de seguros sean /api/v3/seguros
 router.use('/v2', par3Routes);
+router.use('/v2/seguros', par2Seguros); // <-- MONTAR RUTAS DE SEGUROS bajo /api/v2
 
 // Middleware global para manejar errores específicos de sprinteros
 router.use((err, req, res, next) => {
