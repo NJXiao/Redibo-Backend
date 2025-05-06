@@ -1,15 +1,14 @@
-//este tiene un proposito futuroconst express = require('express');
 const express = require('express');
 const par1Routes = require('./Par_1/controlador/rutas'); // Rutas de Par_1
-const par2Routes = require('./Par_2/routes/carRoutes'); // Rutas de Par_2
+const par2Routes = require('./Par_2/routes/segurosRoutes'); // Rutas de Par_2
 const par3Routes = require('./Par_3/routes/index'); // Rutas de Par_3
 
 const router = express.Router();
 
 // Montar las rutas de cada módulo
-router.use('/v1', par1Routes); // Prefijo para las rutas de Par_1
-router.use('/v3', par2Routes); // Prefijo para las rutas de Par_2
-router.use('/v2', par3Routes); // Prefijo para las rutas de Par_3
+router.use('/v1', par1Routes);
+router.use('/v3', par2Routes); // Esto hará que las rutas de seguros sean /api/v3/seguros
+router.use('/v2', par3Routes);
 
 // Middleware global para manejar errores específicos de sprinteros
 router.use((err, req, res, next) => {
