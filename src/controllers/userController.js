@@ -2,10 +2,14 @@ const { PrismaClient } = require('@prisma/client');
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcrypt');
 const { generateToken } = require('../services/jwtService');
-//const { use } = require('passport');
 const jwt = require('jsonwebtoken');
+const emailService = require('../services/emailService');
 
 const prisma = new PrismaClient();
+
+const generateRecoveryCode = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
 
 exports.registerUser = async (req, res) => {
   const errors = validationResult(req);
@@ -615,5 +619,157 @@ exports.checkTokenCompleteRegister = async (req, res) => {
       success: false,
       message: 'Token inválido o expirado'
     });
+  }
+};
+
+exports.requestRecoveryCode = async (req, res) => {
+  try {
+    const { correo } = req.body;
+
+    if (!correo) {
+      return res.status(400).json({ error: 'El correo electrónico es requerido' });
+    }
+
+    // Verificar si el correo existe
+    const usuario = await prisma.usuario.findUnique({
+      where: { correo }
+    });
+
+    if (!usuario) {
+      return res.status(404).json({ error: 'Correo electrónico no registrado' });
+    }
+
+    const codigo = generateRecoveryCode();
+    
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + 15);
+
+    // Invalidar códigos anteriores
+    await prisma.passwordRecoveryCode.updateMany({
+      where: { id_usuario: usuario.id, used: false },
+      data: { used: true }
+    });
+
+    // Crear nuevo código
+    await prisma.passwordRecoveryCode.create({
+      data: {
+        id_usuario: usuario.id,
+        correo,
+        codigo,
+        expires_at: expiresAt,
+      }
+    });
+
+    await emailService.sendRecoveryCode(correo, codigo);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Código de verificación enviado correctamente'
+    });
+  } catch (error) {
+    console.error('Error al solicitar código de recuperación:', error);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
+// Verificar código de recuperación
+exports.verifyRecoveryCode = async (req, res) => {
+  try {
+    const { correo, codigo } = req.body;
+
+    if (!correo || !codigo) {
+      return res.status(400).json({ error: 'Correo y código son requeridos' });
+    }
+
+    // Buscar el código válido más reciente
+    const recoveryCode = await prisma.passwordRecoveryCode.findFirst({
+      where: {
+        correo,
+        codigo,
+        used: false,
+        expires_at: {
+          gt: new Date()
+        }
+      },
+      orderBy: {
+        created_at: 'desc'
+      }
+    });
+
+    if (!recoveryCode) {
+      return res.status(400).json({ error: 'Código inválido o expirado' });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Código verificado correctamente'
+    });
+  } catch (error) {
+    console.error('Error al verificar código:', error);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
+// Restablecer contraseña
+exports.resetPassword = async (req, res) => {
+  try {
+    const { correo, codigo, nuevaContrasena } = req.body;
+
+    if (!correo || !codigo || !nuevaContrasena) {
+      return res.status(400).json({ 
+        error: 'Correo, código y nueva contraseña son requeridos' 
+      });
+    }
+
+    if (nuevaContrasena.length < 8) {
+      return res.status(400).json({ 
+        error: 'La contraseña debe tener al menos 8 caracteres' 
+      });
+    }
+
+    // código es válido
+    const recoveryCode = await prisma.passwordRecoveryCode.findFirst({
+      where: {
+        correo,
+        codigo,
+        used: false,
+        expires_at: {
+          gt: new Date()
+        }
+      },
+      orderBy: {
+        created_at: 'desc'
+      },
+      include: {
+        usuario: true
+      }
+    });
+
+    if (!recoveryCode) {
+      return res.status(400).json({ error: 'Código inválido o expirado' });
+    }
+
+    const hashedPassword = await bcrypt.hash(nuevaContrasena, 10);
+
+    await prisma.usuario.update({
+      where: { id: recoveryCode.id_usuario },
+      data: { contraseña: hashedPassword }
+    });
+
+    // Marcar código como usado
+    await prisma.passwordRecoveryCode.update({
+      where: { id: recoveryCode.id },
+      data: { used: true }
+    });
+
+    await emailService.sendPasswordChangedNotification(correo);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Contraseña actualizada correctamente'
+    });
+  } catch (error) {
+    console.error('Error al restablecer la contraseña:', error);
+    return res.status(500).json({ error: 'Error interno del servidor' });
   }
 };

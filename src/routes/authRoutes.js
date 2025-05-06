@@ -41,4 +41,10 @@ router.get("/check-profile/email/:email", userController.checkProfileByEmail);
 
 router.get( "/validateTokenCompleteRegister", userController.checkTokenCompleteRegister);
 
+router.post("/request-recovery-code", userController.requestRecoveryCode);
+
+router.post("/verify-recovery-code", userController.verifyRecoveryCode);
+
+router.post("/reset-password", userController.resetPassword);
+
 module.exports = router;
