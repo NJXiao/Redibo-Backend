@@ -7,133 +7,316 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model caracteristicas_adicionales {
-  id                              Int                               @id @default(autoincrement())
-  nombre                          String                            @unique @db.VarChar(255)
-  caracteristicasadicionalescarro caracteristicasadicionalescarro[]
+enum Genero {
+  MASCULINO
+  FEMENINO
+  OTRO
 }
 
-model caracteristicasadicionalescarro {
-  id                             Int                          @id @default(autoincrement())
-  id_carro                       Int?
-  id_caracteristicas_adicionales Int?
-  caracteristicas_adicionales    caracteristicas_adicionales? @relation(fields: [id_caracteristicas_adicionales], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "caracteristicasadicionalescar_id_caracteristicas_adicional_fkey")
-  carro                          carro?                       @relation(fields: [id_carro], references: [id], onDelete: Cascade, onUpdate: NoAction)
+enum Roles {
+  HOST
+  RENTER
+  DRIVER
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model carro {
-  id                              Int                               @id @default(autoincrement())
-  vim                             String                            @unique @db.VarChar(255)
-  anio                            Int?
-  marca                           String?                           @db.VarChar(255)
-  modelo                          String?                           @db.VarChar(255)
-  placa                           String                            @unique @db.VarChar(255)
-  id_direccion                    Int?
-  asientos                        Int?
-  puertas                         Int?
-  soat                            Boolean?                          @default(true)
-  precio_por_dia                  Decimal?                          @db.Decimal(10, 2)
-  num_mantenimientos              Int?                              @default(0)
-  transmision                     String?                           @db.VarChar(50)
-  estado                          String?                           @db.VarChar(50)
-  id_usuario_rol                  Int?
-  caracteristicasadicionalescarro caracteristicasadicionalescarro[]
-  direccion                       direccion?                        @relation(fields: [id_direccion], references: [id], onUpdate: NoAction)
-  usuario_rol                     usuario_rol?                      @relation(fields: [id_usuario_rol], references: [id], onUpdate: NoAction)
-  combustiblecarro                combustiblecarro[]
-  imagen                          imagen[]
-}
-
-model ciudad {
-  id        Int         @id @default(autoincrement())
-  nombre    String      @db.VarChar(255)
-  id_pais   Int?
-  pais      pais?       @relation(fields: [id_pais], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  provincia provincia[]
-  usuario   usuario[]
-}
-
-model combustiblecarro {
-  id                  Int              @id @default(autoincrement())
-  id_tipo_combustible Int?
-  id_carro            Int?
-  carro               carro?           @relation(fields: [id_carro], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  tipocombustible     tipocombustible? @relation(fields: [id_tipo_combustible], references: [id], onDelete: Cascade, onUpdate: NoAction)
-}
-
-model direccion {
-  id           Int         @id @default(autoincrement())
-  id_provincia Int?
-  calle        String?     @db.VarChar(255)
-  zona         String?     @db.VarChar(255)
-  num_casa     String?     @db.VarChar(255)
-  carro        carro[]
-  provincia    provincia?  @relation(fields: [id_provincia], references: [id], onUpdate: NoAction)
-  ubicacion    ubicacion[]
-}
-
-model imagen {
-  id       Int    @id @default(autoincrement())
-  data     String @db.VarChar(255)
-  id_carro Int?
-  carro    carro? @relation(fields: [id_carro], references: [id], onDelete: Cascade, onUpdate: NoAction)
-}
-
-model pais {
-  id     Int      @id @default(autoincrement())
-  nombre String   @unique @db.VarChar(255)
-  ciudad ciudad[]
-}
-
-model provincia {
-  id        Int         @id @default(autoincrement())
-  nombre    String      @db.VarChar(255)
-  id_ciudad Int?
-  direccion direccion[]
-  ciudad    ciudad?     @relation(fields: [id_ciudad], references: [id], onDelete: Cascade, onUpdate: NoAction)
-}
-
-model rol {
-  id          Int           @id @default(autoincrement())
-  rol         String        @unique @db.VarChar(255)
-  usuario_rol usuario_rol[]
-}
-
-model tipocombustible {
-  id                  Int                @id @default(autoincrement())
-  tipo_de_combustible String             @unique @db.VarChar(255)
-  combustiblecarro    combustiblecarro[]
-}
-
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model ubicacion {
-  id              Int                  @id @default(autoincrement())
-  id_direccion    Int?
-  coordenadas     Unsupported("point")
-  radio_cobertura Int?
-  direccion       direccion?           @relation(fields: [id_direccion], references: [id], onDelete: Cascade, onUpdate: NoAction)
-}
-
-model usuario {
-  id               Int           @id @default(autoincrement())
-  nombre           String        @db.VarChar(255)
-  fecha_nacimiento DateTime?     @db.Date
-  genero           String?       @db.VarChar(50)
+model Usuario {
+  id               Int              @id @default(autoincrement())
+  nombre           String
+  correo           String           @unique
+  fecha_nacimiento DateTime?
+  genero           Genero?
   id_ciudad        Int?
-  contrasena       String        @db.VarChar(255)
-  google_id        String?       @unique @db.VarChar(255)
-  foto             String?       @db.VarChar(255)
-  telefono         String?       @unique @db.VarChar(50)
-  ciudad           ciudad?       @relation(fields: [id_ciudad], references: [id], onUpdate: NoAction)
-  usuario_rol      usuario_rol[]
+  ciudad           Ciudad?           @relation(fields: [id_ciudad], references: [id])
+  contraseña       String?
+  google_id       String?
+  foto            String?
+  telefono         String?
+  roles            UsuarioRol[]
+  favoritos        Favorito[]
+  calificaciones   Calificacion[]
+  notificaciones   Notificacion[]
+  reservas         Reserva[]
+  carros           Carro[]          @relation("CarrosPorUsuario")
+  busquedas        Busqueda[]
+  recoveryCode  PasswordRecoveryCode[]
 }
 
-model usuario_rol {
+
+model UsuarioRol {
+  id         Int         @id @default(autoincrement())
+  id_rol     Int
+  id_usuario Int
+  usuario    Usuario     @relation(fields: [id_usuario], references: [id])
+  rol        Rol         @relation(fields: [id_rol], references: [id])
+  favoritos  Favorito[]
+}
+
+model Rol {
+  id      Int          @id @default(autoincrement())
+  rol     String
+  usuarios UsuarioRol[]
+}
+
+model PasswordRecoveryCode {
   id         Int      @id @default(autoincrement())
-  id_rol     Int?
-  id_usuario Int?
-  carro      carro[]
-  rol        rol?     @relation(fields: [id_rol], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  usuario    usuario? @relation(fields: [id_usuario], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id_usuario Int
+  usuario    Usuario  @relation(fields: [id_usuario], references: [id])
+  correo     String
+  codigo     String
+  created_at DateTime @default(now())
+  expires_at DateTime
+  used       Boolean  @default(false)
+}
+
+model Favorito {
+  id              Int         @id @default(autoincrement())
+  id_usuario_rol  Int
+  id_carro        Int
+  usuarioRol      UsuarioRol  @relation(fields: [id_usuario_rol], references: [id])
+  carro           Carro       @relation(fields: [id_carro], references: [id])
+  id_usuario      Int?
+  usuario         Usuario?    @relation(fields: [id_usuario], references: [id])
+}
+
+model Notificacion {
+  id              Int         @id @default(autoincrement())
+  id_usuario_rol  Int
+  mensaje         String
+  usuario         Usuario   @relation(fields: [id_usuario_rol], references: [id])
+}
+
+model Carro {
+  id                  Int                     @id @default(autoincrement())
+  vim                 String
+  año                 Int
+  marca               String
+  modelo              String
+  placa               String
+  id_direccion        Int
+  direccion           Direccion              @relation(fields: [id_direccion], references: [id])
+  fecha_ingreso      DateTime?              @default(now()) //campo añadido
+  asientos            Int
+  puertas             Int
+  //capacidad_tanque     Int?
+  soat                Boolean
+  precio_por_dia      Float
+  num_mantenimientos  Int
+  transmicion         String
+  estado              String
+  id_usuario_rol      Int
+  descripcion         String?
+  ingresoTotal        Float?                 @default(0)
+  NumeroViajes        Int?                    @default(0)
+  usuario             Usuario?               @relation("CarrosPorUsuario", fields: [id_usuario_rol], references: [id])
+  //id_seguro          Int?
+  //seguroCarro        SeguroCarro?                @relation(fields: [id_seguro], references: [id])
+  id_tipodeDescuento Int?  //este tiene el proposito de que cuando le estes registrando una reserva le pase este id
+  //y de esta forma pueda saber si el carro tiene un descuento o no y en la tabla de descuentos
+  //pasará este id y de esta forma se mantendrá un registro de que carro fue reservado con este descuento.
+  //ademas no hay un problema con los id debido al manejo de estos evitando en todo momento generar conflicto, analiza y podras notar esto.
+  tipodeDescuento    tipodeDescuento?      @relation(fields: [id_tipodeDescuento], references: [id])
+  disponible_desde DateTime?  //campo añadido para filtros
+  disponible_hasta DateTime?  //campo añadido para filtros
+  combustiblesporCarro        CombustibleCarro[]
+  caracteristicasAdicionalesCarro caracteristicasAdicionalesCarro[]
+  contratosAlquiler   contratodeAlquiler[]
+  imagenes            Imagen[]
+  favoritos           Favorito[]
+  calificaciones      Calificacion[]
+  reservas            Reserva[]
+  seguroCarro         SeguroCarro[]
+}
+
+model SeguroCarro {
+  id             Int    @id @default(autoincrement())
+  fechaInicio   DateTime
+  fechaFin      DateTime
+  id_carro      Int
+  carro         Carro  @relation(fields: [id_carro], references: [id])
+  id_seguro     Int
+  seguro        Seguro @relation(fields: [id_seguro], references: [id])
+
+}
+
+model Seguro {
+  id                  Int    @id @default(autoincrement())
+  nombre              String
+  tipoSeguro          String
+  empresa             String
+  seguroCarro         SeguroCarro[]
+}
+
+
+model CombustibleCarro {
+  id             Int    @id @default(autoincrement())
+  id_carro       Int
+  carro          Carro  @relation(fields: [id_carro], references: [id])
+  id_combustible Int
+  combustible    TipoCombustible @relation(fields: [id_combustible], references: [id])
+}
+
+model TipoCombustible {
+  id             Int    @id @default(autoincrement())
+  tipoDeCombustible String
+  id_carro       Int
+  combustibleCarro CombustibleCarro[]
+}
+
+model caracteristicasAdicionalesCarro {
+  id             Int    @id @default(autoincrement())
+  id_carro       Int
+  carro          Carro  @relation(fields: [id_carro], references: [id])
+  id_carasteristicasAdicionales Int
+  carasteristicasAdicionales CarasteristicasAdicionales @relation(fields: [id_carasteristicasAdicionales], references: [id])
+}
+
+model CarasteristicasAdicionales {
+  id        Int    @id @default(autoincrement())
+  nombre    String
+  caracteristicasAdicionalesCarro caracteristicasAdicionalesCarro[]
+}
+
+model Imagen {
+  id         Int     @id @default(autoincrement())
+  data       String?  // URL de la imagen
+  public_id  String?  // ID único de Cloudinary
+  width      Int?    // Opcional: ancho de la imagen
+  height     Int?    // Opcional: alto de la imagen
+  format     String? // Opcional: formato de la imagen (jpg, png, etc.)
+  id_carro   Int
+  Carro      Carro   @relation(fields: [id_carro], references: [id])
+}
+
+
+model Calificacion {
+  id             Int         @id @default(autoincrement())
+  id_usuario_rol Int
+  calf_carro     Int?         //no deberia ser obligatorio  //añadido ?
+  calf_usuario   Int?     //no deberia ser obligatorio  //añadido  ?
+  id_carro       Int
+  id_usuario     Int
+  carro          Carro       @relation(fields: [id_carro], references: [id])
+  usuario        Usuario?    @relation(fields: [id_usuario], references: [id])
+}
+
+model Reserva {
+  id             Int         @id @default(autoincrement())
+  id_carro       Int
+  id_usuario     Int
+  kilometraje    Int?
+  fecha_creacion DateTime @default(now())
+  fecha_inicio   DateTime
+  montoPagoInicial   Float?
+  montoTotalConDescuento Float?
+  hora_inicio   Int?
+  hora_fin      Int?
+  fecha_fin      DateTime?
+  fecha_expiracion DateTime?
+  estado         String @default("pendiente")
+  carro          Carro      @relation(fields: [id_carro], references: [id])
+  usuario        Usuario?    @relation(fields: [id_usuario], references: [id])
+  garantia       Garantia[]
+  descuento      Descuento[]  //porque un carro puede tener varios descuentos, por ejemplo, un descuento por ser cliente frecuente y otro por una promocion de la empresa.
+}
+
+model Descuento {
+  id         Int       @id @default(autoincrement())
+  montoDescontado     Float?  //para hayar este monto primero se consulta ah tipo de descuento y se calcula en base al porsentaje.
+  id_descuentoTipo Int?
+  tipodeDescuento tipodeDescuento? @relation(fields: [id_descuentoTipo], references: [id])
+  reservas   Reserva[]
+}
+
+model tipodeDescuento {
+  id         Int       @id @default(autoincrement())
+  nombre     String
+  porcentaje Float
+  fecha_inicio DateTime?
+  fecha_fin   DateTime?
+  descuentos  Descuento[]
+  carros      Carro[]
+}
+
+model Garantia {
+  id           Int       @id @default(autoincrement())
+  precio       Float
+  fecha_limite DateTime
+  descripcion  String?
+  pagado       Boolean
+  //documentacion Boolean
+  pagoPorDaños Boolean?
+  id_reserva   Int?
+  reserva      Reserva?   @relation(fields: [id_reserva], references: [id])
+}
+model contratodeAlquiler {
+  id             Int         @id @default(autoincrement())
+  id_reserva     Int
+  kilometraje    Int
+  id_carro       Int
+  carro          Carro       @relation(fields: [id_carro], references: [id])
+  estado         String      @default("pendiente")
+}
+
+
+model Ciudad {
+  id      Int      @id @default(autoincrement())
+  nombre  String
+  pais   Pais?     @relation(fields: [id_pais], references: [id])
+  id_pais Int?
+  usuarios Usuario[]
+  provincia Provincia[]
+  aueropuerto aeropuerto[]
+}
+
+model aeropuerto {
+  id        Int    @id @default(autoincrement())
+  nombre    String
+  latitud   Float?
+  longitud  Float?
+  ciudad    Ciudad @relation(fields: [id_ciudad], references: [id])
+  id_ciudad Int
+}
+
+model Pais {
+  id         Int         @id @default(autoincrement())
+  nombre     String
+  ciudad     Ciudad[]
+}
+
+model Direccion {
+  id          Int      @id @default(autoincrement())
+  id_provincia Int
+  calle       String
+  zona        String?
+  num_casa    String?
+  latitud    Float?
+  longitud   Float?
+  provincia   Provincia @relation(fields: [id_provincia], references: [id])
+  carros      Carro[]
+  ubicacion   Ubicacion[]
+}
+
+model Ubicacion {
+  id               Int       @id @default(autoincrement())
+  direccion       Direccion @relation(fields: [id_direccion], references: [id])
+  id_direccion     Int
+  coordenadas      Json      
+  radio_cobertura  Int      @default(5000)
+}
+
+model Provincia {
+  id        Int       @id @default(autoincrement())
+  nombre    String
+  ciudad    Ciudad @relation(fields: [id_ciudad], references: [id])   
+  id_ciudad Int
+  direcciones Direccion[]
+
+}
+
+model Busqueda {
+  id              Int       @id @default(autoincrement())
+  criterio        String
+  fecha_creacion  DateTime  @default(now())
+  id_usuario      Int
+  usuario         Usuario   @relation(fields: [id_usuario], references: [id])
 }
