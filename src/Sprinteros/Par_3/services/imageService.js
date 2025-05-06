@@ -7,74 +7,85 @@ const { Readable } = require('stream');
 const prisma = new PrismaClient();
 
 /**
- * Sube una imagen a Cloudinary y guarda la URL + public_id en la base de datos
- * @param {Buffer} imageBuffer
- * @param {number} carId
- * @returns {Promise<{ success: boolean, data: import('@prisma/client').Imagen }>}
+ * Sube una imagen a Cloudinary y crea un registro en BD.
  */
 async function uploadCarImage(imageBuffer, carId) {
-  if (!imageBuffer || !Buffer.isBuffer(imageBuffer)) {
-    throw new Error('Buffer de imagen inválido');
-  }
-  if (!Number.isInteger(carId)) {
-    throw new Error('CarId inválido');
-  }
+  if (!Buffer.isBuffer(imageBuffer)) throw new Error('Buffer inválido');
+  if (!Number.isInteger(carId)) throw new Error('CarId inválido');
 
-  // subimos al folder /car-images/{carId}
-  const folderPath = `car-images/${carId}`;
-  let uploadResult;
-  try {
-    uploadResult = await new Promise((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream(
-        {
-          folder: folderPath,
-          resource_type: 'image',
-        },
-        (err, result) => err ? reject(err) : resolve(result)
-      );
-      Readable.from(imageBuffer).pipe(stream);
-    });
-  } catch (err) {
-    console.error('Cloudinary upload error:', err);
-    throw new Error('Error al subir imagen a Cloudinary');
-  }
+  const folder = `car-images/${carId}`;
+  const uploadResult = await new Promise((res, rej) => {
+    const stream = cloudinary.uploader.upload_stream({ folder, resource_type: 'image' },
+      (err, result) => err ? rej(err) : res(result)
+    );
+    Readable.from(imageBuffer).pipe(stream);
+  });
 
-  // guardamos en BD con transacción por si falla algo luego
-  let savedImage;
+  let saved;
   try {
-    await prisma.$transaction(async (tx) => {
-      savedImage = await tx.imagen.create({
-        data: {
-          data: uploadResult.secure_url,
-          public_id: uploadResult.public_id,   // NUEVO campo en el modelo
-          id_carro: carId,
-          width: uploadResult.width,           // opcional
-          height: uploadResult.height,
-          format: uploadResult.format,
-        },
-      });
+    saved = await prisma.imagen.create({
+      data: {
+        data:      uploadResult.secure_url,
+        public_id: uploadResult.public_id,
+        id_carro:  carId,
+        width:     uploadResult.width,
+        height:    uploadResult.height,
+        format:    uploadResult.format,
+      }
     });
-  } catch (err) {
-    console.error('Prisma create error:', err);
-    // opcional: limpiar asset subido en Cloudinary si falla la BD
+  } catch (e) {
     await cloudinary.uploader.destroy(uploadResult.public_id);
-    throw new Error('Error al guardar imagen en base de datos');
+    throw new Error('Error guardando imagen en BD');
   }
 
-  return { success: true, data: savedImage };
+  return { success: true, data: saved };
 }
 
 /**
- * Obtiene imágenes de un carro (con opción de paginar)
- * @param {number} carId
- * @param {object} options { page: number, pageSize: number }
+ * Reemplaza la imagen de ID dado:
+ * 1. Sube nueva a Cloudinary
+ * 2. Actualiza el registro en BD
+ * 3. Elimina el asset antiguo
+ */
+async function updateCarImage(imageBuffer, imageId) {
+  if (!Buffer.isBuffer(imageBuffer)) throw new Error('Buffer inválido');
+  if (!Number.isInteger(imageId)) throw new Error('ImageId inválido');
+
+  const existing = await prisma.imagen.findUnique({
+    where: { id: imageId },
+    select: { public_id: true, id_carro: true }
+  });
+  if (!existing) throw new Error('Imagen no encontrada');
+
+  const folder = `car-images/${existing.id_carro}`;
+  const uploadResult = await new Promise((res, rej) => {
+    const stream = cloudinary.uploader.upload_stream({ folder, resource_type: 'image' },
+      (err, result) => err ? rej(err) : res(result)
+    );
+    Readable.from(imageBuffer).pipe(stream);
+  });
+
+  const updated = await prisma.imagen.update({
+    where: { id: imageId },
+    data: {
+      data:      uploadResult.secure_url,
+      public_id: uploadResult.public_id,
+      width:     uploadResult.width,
+      height:    uploadResult.height,
+      format:    uploadResult.format,
+    }
+  });
+
+  await cloudinary.uploader.destroy(existing.public_id);
+  return { success: true, data: updated };
+}
+
+/**
+ * Obtiene imágenes de un carro (paginado).
  */
 async function getCarImages(carId, { page = 1, pageSize = 20 } = {}) {
-  if (!Number.isInteger(carId)) {
-    throw new Error('CarId inválido');
-  }
+  if (!Number.isInteger(carId)) throw new Error('CarId inválido');
   const skip = (page - 1) * pageSize;
-
   const [ total, data ] = await Promise.all([
     prisma.imagen.count({ where: { id_carro: carId } }),
     prisma.imagen.findMany({
@@ -84,55 +95,31 @@ async function getCarImages(carId, { page = 1, pageSize = 20 } = {}) {
       take: pageSize,
     })
   ]);
-
-  return {
-    success: true,
-    data,
-    pagination: {
-      total,
-      page,
-      pageSize,
-      totalPages: Math.ceil(total / pageSize),
-    }
-  };
+  return { success: true, data, pagination: { total, page, pageSize, totalPages: Math.ceil(total/pageSize) } };
 }
 
 /**
- * Elimina una imagen de Cloudinary (usando el public_id guardado) y de la BD
- * @param {number} imageId
+ * Elimina imagen de Cloudinary y BD.
  */
 async function deleteCarImage(imageId) {
-  if (!Number.isInteger(imageId)) {
-    throw new Error('ImageId inválido');
-  }
-
-  // buscamos primero
-  const image = await prisma.imagen.findUnique({
+  if (!Number.isInteger(imageId)) throw new Error('ImageId inválido');
+  const img = await prisma.imagen.findUnique({
     where: { id: imageId },
     select: { public_id: true }
   });
-  if (!image) {
-    const msg = `Imagen con ID ${imageId} no encontrada`;
-    console.warn(msg);
-    throw new Error(msg);
-  }
+  if (!img) throw new Error('Imagen no encontrada');
 
-  // destruimos en Cloudinary y en BD dentro de una transacción
-  try {
-    await prisma.$transaction(async (tx) => {
-      await cloudinary.uploader.destroy(image.public_id);
-      await tx.imagen.delete({ where: { id: imageId } });
-    });
-  } catch (err) {
-    console.error('Error al eliminar imagen:', err);
-    throw new Error('Error al eliminar imagen');
-  }
+  await prisma.$transaction(async tx => {
+    await cloudinary.uploader.destroy(img.public_id);
+    await tx.imagen.delete({ where: { id: imageId } });
+  });
 
-  return { success: true, message: 'Imagen eliminada correctamente' };
+  return { success: true };
 }
 
 module.exports = {
   uploadCarImage,
+  updateCarImage,
   getCarImages,
   deleteCarImage,
 };
