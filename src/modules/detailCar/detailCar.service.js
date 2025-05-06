@@ -1,52 +1,72 @@
-const prisma = require('../../config/prisma');
+const prisma = require('../../config/prisma')
 
-const carroService = {
-  async create(data) {
-    const { marca, modelo, año, condiciones_uso } = data;
-
-    const condicionesGenerales = await prisma.condiciones_generales.create({
-      data: condiciones_uso.condiciones_generales
-    });
-
-    const entregaAuto = await prisma.entrega_auto.create({
-      data: {
-        ...condiciones_uso.entrega_auto,
-        herramientas_basicas: {
-          create: condiciones_uso.entrega_auto.herramientas_basicas
-        }
-      }
-    });
-
-    const devolucionAuto = await prisma.devolucion_auto.create({
-      data: condiciones_uso.devolucion_auto
-    });
-
-    const condicionesUso = await prisma.condiciones_uso.create({
-      data: {
-        id_condiciones_generales: condicionesGenerales.id,
-        id_entrega_auto: entregaAuto.id,
-        id_devolucion_auto: devolucionAuto.id
-      }
-    });
-
-    return await prisma.carro.create({
-      data: {
-        marca,
-        modelo,
-        año,
-        id_condiciones_uso: condicionesUso.id
-      },
-      include: {
-        condiciones_uso: {
-          include: {
-            condiciones_generales: true,
-            entrega_auto: { include: { herramientas_basicas: true } },
-            devolucion_auto: true
+const carService = {
+  async findById(id){
+    try{
+      console.log('Id recibido desde constroller',id);
+      return await prisma.Carro.findUnique({
+        where: { id },
+        select: {
+          marca:true,
+          modelo:true,
+          placa:true,
+          a_o:true,
+          asientos:true,
+          puertas:true,
+          soat:true,
+          precio_por_dia:true,
+          descripcion: true,
+          transmicion:true,
+          disponible_hasta:true,
+          disponible_desde:true,
+          Direccion: {
+            select:{
+                calle:true,
+                zona:true,
+                num_casa:true,
+                Provincia:{
+                    select:{
+                        nombre:true,
+                        Ciudad:{
+                            select:{
+                                nombre:true,
+                            }
+                        }
+                    },
+                },
+            },
+        },
+        Usuario:{
+          select:{
+            nombre:true,
+            telefono: true,
           }
+        },
+          CombustibleCarro:{
+            select:{
+              TipoCombustible:{
+                select:{
+                  tipoDeCombustible:true,
+                }
+              },
+            },
+          },
+          Imagen:true,
+          caracteristicasAdicionalesCarro:{
+            select:{
+              CarasteristicasAdicionales :{
+                select:{
+                  nombre:true,
+                }
+              },
+            },
+          },
         }
-      }
-    });
+      });
+    }catch (error) {
+      console.log(error);
+    }
   }
-};
+}
 
-module.exports = carroService;
+module.exports = carService;
