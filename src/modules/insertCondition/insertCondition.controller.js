@@ -5,11 +5,11 @@ const router = Router();
 
 router.post('/', async (req, res) => {
   try {
-    const carro = await carroService.create(req.body);
-    res.status(201).json(carro);
+    const condicionesUso = await carroService.addConditionsToCar(req.body);
+    res.status(201).json(condicionesUso);
   } catch (error) {
     console.error('Error en el controlador:', error);
-    res.status(500).json({ message: 'Error al crear el carro' });
+    res.status(500).json({ message: 'Error al asociar las condiciones de uso al carro' });
   }
 });
 
