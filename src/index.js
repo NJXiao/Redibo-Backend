@@ -23,6 +23,9 @@ app.use('/api/reservations', reservationRouter)
 app.use('/api/search', searchRouter)
 app.use('/api/users', userRouter)
 
+///login 
+const loginRoutes = require('./login');
+app.use('/login', loginRoutes);
 
 const PORT = process.env.PORT || 4000
 

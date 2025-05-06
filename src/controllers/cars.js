@@ -35,6 +35,23 @@ class CarController {
       }
     }
   }
+
+  static async getCarsAvailable(req, res) {
+    try {
+      const { startDate, endDate } = req.query
+      if (!startDate || !endDate) {
+        return res.status(400).json({ error: 'Debe proporcionar las fechas de inicio y fin' });
+      }
+      const cars = await CarModel.getCarsAvailable({ startDate, endDate });
+      res.status(200).json(cars)
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message })
+      } else {
+        res.status(500).json({ error: 'Error en el servidor' })
+      }
+    }
+  }
 }
 
 module.exports = { CarController }
