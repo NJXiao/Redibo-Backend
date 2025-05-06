@@ -1,24 +1,16 @@
-const {Router} = require('express');
-const carService = require('./detailCar.service');
+const { Router } = require('express');
+const carroService = require('./carro.service');
 
 const router = Router();
 
-// GET /api/autos/:id
-router.get('/:id', async (req, res) => {
-  const carId = parseInt(req.params.id);
-  console.log('Id recibido',carId);
+// POST /api/carros
+router.post('/', async (req, res) => {
   try {
-    const car = await carService.findById(carId);
-    if (!car) {
-      console.log('carro no encontrado')
-      return res.status(404).json({ message: "Auto no disponible" });
-    }
-
-    res.json(car);
-    console.log(car);
-  } catch (err) {
-    res.status(500).json({ message: "Error al obtener el carro" });
-    console.error('Error en el controlador: ',err);
+    const carro = await carroService.create(req.body);
+    res.status(201).json(carro);
+  } catch (error) {
+    console.error('Error en el controlador:', error);
+    res.status(500).json({ message: 'Error al crear el carro' });
   }
 });
 
