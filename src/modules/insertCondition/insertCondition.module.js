@@ -1,7 +1,7 @@
-const controller = require('./insertCondition.controller');
-const service = require('./insertCondition.service');
+const insertController = require('./insertCondition.controller');
+const inserService = require('./insertCondition.service');
 
 module.exports = {
-  controller,
-  service
+  controller : insertController,
+  service : inserService
 };

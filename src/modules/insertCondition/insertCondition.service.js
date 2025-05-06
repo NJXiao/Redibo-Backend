@@ -2,7 +2,8 @@ const prisma = require('../../config/prisma');
 
 const carroService = {
   async create(data) {
-    const { marca, modelo, año, condiciones_uso } = data;
+    const { marca, modelo, año, vim, condiciones_uso } = data;
+
 
     const condicionesGenerales = await prisma.condiciones_generales.create({
       data: condiciones_uso.condiciones_generales
@@ -34,6 +35,7 @@ const carroService = {
         marca,
         modelo,
         año,
+        vim,
         id_condiciones_uso: condicionesUso.id
       },
       include: {
