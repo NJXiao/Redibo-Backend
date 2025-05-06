@@ -45,6 +45,7 @@ model Usuario {
   reservas         Reserva[]
   carros           Carro[]          @relation("CarrosPorUsuario")
   busquedas        Busqueda[]
+  recoveryCode  PasswordRecoveryCode[]
 }
 
 
@@ -61,6 +62,17 @@ model Rol {
   id      Int          @id @default(autoincrement())
   rol     String
   usuarios UsuarioRol[]
+}
+
+model PasswordRecoveryCode {
+  id         Int      @id @default(autoincrement())
+  id_usuario Int
+  usuario    Usuario  @relation(fields: [id_usuario], references: [id])
+  correo     String
+  codigo     String
+  created_at DateTime @default(now())
+  expires_at DateTime
+  used       Boolean  @default(false)
 }
 
 model Favorito {
@@ -110,6 +122,8 @@ model Carro {
   //pasará este id y de esta forma se mantendrá un registro de que carro fue reservado con este descuento.
   //ademas no hay un problema con los id debido al manejo de estos evitando en todo momento generar conflicto, analiza y podras notar esto.
   tipodeDescuento    tipodeDescuento?      @relation(fields: [id_tipodeDescuento], references: [id])
+  disponible_desde DateTime?  //campo añadido para filtros
+  disponible_hasta DateTime?  //campo añadido para filtros
   combustiblesporCarro        CombustibleCarro[]
   caracteristicasAdicionalesCarro caracteristicasAdicionalesCarro[]
   contratosAlquiler   contratodeAlquiler[]
