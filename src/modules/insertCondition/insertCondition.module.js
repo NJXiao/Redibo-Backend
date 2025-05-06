@@ -1,5 +1,5 @@
-const controller = require('./carro.controller');
-const service = require('./carro.service');
+const controller = require('./insertCondition.controller');
+const service = require('./insertCondition.service');
 
 module.exports = {
   controller,
