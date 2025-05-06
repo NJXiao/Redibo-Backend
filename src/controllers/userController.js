@@ -727,7 +727,25 @@ exports.resetPassword = async (req, res) => {
       });
     }
 
-    // código es válido
+    if (!/[A-Z]/.test(nuevaContrasena)) {
+      return res.status(400).json({
+        error: 'La contraseña debe contener al menos una letra mayúscula'
+      });
+    }
+
+    if (!/[0-9]/.test(nuevaContrasena)) {
+      return res.status(400).json({
+        error: 'La contraseña debe contener al menos un número'
+      });
+    }
+
+    if (!/[^A-Za-z0-9]/.test(nuevaContrasena)) {
+      return res.status(400).json({
+        error: 'La contraseña debe contener al menos un carácter especial'
+      });
+    }
+
+    // Código es válido
     const recoveryCode = await prisma.passwordRecoveryCode.findFirst({
       where: {
         correo,
@@ -747,6 +765,14 @@ exports.resetPassword = async (req, res) => {
 
     if (!recoveryCode) {
       return res.status(400).json({ error: 'Código inválido o expirado' });
+    }
+
+    // Verificar que la nueva contraseña no sea igual a la actual
+    const isCurrentPassword = await bcrypt.compare(nuevaContrasena, recoveryCode.usuario.contraseña);
+    if (isCurrentPassword) {
+      return res.status(400).json({
+        error: 'La nueva contraseña no puede ser igual a la actual'
+      });
     }
 
     const hashedPassword = await bcrypt.hash(nuevaContrasena, 10);

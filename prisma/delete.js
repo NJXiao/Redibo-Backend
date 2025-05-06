@@ -24,6 +24,13 @@ async function cleanOrphanUsers() {
       return;
     }
 
+    // Eliminar registros en PasswordRecoveryCode antes de borrar usuarios
+    await prisma.passwordRecoveryCode.deleteMany({
+      where: {
+        id_usuario: { in: usersToDelete.map(user => user.id) }
+      }
+    });
+
     // Paso 2: Eliminar en transacción
     await prisma.$transaction(async (prisma) => {
       // Eliminar UsuarioRol de estos usuarios
