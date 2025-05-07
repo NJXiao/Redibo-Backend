@@ -827,6 +827,16 @@ exports.addUserRole = async (req, res) => {
     const rolData = await prisma.rol.findFirst({
       where: { rol: rolToAdd }
     });
+    // Verificar si el rol ya está asignado al usuario
+    const rolExistente = await prisma.usuarioRol.findFirst({
+      where: {
+        id_usuario,
+        id_rol: rolData.id
+      }
+    });
+    if (rolExistente) {
+      return res.status(400).json({ error: 'El rol ya está asignado al usuario' });
+    }
     if (!rolData) {
       return res.status(404).json({ error: 'Rol no encontrado' });
     }
