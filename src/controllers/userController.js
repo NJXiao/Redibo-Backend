@@ -188,9 +188,7 @@ exports.completeGoogleRegistration = async (req, res) => {
 
     // Generar token con el nombre del rol
     const token = generateToken({
-      id: nuevoUsuario.id,
-      correo: nuevoUsuario.correo,
-      roles: [rolData.rol]
+      id: nuevoUsuario.id
     });
 
     return res.status(201).json({
@@ -257,9 +255,7 @@ exports.loginUser = async (req, res) => {
     console.log("Roles del usuario:", roles);
     // Generar token JWT
     const token = generateToken({
-      id: usuario.id,
-      correo: usuario.correo,
-      roles
+      id: usuario.id
     });
     return res.json({
       usuario: {
@@ -340,9 +336,7 @@ exports.googleCallback = (req, res) => {
     };
     //console.log(userData)
     const token = generateToken({
-      id: req.user.id,
-      correo: req.user.correo,
-      roles: req.user.roles
+      id: req.user.id
     });
 
     // 2. Codificar datos para URL
@@ -492,9 +486,7 @@ exports.completeUserProfile = async (req, res) => {
     }
     // Generar token con los roles
     const token = generateToken({
-      id: usuarioActualizado.id,
-      correo: usuarioActualizado.correo,
-      roles: roles
+      id: usuarioActualizado.id
     });
     const nombreCiudad = await prisma.ciudad.findFirst({
       where: { 
@@ -791,11 +783,15 @@ exports.resetPassword = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(nuevaContrasena, 10);
 
-    await prisma.usuario.update({
+    const usuarioActualizado = await prisma.usuario.update({
       where: { id: recoveryCode.id_usuario },
-      data: { contraseña: hashedPassword }
+      data: { contraseña: hashedPassword },
+      select: {
+        id: true,
+        nombre: true,
+        foto: true
+      }
     });
-
     // Marcar código como usado
     await prisma.passwordRecoveryCode.update({
       where: { id: recoveryCode.id },
@@ -803,11 +799,17 @@ exports.resetPassword = async (req, res) => {
     });
 
     await emailService.sendPasswordChangedNotification(correo);
-
+    const token = generateToken({
+      id: usuarioActualizado.id
+    });
+    
     return res.status(200).json({
       success: true,
+      token: token,
+      foto: usuarioActualizado.foto,
+      nombre: usuarioActualizado.nombre,
       message: 'Contraseña actualizada correctamente'
-    });
+    })
   } catch (error) {
     console.error('Error al restablecer la contraseña:', error);
     return res.status(500).json({ error: 'Error interno del servidor' });
@@ -850,7 +852,7 @@ exports.addUserRole = async (req, res) => {
         id_rol: rolData.id
       }
     });
-
+    
     return res.status(200).json({
       message: 'Rol agregado exitosamente',
       userId: id_usuario,
