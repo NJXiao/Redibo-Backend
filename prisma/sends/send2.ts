@@ -10,17 +10,17 @@ function generarFechasAleatorias() {
   const dosMesesDespues = new Date();
   dosMesesDespues.setMonth(dosMesesDespues.getMonth() + 2);
   
-  const fechaInicio = new Date(ahora.getTime() + Math.random() * (dosMesesDespues.getTime() - ahora.getTime()));
-  const fechaFin = new Date(fechaInicio.getTime() + Math.random() * (dosMesesDespues.getTime() - fechaInicio.getTime()));
+  const disponible_desde = new Date(ahora.getTime() + Math.random() * (dosMesesDespues.getTime() - ahora.getTime()));
+  const disponible_hasta = new Date(disponible_desde.getTime() + Math.random() * (dosMesesDespues.getTime() - disponible_desde.getTime()));
   
-  return { fechaInicio, fechaFin };
+  return { disponible_desde, disponible_hasta };
 }
 
 // Función para generar valores aleatorios para ingresos y viajes
 function generarValoresAleatorios() {
   const ingresoTotal = Math.floor(Math.random() * 5000) + 1000; // Entre 1000 y 6000
-  const numeroViajes = Math.floor(Math.random() * 20) + 1; // Entre 1 y 20 viajes
-  return { ingresoTotal, numeroViajes };
+  const NumeroViajes = Math.floor(Math.random() * 20) + 1; // Entre 1 y 20 viajes
+  return { ingresoTotal, NumeroViajes };
 }
 
 async function main() {
@@ -172,15 +172,6 @@ async function main() {
         id_tipodeDescuento: null
       },
     });
-
-    // En lugar de crear imagen con Buffer vacío, creamos una entrada con string vacío 
-    // para las URLs de Cloudinary (las imágenes reales se cargarán con sendImage.ts)
-    await prisma.imagen.create({
-      data: {
-        data: '',  // String vacío en lugar de Buffer.from('')
-        id_carro: carro.id,
-      },
-    });
   }
 
   // 7) Agregar carros adicionales para hosts específicos:
@@ -330,8 +321,8 @@ async function main() {
       },
     });
 
-    const { ingresoTotal, numeroViajes } = generarValoresAleatorios();
-    const { fechaInicio, fechaFin } = generarFechasAleatorias();
+    const { ingresoTotal, NumeroViajes } = generarValoresAleatorios();
+    const { disponible_desde, disponible_hasta } = generarFechasAleatorias();
 
     const carro = await prisma.carro.create({
       data: {
@@ -351,22 +342,14 @@ async function main() {
         id_usuario_rol: usuarioRolId,
         descripcion: `Carro ${carData.marca} ${carData.modelo} en excelente estado`,
         ingresoTotal,
-        NumeroViajes: numeroViajes,
-        disponible_desde: fechaInicio,
-        disponible_hasta: fechaFin,
+        NumeroViajes,
+        disponible_desde,
+        disponible_hasta,
         id_tipodeDescuento: null
       },
     });
 
-    // Crear entrada para imagen con string vacío (URL) en lugar de Buffer
-    await prisma.imagen.create({
-      data: {
-        data: '',  // String vacío para URL de Cloudinary
-        id_carro: carro.id,
-      },
-    });
-
-    return carro; // Retornar el carro creado
+    return carro;
   }
 
   // Agregar carros extra para el host con id 1 (4 carros)
