@@ -4,6 +4,25 @@ const prisma = new PrismaClient();
 // Declaración única para almacenar las relaciones UsuarioRol creadas
 const usuarioRoles: Array<{ id: number; id_rol: number; id_usuario: number }> = [];
 
+// Función para generar fechas aleatorias dentro de los próximos 2 meses
+function generarFechasAleatorias() {
+  const ahora = new Date();
+  const dosMesesDespues = new Date();
+  dosMesesDespues.setMonth(dosMesesDespues.getMonth() + 2);
+  
+  const fechaInicio = new Date(ahora.getTime() + Math.random() * (dosMesesDespues.getTime() - ahora.getTime()));
+  const fechaFin = new Date(fechaInicio.getTime() + Math.random() * (dosMesesDespues.getTime() - fechaInicio.getTime()));
+  
+  return { fechaInicio, fechaFin };
+}
+
+// Función para generar valores aleatorios para ingresos y viajes
+function generarValoresAleatorios() {
+  const ingresoTotal = Math.floor(Math.random() * 5000) + 1000; // Entre 1000 y 6000
+  const numeroViajes = Math.floor(Math.random() * 20) + 1; // Entre 1 y 20 viajes
+  return { ingresoTotal, numeroViajes };
+}
+
 async function main() {
   // 1) Crear o recuperar los roles base
   const rolesBase = ['renter', 'host'];
@@ -147,6 +166,10 @@ async function main() {
         ...carInfo,
         id_direccion: dir.id,
         id_usuario_rol: userRole.id,
+        descripcion: `Carro ${carInfo.marca} ${carInfo.modelo} en excelente estado`,
+        ...generarValoresAleatorios(),
+        ...generarFechasAleatorias(),
+        id_tipodeDescuento: null
       },
     });
 
@@ -307,6 +330,9 @@ async function main() {
       },
     });
 
+    const { ingresoTotal, numeroViajes } = generarValoresAleatorios();
+    const { fechaInicio, fechaFin } = generarFechasAleatorias();
+
     const carro = await prisma.carro.create({
       data: {
         vim: `${carData.vimPrefix}${extraIndex}`,
@@ -323,6 +349,12 @@ async function main() {
         estado: carData.estado,
         id_direccion: direccion.id,
         id_usuario_rol: usuarioRolId,
+        descripcion: `Carro ${carData.marca} ${carData.modelo} en excelente estado`,
+        ingresoTotal,
+        NumeroViajes: numeroViajes,
+        disponible_desde: fechaInicio,
+        disponible_hasta: fechaFin,
+        id_tipodeDescuento: null
       },
     });
 

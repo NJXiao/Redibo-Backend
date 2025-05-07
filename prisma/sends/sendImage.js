@@ -6,7 +6,7 @@ const { uploadCarImage } = require('../../src/Sprinteros/Par_3/services/imageSer
 const prisma = new PrismaClient();
 
 // Configuración:
-const IMAGES_PER_CAR = 3;
+const IMAGES_PER_CAR = 4;
 const BASE_IMAGES_DIR = path.join(__dirname, 'imagen', 'idhost_1');
 
 async function verifyDirectory(dir) {
@@ -59,7 +59,7 @@ async function main() {
       // Leer y procesar archivos
       const files = await fs.readdir(cardDir);
       const imageFiles = files
-        .filter(f => /^imagen[1-3]\.(jpe?g|png)$/i.test(f))
+        .filter(f => /^imagen[1-4]\.(jpe?g|png)$/i.test(f))
         .sort((a, b) => {
           const numA = parseInt(a.match(/\d+/)[0]);
           const numB = parseInt(b.match(/\d+/)[0]);
