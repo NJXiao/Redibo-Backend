@@ -813,3 +813,41 @@ exports.resetPassword = async (req, res) => {
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
+
+// Función para agregar un nuevo rol de usuario
+exports.addUserRole = async (req, res) => {
+  try {
+    const  rolToAdd = req.body.rol;
+    const id_usuario = req.user.id; // ID del usuario autenticado
+    // Verificar si el usuario existe
+    const usuario = await prisma.usuario.findUnique({
+      where: { id: id_usuario }
+    });
+    // Verificar si el rol existe
+    const rolData = await prisma.rol.findFirst({
+      where: { rol: rolToAdd }
+    });
+    if (!rolData) {
+      return res.status(404).json({ error: 'Rol no encontrado' });
+    }
+    if (!usuario) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+    // Asignar el nuevo rol al usuario
+    await prisma.usuarioRol.create({
+      data: {
+        id_usuario,
+        id_rol: rolData.id
+      }
+    });
+
+    return res.status(200).json({
+      message: 'Rol agregado exitosamente',
+      userId: id_usuario,
+      roleId: rolData.id
+    });
+  } catch (error) {
+    console.error('Error al agregar rol de usuario:', error);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};

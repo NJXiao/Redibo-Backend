@@ -44,4 +44,7 @@ router.post('/registro', registerValidations, userController.registerUser);
 // Ruta para obtener el perfil del usuario
 router.get('/perfil', authenticateToken, userController.getUserProfile);
 
+// Ruta para agregar un nuevo rol de usuario
+router.post('/add-rol', authenticateToken, userController.addUserRole);
+
 module.exports = router;
