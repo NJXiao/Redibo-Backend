@@ -2,6 +2,6 @@ const traerInsertController = require('./insertedInsurance.controller');
 const traerInsertService = require('./insertedInsurance.service');
 
 module.exports = {
-    controller: traerInsertController,
+    controller : traerInsertController,
     service: traerInsertService,
 }

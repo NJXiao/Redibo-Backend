@@ -1,16 +1,19 @@
 const express =require('express');
-const insertedInsurance = require('./buscarAuto.service');
+const { agregarCredencial } = require('./insertedInsurance.service');
+
 
 const inserted= express.Router();
 
 inserted.post('/',async(req,res) => {
     try {
-        const insertJson = await insertedInsurance.findAll();
+        const insertJson = await agregarCredencial(req.body);
         res.status(201).json(insertJson);
+        console.lof('insertado');
     }catch(error){
-        console.log('Cobertura no insertada ')
-        res.status(500).json({error : 'Cobertura no Insertada'})
+        console.log('no insertada ')
+        res.status(500).json({error : 'no Insertada'})
+        console.error('Error al insertar cobertura:', error);
     }
-})
-
+}
+);
 module.exports = inserted;
