@@ -2,11 +2,17 @@ const prisma = require('../../config/prisma');
 
 const seguroCarroService = {
   async agregarCredencial(data) {
-    const { seguro, fechaInicio, fechaFin, id_carro, empresa } = data;
-
+    const {
+      seguro,
+      fechaInicio,
+      fechaFin,
+      id_carro,
+      enlace,    
+    } = data;
+    
     const nuevoSeguro = await prisma.seguro.create({
       data: {
-        empresa: seguro.empresa,
+        empresa: seguro.empresa,           
         nombre: seguro.nombre,
         tipoSeguro: seguro.tipoSeguro,
         valides: seguro.valides,
@@ -20,10 +26,10 @@ const seguroCarroService = {
         fechaFin: new Date(fechaFin),
         id_carro,
         id_seguro: nuevoSeguro.id,
-        empresa
+        enlace,  
       },
       include: {
-        seguro: true
+        seguro: true,
       }
     });
 
@@ -33,8 +39,8 @@ const seguroCarroService = {
   async findAll() {
     return await prisma.seguroCarro.findMany({
       include: {
-        seguro: true
-      }
+        seguro: true,
+      },
     });
   }
 };

@@ -1,12 +1,12 @@
-const express =require('express');
-const { agregarCredencial } = require('./insertedInsurance.service');
+/*const express =require('express');
+const seguroCarro = require('./insertedInsurance.service');
 
 
 const inserted= express.Router();
 
 inserted.post('/',async(req,res) => {
     try {
-        const insertJson = await agregarCredencial(req.body);
+        const insertJson = await seguroCarro.agregarCredencial(req.body);
         res.status(201).json(insertJson);
         console.lof('insertado');
     }catch(error){
@@ -16,4 +16,24 @@ inserted.post('/',async(req,res) => {
     }
 }
 );
+module.exports = inserted;*/
+const express = require('express');
+const seguroCarro = require('./insertedInsurance.service');
+
+const inserted = express.Router();
+
+inserted.post('/', async (req, res) => {
+  try {
+    console.log('Datos recibidos en /insertedInsurance:', req.body);
+
+    const insertJson = await seguroCarro.agregarCredencial(req.body);
+    
+    console.log('Insertado correctamente');
+    res.status(201).json(insertJson);
+  } catch (error) {
+    console.error('❌ Error al insertar cobertura:', error.message);
+    res.status(500).json({ error: 'No insertada', detalle: error.message });
+  }
+});
+
 module.exports = inserted;
