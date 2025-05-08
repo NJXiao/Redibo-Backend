@@ -1,4 +1,5 @@
 
+require('./cronJobs/reservationCleanup');
 
 const express = require("express");
 const morgan = require("morgan");

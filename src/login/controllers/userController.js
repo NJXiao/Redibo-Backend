@@ -293,9 +293,32 @@ exports.getUserProfile = async (req, res) => {
           select: {
             nombre: true
           }
+        },
+        reservas: {
+          orderBy: {
+            fecha_creacion: 'asc'
+          },
+          take: 1,
+          select: {
+            id: true,
+            fecha_creacion: true,
+            fecha_inicio: true,
+            fecha_fin: true,
+            fecha_expiracion: true,
+            estado: true,
+            carro: {
+              select: {
+                id: true,
+                marca: true,
+                modelo: true,
+                placa: true
+              }
+            }
+          }
         }
       }
     });
+
 
     if (!usuario) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
