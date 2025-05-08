@@ -35,7 +35,7 @@ exports.registerUser = async (req, res) => {
     });
     
     if (existingEmail) {
-      return res.status(400).json({ error: 'El correo ya está registrado' });
+      return res.status(200).json({ error: 'El correo ya está registrado' });
     }
     
     // Verificar si el teléfono ya existe
@@ -44,7 +44,7 @@ exports.registerUser = async (req, res) => {
     });
     
     if (existingPhone) {
-      return res.status(400).json({ error: 'El teléfono ya está registrado' });
+      return res.status(200).json({ error: 'El teléfono ya está registrado' });
     }
     
     // Validar edad (mayor de 18)
@@ -123,12 +123,12 @@ exports.completeGoogleRegistration = async (req, res) => {
     // Validar rol recibido
     const rolesValidos = ['HOST', 'RENTER', 'DRIVER'];
     if (!rol || !rolesValidos.includes(rol)) {
-      return res.status(400).json({ error: 'El rol debe ser HOST, RENTER o DRIVER' });
+      return res.status(200).json({ error: 'El rol debe ser HOST, RENTER o DRIVER' });
     }
     // Buscar ID del rol
     const rolData = await prisma.rol.findFirst({ where: { rol } });
     if (!rolData) {
-      return res.status(400).json({ error: 'Rol no encontrado en base de datos' });
+      return res.status(200).json({ error: 'Rol no encontrado en base de datos' });
     }
     // Verificar si el correo ya está registrado
     const correoExistente = await prisma.usuario.findFirst({
@@ -136,7 +136,7 @@ exports.completeGoogleRegistration = async (req, res) => {
     });
 
     if (correoExistente) {
-      return res.status(400).json({ 
+      return res.status(200).json({ 
         error: 'El correo ya está registrado', 
         campo: 'correo' 
       });
@@ -148,7 +148,7 @@ exports.completeGoogleRegistration = async (req, res) => {
     });
 
     if (telefonoExistente) {
-      return res.status(400).json({ 
+      return res.status(200).json({ 
         error: 'El teléfono ya está registrado', 
         campo: 'telefono' 
       });
@@ -162,7 +162,7 @@ exports.completeGoogleRegistration = async (req, res) => {
     const birthDate = new Date(fechaNacimiento);
     if (isNaN(birthDate.getTime())) {
       console.error("❌ Fecha inválida:", fechaNacimiento);
-      return res.status(400).json({ error: 'La fecha de nacimiento no es válida' });
+      return res.status(200).json({ error: 'La fecha de nacimiento no es válida' });
     }
 
     // Crear usuario
@@ -241,18 +241,17 @@ exports.loginUser = async (req, res) => {
     });
 
     if (!usuario || !usuario.contraseña) {
-      return res.status(401).json({ error: 'Credenciales inválidas' });
+      return res.status(200).json({ error: 'Credenciales inválidas' });
     }
 
     const passwordMatch = await bcrypt.compare(contrasena, usuario.contraseña);
 
     if (!passwordMatch) {
-      return res.status(401).json({ error: 'Credenciales inválidas' });
+      return res.status(200).json({ error: 'Credenciales inválidas' });
     }
 
     // Obtener roles del usuario
     const roles = usuario.roles.map(userRole => userRole.rol.rol);
-    console.log("Roles del usuario:", roles);
     // Generar token JWT
     const token = generateToken({
       id: usuario.id
@@ -434,7 +433,7 @@ exports.completeUserProfile = async (req, res) => {
     });
     
     if (telefonoExistente) {
-      return res.status(400).json({ error: 'El teléfono ya está registrado' });
+      return res.status(200).json({ error: 'El teléfono ya está registrado' });
     }
     // Buscar ID del rol en la base de datos
     const rolData = await prisma.rol.findFirst({ where: { rol } });
@@ -633,7 +632,7 @@ exports.requestRecoveryCode = async (req, res) => {
     const { correo } = req.body;
 
     if (!correo) {
-      return res.status(400).json({ error: 'El correo electrónico es requerido' });
+      return res.status(200).json({ error: 'El correo electrónico es requerido' });
     }
 
     // Verificar si el correo existe
@@ -642,10 +641,13 @@ exports.requestRecoveryCode = async (req, res) => {
     });
 
     if (!usuario) {
-      return res.status(404).json({ error: 'Correo electrónico no registrado' });
+      return res.status(200).json({ error: 'Correo electrónico no registrado' });
     }
 
-    const codigo = generateRecoveryCode();
+    if( usuario.contraseña === null) {
+      return res.status(200).json({ error: 'Cuenta sin contraseña. Inicia sesion con Google' });
+    }
+      const codigo = generateRecoveryCode();
     
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 15);
@@ -684,7 +686,7 @@ exports.verifyRecoveryCode = async (req, res) => {
     const { correo, codigo } = req.body;
 
     if (!correo || !codigo) {
-      return res.status(400).json({ error: 'Correo y código son requeridos' });
+      return res.status(200).json({ error: 'Correo y código son requeridos' });
     }
 
     // Buscar el código válido más reciente
@@ -703,7 +705,7 @@ exports.verifyRecoveryCode = async (req, res) => {
     });
 
     if (!recoveryCode) {
-      return res.status(400).json({ error: 'Código inválido o expirado' });
+      return res.status(200).json({ error: 'Código inválido o expirado' });
     }
 
     return res.status(200).json({
@@ -712,7 +714,7 @@ exports.verifyRecoveryCode = async (req, res) => {
     });
   } catch (error) {
     console.error('Error al verificar código:', error);
-    return res.status(500).json({ error: 'Error interno del servidor' });
+    return res.status(200).json({ error: 'Código inválido' });
   }
 };
 
@@ -722,35 +724,47 @@ exports.resetPassword = async (req, res) => {
     const { correo, codigo, nuevaContrasena } = req.body;
 
     if (!correo || !codigo || !nuevaContrasena) {
-      return res.status(400).json({ 
+      return res.status(200).json({ 
         error: 'Correo, código y nueva contraseña son requeridos' 
       });
     }
 
     if (nuevaContrasena.length < 8) {
-      return res.status(400).json({ 
+      return res.status(200).json({ 
         error: 'La contraseña debe tener al menos 8 caracteres' 
       });
     }
 
     if (!/[A-Z]/.test(nuevaContrasena)) {
-      return res.status(400).json({
+      return res.status(200).json({
         error: 'La contraseña debe contener al menos una letra mayúscula'
       });
     }
 
     if (!/[0-9]/.test(nuevaContrasena)) {
-      return res.status(400).json({
+      return res.status(200).json({
         error: 'La contraseña debe contener al menos un número'
       });
     }
 
     if (!/[^A-Za-z0-9]/.test(nuevaContrasena)) {
-      return res.status(400).json({
+      return res.status(200).json({
         error: 'La contraseña debe contener al menos un carácter especial'
       });
     }
 
+    if (!/[0-9]/.test(nuevaContrasena)) {
+      return res.status(200).json({
+        error: 'La contraseña debe contener al menos un número'
+      });
+    }
+
+    if (!/[^A-Za-z0-9]/.test(nuevaContrasena)) {
+      return res.status(200).json({
+        error: 'La contraseña debe contener al menos un carácter especial'
+      });
+    }
+    
     // Código es válido
     const recoveryCode = await prisma.passwordRecoveryCode.findFirst({
       where: {
@@ -770,13 +784,13 @@ exports.resetPassword = async (req, res) => {
     });
 
     if (!recoveryCode) {
-      return res.status(400).json({ error: 'Código inválido o expirado' });
+      return res.status(200).json({ error: 'Código inválido o expirado' });
     }
 
     // Verificar que la nueva contraseña no sea igual a la actual
     const isCurrentPassword = await bcrypt.compare(nuevaContrasena, recoveryCode.usuario.contraseña);
     if (isCurrentPassword) {
-      return res.status(400).json({
+      return res.status(200).json({
         error: 'La nueva contraseña no puede ser igual a la actual'
       });
     }
