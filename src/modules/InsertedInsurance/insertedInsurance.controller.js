@@ -24,10 +24,7 @@ const inserted = express.Router();
 
 inserted.post('/', async (req, res) => {
   try {
-    console.log('Datos recibidos en /insertedInsurance:', req.body);
-
     const insertJson = await seguroCarro.agregarCredencial(req.body);
-    
     console.log('Insertado correctamente');
     res.status(201).json(insertJson);
   } catch (error) {
