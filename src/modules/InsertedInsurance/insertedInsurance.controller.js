@@ -28,7 +28,6 @@ inserted.post('/', async (req, res) => {
     console.log('Insertado correctamente');
     res.status(201).json(insertJson);
   } catch (error) {
-    console.error('❌ Error al insertar cobertura:', error.message);
     res.status(500).json({ error: 'No insertada', detalle: error.message });
   }
 });
