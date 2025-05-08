@@ -56,11 +56,13 @@ model Carro {
   disponible_desde                DateTime?
   disponible_hasta                DateTime?
   id_condiciones_uso              Int?                              @unique(map: "uq_carro_condiciones_uso")
+  notificaion_confirmacion_id     Int?
   Calificacion                    Calificacion[]
   Direccion                       Direccion                         @relation(fields: [id_direccion], references: [id])
   tipodeDescuento                 tipodeDescuento?                  @relation(fields: [id_tipodeDescuento], references: [id])
   Usuario                         Usuario                           @relation(fields: [id_usuario_rol], references: [id])
   condiciones_uso                 condiciones_uso?                  @relation(fields: [id_condiciones_uso], references: [id], onUpdate: NoAction, map: "fk_carro_condiciones_uso")
+  notificaion_confirmacion        notificaion_confirmacion?         @relation(fields: [notificaion_confirmacion_id], references: [id], onUpdate: NoAction, map: "fk_notificaion_confirmacion")
   CombustibleCarro                CombustibleCarro[]
   Favorito                        Favorito[]
   Imagen                          Imagen[]
@@ -205,6 +207,7 @@ model Seguro {
   nombre      String
   tipoSeguro  String
   valides     String?       @db.VarChar(255)
+  descripcion String?       @db.VarChar(255)
   SeguroCarro SeguroCarro[]
 }
 
@@ -346,6 +349,14 @@ model herramientas_basicas {
   cantidad        Float
   id_entrega_auto Int
   entrega_auto    entrega_auto @relation(fields: [id_entrega_auto], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_entrega_auto")
+}
+
+model notificaion_confirmacion {
+  id      Int       @id(map: "notificacion_pkey") @default(autoincrement())
+  mensaje String
+  fecha   DateTime? @default(now()) @db.Timestamp(6)
+  estado  Boolean?
+  Carro   Carro[]
 }
 
 model tipodeDescuento {
