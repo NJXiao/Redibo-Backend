@@ -7,6 +7,7 @@ const seguroCarroService = {
       fechaFin,
       id_carro,
       enlace
+      
     } = data;
   
     const nuevoSeguro = await prisma.seguro.create({
