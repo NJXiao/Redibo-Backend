@@ -39,7 +39,7 @@ router.get("/check-profile/:id", userController.checkProfileStatus);
 // Verificar estado usuario por email
 router.get("/check-profile/email/:email", userController.checkProfileByEmail);
 
-router.get( "/validateTokenCompleteRegister", userController.checkTokenCompleteRegister);
+router.get( "/validateTokenCompleteRegister",authenticateToken ,userController.checkTokenCompleteRegister);
 
 router.post("/request-recovery-code", userController.requestRecoveryCode);
 

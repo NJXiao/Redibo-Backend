@@ -302,17 +302,6 @@ exports.googleCallback = (req, res) => {
         process.env.JWT_SECRET, 
         { expiresIn: '15m' } // Aumentamos a 15 minutos
       );
-      const cookieOptions = {
-        httpOnly: true, // Previene acceso desde JS
-        secure: process.env.NODE_ENV === 'production', // true en producción
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        maxAge: 900000, // 5 minutos
-        //path: '/',
-        domain: process.env.COOKIE_DOMAIN || 'localhost' // Define COOKIE_DOMAIN en .env
-      };
-  
-      // Establecer cookie con el token
-      res.cookie('temp_auth', token, cookieOptions);
       
       // También pasar token como parámetro de URL como respaldo
       return res.redirect(`${process.env.FRONTEND_URL}/login/completeRegister?token=${token}`);
@@ -591,31 +580,12 @@ exports.checkProfileByEmail = async (req, res) => {
 // función checkTokenCompleteRegister
 exports.checkTokenCompleteRegister = async (req, res) => {
   try {
-    //console.log("Validando token para completar registro");
-    //console.log("Cookies recibidas:", req.cookies);
-    //console.log("Query params:", req.query);
     
-    // Intentar obtener el token de varias fuentes
-    const token = req.cookies.temp_auth || req.query.token || req.headers.authorization?.split(' ')[1];
-    
-    if (!token) {
-      //console.log("No se encontró token en la solicitud");
-      return res.status(401).json({
-        success: false,
-        message: 'No se encontró token de autenticación'
-      });
-    }
-    
-    // Verificar y decodificar token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    //console.log("Token verificado correctamente:", decoded);
-    //res.header('Access-Control-Allow-Credentials', 'true');
-    // Devolver datos del usuario
     res.json({
       success: true,
-      nombre: decoded.nombre,
-      email: decoded.email,
-      foto: decoded.foto
+      nombre: req.user.nombre,
+      email: req.user.email,
+      foto: req.user.foto
     });
     
   } catch (error) {
