@@ -1,28 +1,32 @@
 const prisma = require('../../config/prisma');
 
-const findAll = async () => {
-  try {
-    return await prisma.seguroCarro.findMany({
-      select: {
-        id: true,
-        fechaInicio: true,
-        fechaFin: true,
-        Seguro: {
-          select: {
-            empresa: true,
-            nombre: true,
-            tipoSeguro: true,
-            valides: true,
-            descripcion: true,
+const credenciales = {
+  async findByCarId(id_carro) {
+    try {
+      console.log('Id recibido desde controller:', id_carro);
+      return await prisma.seguroCarro.findMany({
+        where: { id_carro: id_carro },
+        select: {
+          id: true,
+          fechaInicio: true,
+          fechaFin: true,
+          enlace: true,
+          id_carro: true,
+          Seguro: {
+            select: {
+              empresa: true,
+              nombre: true,
+              tipoSeguro: true,
+              valides: true,
+              descripcion: true,
+            },
           },
         },
-        id_carro: true,
-        enlace: true,
-      },
-    });
-  } catch (error) {
-    console.error('Error al obtener los seguros de carros:', error);
-  }
+      });
+    } catch (error) {
+      console.error('Error al obtener los seguros por carro:', error);
+    }
+  },
 };
 
-module.exports = { findAll };
+module.exports = credenciales;
