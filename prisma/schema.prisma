@@ -68,6 +68,7 @@ model Carro {
   SeguroCarro                     SeguroCarro[]
   caracteristicasAdicionalesCarro caracteristicasAdicionalesCarro[]
   contratodeAlquiler              contratodeAlquiler[]
+  condiciones_uso                 condiciones_uso?                  @relation(fields: [id_condiciones_uso], references: [id])
 }
 
 model Ciudad {
@@ -295,6 +296,7 @@ model condiciones_generales {
   multa_conductor     Boolean
   dev_mismo_lugar     Boolean
   uso_comercial       Boolean
+  condiciones_uso     condiciones_uso?
 }
 
 model condiciones_uso {
@@ -302,6 +304,10 @@ model condiciones_uso {
   id_condiciones_generales Int? @unique
   id_devolucion_auto       Int? @unique
   id_entrega_auto          Int? @unique
+  condiciones_generales    condiciones_generales?  @relation(fields: [id_condiciones_generales], references: [id])
+  devolucion_auto          devolucion_auto?       @relation(fields: [id_devolucion_auto], references: [id])
+  entrega_auto             entrega_auto?           @relation(fields: [id_entrega_auto], references: [id])
+  Carro                    Carro?
 }
 
 model contratodeAlquiler {
@@ -321,6 +327,7 @@ model devolucion_auto {
   herramientas      Boolean
   cobrar_da_os      Boolean @map("cobrar_daños")
   combustible_igual Boolean
+  condiciones_uso     condiciones_uso?
 }
 
 model entrega_auto {
@@ -331,6 +338,7 @@ model entrega_auto {
   rayones            Boolean
   llanta_estado      Boolean
   interior_da_o      Boolean @map("interior_daño")
+  condiciones_uso     condiciones_uso?
 }
 
 model herramientas_basicas {
