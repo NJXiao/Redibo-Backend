@@ -106,7 +106,6 @@ passport.use(
           // Extraer roles para el token JWT
           const roles = userComplete.roles.map(userRole => userRole.rol.rol);
           // Usuario ya existe y su perfil está completo
-          console.log('User roles', roles);
           return done(null, {
             isNewUser: false,
             isIncomplete: false,
@@ -126,7 +125,7 @@ passport.use(
         const newUser = await prisma.usuario.create({
           data: {
             google_id: profile.id,
-            correo: email,
+            correo: email.toLowerCase(),
             nombre: profile.displayName,
             foto: profile.photos && profile.photos.length > 0 ? profile.photos[0].value : null
           }

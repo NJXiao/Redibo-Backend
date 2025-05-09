@@ -61,28 +61,61 @@ async function cleanOrphanUsers() {
   }
 }
 
-
-async function cleanOneUser() {
-  const id= 72
+async function deleteOrphanUsersByEmails(emails) {
   try {
-    // Paso 2: Eliminar en transacción
+    if (!emails || emails.length === 0) {
+      console.log('⚠️ Lista de correos vacía');
+      return;
+    }
+
+    // Paso 1: Buscar usuarios huérfanos que estén en la lista de correos
+    const usersToDelete = await prisma.usuario.findMany({
+      where: {
+        AND: [
+          { correo: { in: emails } }, // Solo los correos en la lista
+          { 
+            AND: [ // Que cumplan con ser huérfanos
+              { favoritos: { none: {} } },
+              { calificaciones: { none: {} } },
+              { notificaciones: { none: {} } },
+              { reservas: { none: {} } },
+              { carros: { none: {} } },
+              { busquedas: { none: {} } }
+            ]
+          }
+        ]
+      },
+      select: { id: true, correo: true }
+    });
+
+    if (usersToDelete.length === 0) {
+      console.log('⚠️ No hay usuarios huérfanos con esos correos');
+      return;
+    }
+
+    const userIds = usersToDelete.map(user => user.id);
+    const userEmails = usersToDelete.map(user => user.correo);
+
+    // Paso 2: Eliminar en transacción solo si son huérfanos
     await prisma.$transaction(async (prisma) => {
-      // Eliminar UsuarioRol de estos usuarios
-      await prisma.usuarioRol.deleteMany({
-        where: {
-          id_usuario: id
-        },
+      // Eliminar códigos de recuperación
+      await prisma.passwordRecoveryCode.deleteMany({
+        where: { id_usuario: { in: userIds } }
       });
 
-      // Eliminar los usuarios
+      // Eliminar roles de usuario
+      await prisma.usuarioRol.deleteMany({
+        where: { id_usuario: { in: userIds } }
+      });
+
+      // Eliminar usuarios
       await prisma.usuario.deleteMany({
-        where: { 
-          id: id
-        },
+        where: { id: { in: userIds } }
       });
     });
 
-    console.log(`✅ Eliminados usuarios huérfanos`);
+    console.log(`✅ Eliminados ${usersToDelete.length} usuarios huérfanos:`);
+    console.log(userEmails.join(', '));
 
   } catch (error) {
     console.error('❌ Error:', error);
@@ -91,5 +124,9 @@ async function cleanOneUser() {
   }
 }
 // Ejecutar
-cleanOrphanUsers();
-//cleanOneUser();
+//cleanOrphanUsers();
+
+// deleteUsersByEmails(['user1@example.com', 'user2@example.com']);
+const emails = [
+];
+deleteOrphanUsersByEmails(emails);

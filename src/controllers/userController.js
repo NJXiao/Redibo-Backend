@@ -19,6 +19,8 @@ exports.registerUser = async (req, res) => {
   try {
     const userData = req.body;
     let { nombre, correo, fechaNacimiento, genero, ciudad, contrasena, telefono, rol } = userData;
+    
+    correo = correo.toLowerCase();
     // Validar rol recibido
     const rolesValidos = ['HOST', 'RENTER', 'DRIVER'];
     if (!rol || !rolesValidos.includes(rol)) {
@@ -31,9 +33,14 @@ exports.registerUser = async (req, res) => {
     }
     // Verificar si el correo ya existe
     const existingEmail = await prisma.usuario.findFirst({
-      where: { correo }
+      where: { 
+        correo: { 
+          equals: correo,
+          mode: 'insensitive'
+        }
+      }
     });
-    
+
     if (existingEmail) {
       return res.status(200).json({ error: 'El correo ya está registrado' });
     }
@@ -59,7 +66,7 @@ exports.registerUser = async (req, res) => {
       newUser = await prisma.usuario.create({
         data: {
           nombre,
-          correo,
+          correo : correo.toLowerCase(),
           fecha_nacimiento: birthDate,
           genero,
           id_ciudad: parseInt(userData.ciudad),
@@ -78,14 +85,14 @@ exports.registerUser = async (req, res) => {
       
       // Hash de la contraseña
       const hashedPassword = await bcrypt.hash(contrasena, 10);
-      const usuario = {}; // Inicializar objeto usuario
-      usuario.primer_nombre = userData.nombre.split(" ")[0]; // Solo el primer nombre
-      usuario.primer_apellido = userData.nombre.split(" ")[1]; // Solo el primer apellido
+      const usuario = {}; 
+      usuario.primer_nombre = userData.nombre.split(" ")[0]; 
+      usuario.primer_apellido = userData.nombre.split(" ")[1]; 
       // Crear usuario normal
       newUser = await prisma.usuario.create({
         data: {
           nombre,
-          correo,
+          correo: correo.toLowerCase(),
           fecha_nacimiento: new Date(userData.fechaNacimiento),
           genero,
           id_ciudad: parseInt(userData.ciudad),
@@ -132,7 +139,7 @@ exports.completeGoogleRegistration = async (req, res) => {
     }
     // Verificar si el correo ya está registrado
     const correoExistente = await prisma.usuario.findFirst({
-      where: { correo }
+      where: {correo: { equals: correo, mode: 'insensitive' }}
     });
 
     if (correoExistente) {
@@ -154,10 +161,7 @@ exports.completeGoogleRegistration = async (req, res) => {
       });
     }
     
-    // Validar edad (mayor de 18)
-    console.log("🔍 Datos recibidos en el backend:", {
-      nombre, correo, fechaNacimiento, genero, ciudad, foto, telefono, rol
-    });
+    
     
     const birthDate = new Date(fechaNacimiento);
     if (isNaN(birthDate.getTime())) {
@@ -169,7 +173,7 @@ exports.completeGoogleRegistration = async (req, res) => {
     const nuevoUsuario = await prisma.usuario.create({
       data: {
         nombre,
-        correo,
+        correo: correo.toLowerCase(),
         fecha_nacimiento: birthDate,
         genero,
         id_ciudad: parseInt(ciudad),
@@ -190,13 +194,29 @@ exports.completeGoogleRegistration = async (req, res) => {
     const token = generateToken({
       id: nuevoUsuario.id
     });
-
+    // obtener roles del usuario
+    const usuario = await prisma.usuario.findUnique({
+      where: { id: nuevoUsuario.id },
+      include: {
+        roles: {
+          select: {
+            rol: {
+              select: {
+                rol: true
+              }
+            }
+          }
+        }
+      }
+    });
+    const roles = usuario.roles.map(userRole => userRole.rol.rol);
     return res.status(201).json({
       mensaje: 'Usuario registrado exitosamente',
       usuario: {
         id: nuevoUsuario.id,
         nombre: nuevoUsuario.nombre,
-        correo: nuevoUsuario.correo
+        correo: nuevoUsuario.correo,
+        rol: roles,
       },
       token
     });
@@ -212,7 +232,7 @@ exports.loginUser = async (req, res) => {
 
   try {
     const usuario = await prisma.usuario.findFirst({
-      where: { correo },
+      where: {correo: { equals: correo, mode: 'insensitive' }},
       select: {
         id: true,
         nombre: true,
@@ -258,17 +278,9 @@ exports.loginUser = async (req, res) => {
     });
     return res.json({
       usuario: {
-        // id: usuario.id,
         nombre: usuario.nombre,
-        // correo: usuario.correo,
-        // telefono: usuario.telefono || "No especificado",
-        // fecha_nacimiento: usuario.fecha_nacimiento 
-        //   ? new Date(usuario.fecha_nacimiento).toISOString()
-        //   : "No especificada",
-        // genero: usuario.genero || "No especificado",
-        // ciudad: usuario.ciudad.nombre,
-        foto: usuario.foto
-        // roles: roles || []
+        foto: usuario.foto,
+        roles: roles || []
       },
       token
     });
@@ -280,8 +292,6 @@ exports.loginUser = async (req, res) => {
 
 exports.googleCallback = (req, res) => {
   try {
-    //console.log("Google callback ejecutado", req.user);
-    
     // Verificar si tenemos datos de usuario
     if (!req.user) {
       console.error("No se recibieron datos de usuario en el callback de Google");
@@ -290,8 +300,7 @@ exports.googleCallback = (req, res) => {
     
     // Si el usuario necesita completar su perfil
     if (req.user.isIncomplete) {
-      //console.log("Usuario con perfil incompleto:", req.user.correo);
-      
+           
       const nombre = req.user.nombre;
       const email = req.user.correo;
       const foto = req.user.foto;
@@ -300,37 +309,25 @@ exports.googleCallback = (req, res) => {
       const token = jwt.sign(
         { nombre, email, foto },
         process.env.JWT_SECRET, 
-        { expiresIn: '15m' } // Aumentamos a 15 minutos
+        { expiresIn: '15m' }
       );
       
-      // También pasar token como parámetro de URL como respaldo
+      // También pasar token como parámetro de URL
       return res.redirect(`${process.env.FRONTEND_URL}/login/completeRegister?token=${token}`);
     }
     
-    // Usuario existente con perfil completo
-    //console.log("Usuario con perfil completo:", req.user.correo);
-    console.log("Datos del rol:", req.user.roles);
+    
     const userData = {
       nombre: req.user.nombre,
-      // correo: req.user.correo,
-      // telefono: req.user.telefono || "No especificado",
-      // fecha_nacimiento: req.user.fecha_nacimiento 
-      //   ? new Date(req.user.fecha_nacimiento).toISOString()
-      //   : "No especificada",
-      // genero: req.user.genero || "No especificado",
-      // ciudad: req.user.ciudad,
-      foto: req.user.foto
-      // roles: req.user.roles || []
+      foto: req.user.foto,
+      roles: req.user.roles || []
     };
-    //console.log(userData)
     const token = generateToken({
       id: req.user.id
     });
 
-    // 2. Codificar datos para URL
     const encodedData = Buffer.from(JSON.stringify(userData)).toString('base64');
 
-    // 3. Redirigir con parámetros
     return res.redirect(
       `${process.env.FRONTEND_URL}/login?token=${token}&data=${encodedData}`
     );
@@ -388,9 +385,8 @@ exports.getUserProfile = async (req, res) => {
 // Función para completar perfil de usuario (Google u otros métodos)
 exports.completeUserProfile = async (req, res) => {
   try {
-    console.log('Datos recibidos' , req.body)
     const { 
-      correo,          // ID del usuario existente a actualizar
+      correo,          
       fechaNacimiento, 
       genero, 
       ciudad, 
@@ -403,12 +399,13 @@ exports.completeUserProfile = async (req, res) => {
     if (!rolesValidos.includes(rol)) {
       return res.status(400).json({ error: 'El rol debe ser HOST, RENTER o DRIVER' });
     }
-    //console.log(req.body)
+    
     // Verificar si el usuario existe
+    const correoLower = correo.toLowerCase();
     const usuario = await prisma.usuario.findUnique({
-      where: { correo: correo }
+      where: {correo: correoLower}
     });
-    console.log('Perfil completado exitosamente')
+    
     if (!usuario) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
@@ -440,7 +437,6 @@ exports.completeUserProfile = async (req, res) => {
           connect: { id: ciudad }
         },
         telefono
-        //perfil_completo: true
       }
     });
 
@@ -465,23 +461,30 @@ exports.completeUserProfile = async (req, res) => {
     // Obtener todos los roles del usuario
     const usuarioRoles = await prisma.usuarioRol.findMany({
       where: { id_usuario: usuario.id },
-      include: { rol: true }
+      include: { 
+        rol: {
+          select: {
+            rol: true 
+          }
+        } 
+      }
     });
-    const roles = usuarioRoles.map(userRole => userRole.rol.rol);
+
+    const roles = usuarioRoles.map(userRole => userRole.rol.rol); 
     if (!roles || roles.length === 0) {
       console.error("❌ El usuario no tiene roles asignados");
       return res.status(400).json({ error: "El usuario no tiene roles asignados" });
     }
-    // Generar token con los roles
+    
     const token = generateToken({
       id: usuarioActualizado.id
     });
     const nombreCiudad = await prisma.ciudad.findFirst({
       where: { 
-        id: ciudad // Excluir el usuario actual
+        id: ciudad 
       }
     });
-    console.log(nombreCiudad)
+    
     return res.status(200).json({
       mensaje: 'Perfil completado exitosamente',
       usuario: {
@@ -491,7 +494,8 @@ exports.completeUserProfile = async (req, res) => {
         genero: usuarioActualizado.genero,
         ciudad: nombreCiudad.nombre,
         foto: usuarioActualizado.foto,
-        telefono: usuarioActualizado.telefono
+        telefono: usuarioActualizado.telefono,
+        roles: roles || []
       },
       token
     });
@@ -519,7 +523,7 @@ exports.checkProfileStatus = async (req, res) => {
         id_ciudad: true,
         roles: {
           select: {
-            id: true // o el campo que necesites validar
+            id: true 
           }
         }
       }
@@ -556,7 +560,7 @@ exports.checkProfileByEmail = async (req, res) => {
     const email = decodeURIComponent(req.params.email);
 
     const usuario = await prisma.usuario.findUnique({
-      where: { correo: email },
+      where: {correo: { equals: correo, mode: 'insensitive' }},
       select: {
         id: true,
         nombre: true,
@@ -606,8 +610,9 @@ exports.requestRecoveryCode = async (req, res) => {
     }
 
     // Verificar si el correo existe
+    const correoLower = correo.toLowerCase();
     const usuario = await prisma.usuario.findUnique({
-      where: { correo }
+      where: {correo: correoLower}
     });
 
     if (!usuario) {
@@ -662,7 +667,7 @@ exports.verifyRecoveryCode = async (req, res) => {
     // Buscar el código válido más reciente
     const recoveryCode = await prisma.passwordRecoveryCode.findFirst({
       where: {
-        correo,
+        correo: { equals: correo, mode: 'insensitive' },
         codigo,
         used: false,
         expires_at: {
@@ -738,7 +743,7 @@ exports.resetPassword = async (req, res) => {
     // Código es válido
     const recoveryCode = await prisma.passwordRecoveryCode.findFirst({
       where: {
-        correo,
+        correo: { equals: correo, mode: 'insensitive' },
         codigo,
         used: false,
         expires_at: {
@@ -773,9 +778,19 @@ exports.resetPassword = async (req, res) => {
       select: {
         id: true,
         nombre: true,
-        foto: true
+        foto: true,
+        roles: {
+          select: {
+            rol: {
+              select: {
+                rol: true
+              }
+            }
+          }
+        }
       }
     });
+    const roles = usuarioActualizado.roles.map(userRole => userRole.rol.rol);
     // Marcar código como usado
     await prisma.passwordRecoveryCode.update({
       where: { id: recoveryCode.id },
@@ -792,6 +807,7 @@ exports.resetPassword = async (req, res) => {
       token: token,
       foto: usuarioActualizado.foto,
       nombre: usuarioActualizado.nombre,
+      roles: roles || [],
       message: 'Contraseña actualizada correctamente'
     })
   } catch (error) {
@@ -804,7 +820,7 @@ exports.resetPassword = async (req, res) => {
 exports.addUserRole = async (req, res) => {
   try {
     const  rolToAdd = req.body.rol;
-    const id_usuario = req.user.id; // ID del usuario autenticado
+    const id_usuario = req.user.id; 
     // Verificar si el usuario existe
     const usuario = await prisma.usuario.findUnique({
       where: { id: id_usuario }
