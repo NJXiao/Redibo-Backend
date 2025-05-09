@@ -58,6 +58,7 @@ model Carro {
   id_condiciones_uso              Int?                              @unique(map: "uq_carro_condiciones_uso")
   notificaion_confirmacion_id     Int?
   Calificacion                    Calificacion[]
+  condiciones_uso                 condiciones_uso?                  @relation(fields: [id_condiciones_uso], references: [id])
   Direccion                       Direccion                         @relation(fields: [id_direccion], references: [id])
   tipodeDescuento                 tipodeDescuento?                  @relation(fields: [id_tipodeDescuento], references: [id])
   Usuario                         Usuario                           @relation(fields: [id_usuario_rol], references: [id])
@@ -68,7 +69,6 @@ model Carro {
   SeguroCarro                     SeguroCarro[]
   caracteristicasAdicionalesCarro caracteristicasAdicionalesCarro[]
   contratodeAlquiler              contratodeAlquiler[]
-  condiciones_uso                 condiciones_uso?                  @relation(fields: [id_condiciones_uso], references: [id])
 }
 
 model Ciudad {
@@ -94,7 +94,7 @@ model Descuento {
   id_descuentoTipo Int?
   montoDescontado  Float?
   tipodeDescuento  tipodeDescuento? @relation(fields: [id_descuentoTipo], references: [id])
-  Reserva          Reserva[]        @relation("DescuentoToReserva")
+  Reserva          Reserva[]
 }
 
 model Direccion {
@@ -191,7 +191,7 @@ model Reserva {
   Garantia               Garantia[]
   Carro                  Carro       @relation(fields: [id_carro], references: [id])
   Usuario                Usuario     @relation(fields: [id_usuario], references: [id])
-  Descuento              Descuento[] @relation("DescuentoToReserva")
+  Descuento              Descuento[]
 }
 
 model Rol {
@@ -285,7 +285,7 @@ model caracteristicasAdicionalesCarro {
 }
 
 model condiciones_generales {
-  id                  Int     @id @default(autoincrement())
+  id                  Int              @id @default(autoincrement())
   edad_minima         Int
   edad_maxima         Int
   kilometraje_max_dia Float
@@ -300,14 +300,14 @@ model condiciones_generales {
 }
 
 model condiciones_uso {
-  id                       Int  @id @default(autoincrement())
-  id_condiciones_generales Int? @unique
-  id_devolucion_auto       Int? @unique
-  id_entrega_auto          Int? @unique
-  condiciones_generales    condiciones_generales?  @relation(fields: [id_condiciones_generales], references: [id])
-  devolucion_auto          devolucion_auto?       @relation(fields: [id_devolucion_auto], references: [id])
-  entrega_auto             entrega_auto?           @relation(fields: [id_entrega_auto], references: [id])
+  id                       Int                    @id @default(autoincrement())
+  id_condiciones_generales Int?                   @unique
+  id_devolucion_auto       Int?                   @unique
+  id_entrega_auto          Int?                   @unique
   Carro                    Carro?
+  condiciones_generales    condiciones_generales? @relation(fields: [id_condiciones_generales], references: [id])
+  devolucion_auto          devolucion_auto?       @relation(fields: [id_devolucion_auto], references: [id])
+  entrega_auto             entrega_auto?          @relation(fields: [id_entrega_auto], references: [id])
 }
 
 model contratodeAlquiler {
@@ -320,25 +320,25 @@ model contratodeAlquiler {
 }
 
 model devolucion_auto {
-  id                Int     @id @default(autoincrement())
+  id                Int              @id @default(autoincrement())
   interior_limpio   Boolean
   exterior_limpio   Boolean
   rayones           Boolean
   herramientas      Boolean
-  cobrar_da_os      Boolean @map("cobrar_daños")
+  cobrar_da_os      Boolean          @map("cobrar_daños")
   combustible_igual Boolean
-  condiciones_uso     condiciones_uso?
+  condiciones_uso   condiciones_uso?
 }
 
 model entrega_auto {
-  id                 Int     @id @default(autoincrement())
-  estado_combustible String  @db.VarChar(255)
+  id                 Int              @id @default(autoincrement())
+  estado_combustible String           @db.VarChar(255)
   esterior_limpio    Boolean
   inter_limpio       Boolean
   rayones            Boolean
   llanta_estado      Boolean
-  interior_da_o      Boolean @map("interior_daño")
-  condiciones_uso     condiciones_uso?
+  interior_da_o      Boolean          @map("interior_daño")
+  condiciones_uso    condiciones_uso?
 }
 
 model herramientas_basicas {
@@ -349,10 +349,12 @@ model herramientas_basicas {
 }
 
 model notificaion_confirmacion {
-  id      Int       @id(map: "notificacion_pkey") @default(autoincrement())
-  mensaje String
-  fecha   DateTime? @default(now()) @db.Timestamp(6)
-  estado  Boolean?
+  id        Int       @id(map: "notificacion_pkey") @default(autoincrement())
+  mensaje   String
+  fecha     DateTime? @default(now()) @db.Timestamp(6)
+  estado    Boolean?
+  id_renter Int?
+  id_host   Int?
 }
 
 model tipodeDescuento {

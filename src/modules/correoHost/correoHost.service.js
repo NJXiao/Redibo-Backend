@@ -1,30 +1,34 @@
-const { PrismaClient } = require("@prisma/client/extension");
-const {enviarCorreo, crearMensaje} = require('./notifications');
+const { PrismaClient } = require('@prisma/client');
+const { enviarCorreo, crearMensaje } = require('./notifications');
 
 const prisma = new PrismaClient();
 
 async function envCorreoHost(data) {
-    const {renterEmail, hostEmail, subject} = data;
+    const { renterEmail, hostEmail, subject, id_renter, id_host } = data;
 
     const mensaje = crearMensaje(renterEmail, hostEmail, subject);
 
     try {
+        // Enviar el correo
         await enviarCorreo(renterEmail, hostEmail, subject);
 
-        const notificaion = await prisma.notificacion.create({
+        // Crear la notificación en la base de datos
+        const notificacion = await prisma.notificaion_confirmacion.create({
             data: {
                 mensaje,
-                id_carro:1
-            }
+                estado: true,
+                id_renter,
+                id_host,
+            },
         });
 
-        return notificaion;
+        return notificacion;
     } catch (error) {
-        console.error('Error al enviar el correo:', error);
-        throw new Error('Error al enviar el correo');
+        console.error('Error al enviar el correo o guardar la notificación:', error);
+        throw new Error('Error al procesar la solicitud');
     }
 }
 
 module.exports = {
-    envCorreoHost
+    envCorreoHost,
 };
