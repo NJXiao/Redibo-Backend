@@ -95,7 +95,19 @@ const findAll = async () => {
       return null;
     }
 
-    return carros;
+    // Transformar características adicionales en una lista de strings
+    const carrosTransformados = carros.map(carro => {
+      const caracteristicas = carro.caracteristicasAdicionalesCarro.map(item => item.carasteristicasAdicionales.nombre);
+      return {
+        ...carro,
+        caracteristicasAdicionales: caracteristicas,
+        caracteristicasAdicionalesCarro: undefined 
+      };
+    });
+
+    return carrosTransformados;
+
+    //return carros;
   } catch (error) {
     console.error('Error al obtener los carros:', error);
     throw error;
