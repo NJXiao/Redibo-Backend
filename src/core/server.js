@@ -36,6 +36,7 @@ app.use('/insurance', insurance.controller);
 app.use('/useConditon',useConditonModule.controller);
 app.use('/detailHost',detailHostModule.controller);
 
+//update and delete sure
 app.use('/updateSeguro',updateSeguro.controller)
 app.use('/deleteSeguro', deleteSeguro.controller)
 
