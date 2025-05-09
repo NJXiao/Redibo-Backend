@@ -9,6 +9,10 @@ const insertCondition= require('../modules/insertCondition/insertCondition.modul
 const insertInsurance= require('../modules/InsertInsurance/InsertedInsurance.module');
 const insurance = require('../modules/insurance/insurance.module'); 
 
+
+
+const useConditonModule=require('../modules/detailUseCondition/detailUseCondition.module');
+
 const app = express();
 
 app.use(express.json());
@@ -23,5 +27,9 @@ app.use('/searchCar', searchCarModule.controller);
 app.use('/insertCondition', insertCondition.controller);
 app.use('/insertedInsurance', insertInsurance.controller);
 app.use('/insurance', insurance.controller);
+
+
+
+app.use('/useConditon',useConditonModule.controller);
 
 module.exports = app;
