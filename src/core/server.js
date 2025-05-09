@@ -10,7 +10,7 @@ const insertInsurance= require('../modules/InsertInsurance/InsertedInsurance.mod
 const insurance = require('../modules/insurance/insurance.module');
 //const correoHost = require('../modules/correoHost/correoHost.module');
 
-
+const detailHostModule=require('../modules/detailHost/detailHost.module');
 const useConditonModule=require('../modules/detailUseCondition/detailUseCondition.module');
 
 const app = express();
@@ -30,7 +30,7 @@ app.use('/insurance', insurance.controller);
 //app.use('/correoHost', correoHost.controller);
 
 
-
 app.use('/useConditon',useConditonModule.controller);
+app.use('/detailHost',detailHostModule.controller);
 
 module.exports = app;
