@@ -19,4 +19,4 @@ async function deleteSeguro(id) {
 
 module.exports = {
   deleteSeguro,
-};
+}; 

@@ -13,6 +13,9 @@ const insurance = require('../modules/insurance/insurance.module');
 const detailHostModule=require('../modules/detailHost/detailHost.module');
 const useConditonModule=require('../modules/detailUseCondition/detailUseCondition.module');
 
+const updateSeguro = require('../modules/updateSeguro/updateSeguro.module')
+const deleteSeguro = require('../modules/deleteSeguro/deleteSeguro.module')
+
 const app = express();
 
 app.use(express.json());
@@ -32,5 +35,8 @@ app.use('/insurance', insurance.controller);
 
 app.use('/useConditon',useConditonModule.controller);
 app.use('/detailHost',detailHostModule.controller);
+
+app.use('/updateSeguro',updateSeguro.controller)
+app.use('/deleteSeguro', deleteSeguro.controller)
 
 module.exports = app;
