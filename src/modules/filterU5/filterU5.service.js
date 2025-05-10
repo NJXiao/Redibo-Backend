@@ -131,7 +131,7 @@ const filtrarPorCalificacion = async (minCalificacion, idsCarros) => {
               in: idsCarros
             }
           },
-          {
+          /*{
             calificaciones: {
               some: {
                 calf_carro: {
@@ -139,7 +139,7 @@ const filtrarPorCalificacion = async (minCalificacion, idsCarros) => {
                 }
               }
             }
-          }
+          }*/
         ]
       },
       select: {
@@ -153,13 +153,37 @@ const filtrarPorCalificacion = async (minCalificacion, idsCarros) => {
         }
       }
     });
+    if (!carros || carros.length === 0) {
+      return [];
+    }
 
-    return carros.map(carro => ({
-      id: carro.id,
-      precio_por_dia: carro.precio_por_dia,
-      NumeroViajes: carro.NumeroViajes,
-      calificaciones: carro.calificaciones.map(cal => cal.calf_carro).filter(Boolean)
-    }));
+    const carrosFiltrados = carros.map(carro => {
+      const calsNumericas = carro.calificaciones.map(cal => cal.calf_carro).filter(val => typeof val === 'number');
+      let promedioCalificacion = 0; // Default si no hay calificaciones
+      if (calsNumericas.length > 0) {
+        const sumaCalificaciones = calsNumericas.reduce((acc, curr) => acc + curr, 0);
+        promedioCalificacion = sumaCalificaciones / calsNumericas.length;
+      }
+      return {
+        carroOriginal: {
+            id: carro.id,
+            precio_por_dia: carro.precio_por_dia,
+            NumeroViajes: carro.NumeroViajes,
+            calificaciones: calsNumericas, // Lista de calificaciones individuales
+        },
+        _promedioCalculado: promedioCalificacion // Guardamos el promedio para filtrar
+      };
+    })
+    .filter(item => item._promedioCalculado >= minCalificacion) // FILTRADO POR PROMEDIO
+    .map(item => item.carroOriginal);
+    return carrosFiltrados;
+
+    // return carros.map(carro => ({
+    //   id: carro.id,
+    //   precio_por_dia: carro.precio_por_dia,
+    //   NumeroViajes: carro.NumeroViajes,
+    //   calificaciones: carro.calificaciones.map(cal => cal.calf_carro).filter(Boolean)
+    // }));
   } catch (error) {
     console.error('Error al filtrar por calificación:', error);
     throw error;
