@@ -84,5 +84,4 @@ router.post('/filtroCalificacion', async (req, res) => {
     res.status(500).json({ error: 'Error al filtrar por calificación' });
   }
 });
-
-module.exports = router; 
+module.exports = router;
