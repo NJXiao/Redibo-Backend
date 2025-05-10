@@ -1,39 +1,61 @@
 const nodemailer = require('nodemailer');
-const oAuth2Client = require('../../config/gmailClient');
 
-// Crear el mensaje
-function crearMensaje(renterEmail, hostEmail, subject) {
-  return `Hola ${hostEmail},\n\n${renterEmail} ha solicitado alquilar tu auto.\n\nGracias,\nEl equipo de alquiler de autos`;
+// Crear el mensaje en formato HTML
+function crearMensaje(datos) {
+  return `
+    <h1>Solicitud de Reserva</h1>
+    <p><strong>Fecha:</strong> ${datos.fecha}</p>
+    <p><strong>Host:</strong> ${datos.hostNombre}</p>
+    <p>El renter <strong>${datos.renterNombre}</strong> solicita la renta del auto <strong>${datos.modelo} (${datos.marca})</strong>. A continuación, los detalles de la solicitud:</p>
+    <table border="1" style="border-collapse: collapse; width: 100%;">
+      <tr>
+        <th>Precio</th>
+        <td>${datos.precio}</td>
+      </tr>
+      <tr>
+        <th>Fecha y hora de recogida</th>
+        <td>${datos.fechaRecogida}</td>
+      </tr>
+      <tr>
+        <th>Fecha y hora de devolución</th>
+        <td>${datos.fechaDevolucion}</td>
+      </tr>
+      <tr>
+        <th>Lugar de recogida</th>
+        <td>${datos.lugarRecogida}</td>
+      </tr>
+      <tr>
+        <th>Lugar de devolución</th>
+        <td>${datos.lugarDevolucion}</td>
+      </tr>
+    </table>
+    <br>
+    <button style="background-color: green; color: white; padding: 10px; border: none; cursor: pointer;">Aceptar</button>
+    <button style="background-color: red; color: white; padding: 10px; border: none; cursor: pointer;">Rechazar</button>
+  `;
 }
 
-// Enviar el correo usando Gmail API
-async function enviarCorreo(renterEmail, hostEmail, subject) {
-  const mensaje = crearMensaje(renterEmail, hostEmail, subject);
-
+// Enviar el correo usando SMTP
+async function enviarCorreo({ renterEmail, hostEmail, mensaje }) {
   try {
-    const accessToken = await oAuth2Client.getAccessToken();
-
+    // Configuración del transporte SMTP
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        type: 'OAuth2',
-        user: 'edmilzon.luna@gmail.com',
-        clientId: oAuth2Client._clientId,
-        clientSecret: oAuth2Client._clientSecret,
-        refreshToken: oAuth2Client.credentials.refresh_token,
-        accessToken: accessToken.token,
+        user: 'edmilzon.luna@gmail.com', // Tu correo de Gmail
+        pass: 'nbzv tvnd uody qswc', // Contraseña de aplicación generada
       },
     });
 
     const mailOptions = {
-      from: renterEmail, // El correo del renter como remitente
-      to: hostEmail, // El correo del host como destinatario
-      subject: subject,
-      text: mensaje,
+      from: hostEmail, // El correo del host como remitente
+      to: renterEmail, // El correo del renter como destinatario
+      subject: 'Solicitud de Reserva',
+      html: mensaje, // Mensaje en formato HTML
     };
 
     const result = await transporter.sendMail(mailOptions);
-    console.log('Correo enviado del renter al host:', result);
+    console.log('Correo enviado del host al renter:', result);
   } catch (error) {
     console.error('Error al enviar el correo:', error);
     throw new Error('Error al enviar el correo');
