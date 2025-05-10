@@ -16,6 +16,8 @@ const useConditonModule=require('../modules/detailUseCondition/detailUseConditio
 const updateSeguro = require('../modules/updateSeguro/updateSeguro.module')
 const deleteSeguro = require('../modules/deleteSeguro/deleteSeguro.module')
 
+const comments=require('../modules/comments/comments.module');
+
 const envSMS = require('../modules/envSMS/envSMS.module')
 const app = express();
 
@@ -34,7 +36,9 @@ app.use('/insurance', insurance.controller);
 app.use('/correoHost', correoHost.controller);
 app.use('/useConditon',useConditonModule.controller);
 app.use('/detailHost',detailHostModule.controller);
-app.use('/envSMS', envSMS.controller)
+app.use('/envSMS', envSMS.controller);
+
+app.use('/comments',comments.controller);
 
 //update and delete sure
 app.use('/updateSeguro',updateSeguro.controller)
