@@ -1,6 +1,5 @@
 const nodemailer = require('nodemailer');
 
-// Crear el mensaje en formato HTML
 function crearMensaje(datos) {
   return `
     <h1>Solicitud de Reserva</h1>
@@ -30,28 +29,28 @@ function crearMensaje(datos) {
       </tr>
     </table>
     <br>
-    <button style="background-color: green; color: white; padding: 10px; border: none; cursor: pointer;">Aceptar</button>
-    <button style="background-color: red; color: white; padding: 10px; border: none; cursor: pointer;">Rechazar</button>
-  `;
+    <div style="text-align: center; margin-top: 20px;">
+      <button style="background-color: black; color: white; padding: 10px; border: none; cursor: pointer;">Aceptar</button>
+      <button style="background-color: #555555; color: white; padding: 10px; border: none; cursor: pointer;">Rechazar</button>
+    </div>
+    `;
 }
 
-// Enviar el correo usando SMTP
 async function enviarCorreo({ renterEmail, hostEmail, mensaje }) {
   try {
-    // Configuración del transporte SMTP
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: 'edmilzon.luna@gmail.com', // Tu correo de Gmail
-        pass: 'nbzv tvnd uody qswc', // Contraseña de aplicación generada
+        user: 'edmilzon.luna@gmail.com',
+        pass: 'nbzv tvnd uody qswc',
       },
     });
 
     const mailOptions = {
-      from: hostEmail, // El correo del host como remitente
-      to: renterEmail, // El correo del renter como destinatario
+      from: renterEmail,
+      to: hostEmail,
       subject: 'Solicitud de Reserva',
-      html: mensaje, // Mensaje en formato HTML
+      html: mensaje,
     };
 
     const result = await transporter.sendMail(mailOptions);
