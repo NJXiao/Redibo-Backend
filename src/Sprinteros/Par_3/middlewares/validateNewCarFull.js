@@ -1,6 +1,6 @@
 const Joi = require('joi');
 
-const seguroAdicionalSchemaFrontend = Joi.object({
+/*const seguroAdicionalSchemaFrontend = Joi.object({
   // Espera 'id' desde el frontend
   id: Joi.number().integer().required().messages({
     'number.base': 'El ID del seguro adicional debe ser un número.',
@@ -59,7 +59,6 @@ const newCarSchema = Joi.object({
   combustibleIds: Joi.array().items(Joi.number().integer()).min(1).required(),
   extraIds: Joi.array().items(Joi.number().integer()).min(0).required(),
 
-  imagesBase64: Joi.array().items(Joi.string().base64()).min(0).required(),
   asientos: Joi.number().integer().min(1).required(),
   puertas:  Joi.number().integer().min(1).required(),
   soat:     Joi.boolean().required(),
@@ -68,19 +67,19 @@ const newCarSchema = Joi.object({
   transmicion: Joi.string().valid('manual', 'automatica').required(),
   estado: Joi.string().required(),
   descripcion: Joi.string().allow(null, ''),
-  segurosAdicionales: Joi.array()
-    .items(
-      Joi.object({
-        id: Joi.number().integer().required().messages({ /* ... */ }),
-        nombre: Joi.string().required().messages({ /* ... */ }),
-        tipoSeguro: Joi.string().required().messages({ /* ... */ }),
-        empresa: Joi.string().required().messages({ /* ... */ }),
-        fechaInicio: Joi.date().iso().required().messages({ /* ... */ }),
-        fechaFin: Joi.date().iso().required().greater(Joi.ref('fechaInicio')).messages({ /* ... */ }),
-      })
-    )
-    .optional()
-    .default([]),
+  //segurosAdicionales: Joi.array()
+   // .items(
+      //Joi.object({
+        //id: Joi.number().integer().required().messages({ /* ... */ }),
+        //nombre: Joi.string().required().messages({ /* ... */ }),
+        //tipoSeguro: Joi.string().required().messages({ /* ... */ }),
+        //empresa: Joi.string().required().messages({ /* ... */ }),
+       // fechaInicio: Joi.date().iso().required().messages({ /* ... */ }),
+        //fechaFin: Joi.date().iso().required().greater(Joi.ref('fechaInicio')).messages({ /* ... */ }),
+      //})
+    //)
+    //.optional()
+    //.default([]),*/
 });
 
 /**

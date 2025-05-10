@@ -34,18 +34,7 @@ const createFullCarHandler = asyncHandler(async (req, res) => {
     num_mantenimientos,
     estado,
     descripcion,
-    segurosAdicionales: segurosDesdeFrontend, // Array de objetos {id, nombre, tipoSeguro, empresa, fechaInicio, fechaFin}
   } = req.body;
-
-  const segurosParaServicio = segurosDesdeFrontend.map(seguroFE => {
-    // La validación Joi ya verificó que 'id', 'fechaInicio', 'fechaFin' existen y son válidos
-    return {
-        seguroId: seguroFE.id,         // Mapea id -> seguroId
-        fechaInicio: seguroFE.fechaInicio,
-        fechaFin: seguroFE.fechaFin,
-    };
-});
-console.debug("[fullCarController] Seguros mapeados para el servicio:", segurosParaServicio);
 
   const dto = {
     direccion: { id_provincia, calle, zona, num_casa },
@@ -67,7 +56,6 @@ console.debug("[fullCarController] Seguros mapeados para el servicio:", segurosP
     },
     combustibles: combustibleIds,
     caracteristicas: extraIds,
-    seguros: segurosParaServicio,
   };
 
   const { carro: newCar } = await fullCarService.createFullCar(dto);
