@@ -35,7 +35,7 @@ async function main() {
       await prisma.ciudad.create({
         data: {
           nombre,
-          pais: { connect: { id: bolivia.id } },
+          id_pais: bolivia.id,  // Cambiado de Pais.connect a id_pais directo
         },
       });
     }
@@ -50,46 +50,46 @@ async function main() {
       nombre: 'Ana Pérez',
       genero: Genero.FEMENINO,
       fecha_nacimiento: new Date('1990-05-14'),
-      contraseña: '1234',
+      contrase_a: '1234', // Cambiado de contraseña a contrase_a
       telefono: '78912345',
-      id_ciudad: ciudadesBD.find((d) => d.nombre === 'La Paz')!.id,
-      correo: 'ana.perez@example.com', // Añadido correo
+      id_ciudad: ciudadesBD.find((d) => d.nombre === 'La Paz')?.id,
+      correo: 'ana.perez@example.com',
     },
     {
       nombre: 'Carlos Gómez',
       genero: Genero.MASCULINO,
       fecha_nacimiento: new Date('1985-11-23'),
-      contraseña: 'abcd',
+      contrase_a: 'abcd', // Cambiado
       telefono: '71234567',
-      id_ciudad: ciudadesBD.find((d) => d.nombre === 'Cochabamba')!.id,
-      correo: 'carlos.gomez@example.com', // Añadido correo
+      id_ciudad: ciudadesBD.find((d) => d.nombre === 'Cochabamba')?.id,
+      correo: 'carlos.gomez@example.com',
     },
     {
       nombre: 'Luis Flores',
       genero: Genero.MASCULINO,
       fecha_nacimiento: new Date('1998-07-09'),
-      contraseña: 'qwerty',
+      contrase_a: 'qwerty', // Cambiado
       telefono: '70123456',
-      id_ciudad: ciudadesBD.find((d) => d.nombre === 'Santa Cruz')!.id,
-      correo: 'luis.flores@example.com', // Añadido correo
+      id_ciudad: ciudadesBD.find((d) => d.nombre === 'Santa Cruz')?.id,
+      correo: 'luis.flores@example.com',
     },
     {
       nombre: 'María Rojas',
       genero: Genero.FEMENINO,
       fecha_nacimiento: new Date('2000-01-01'),
-      contraseña: 'pass',
+      contrase_a: 'pass', // Cambiado
       telefono: '76543210',
-      id_ciudad: ciudadesBD.find((d) => d.nombre === 'Oruro')!.id,
-      correo: 'maria.rojas@example.com', // Añadido correo
+      id_ciudad: ciudadesBD.find((d) => d.nombre === 'Oruro')?.id,
+      correo: 'maria.rojas@example.com',
     },
     {
       nombre: 'Patricia Díaz',
       genero: Genero.OTRO,
       fecha_nacimiento: new Date('1993-09-27'),
-      contraseña: 'pat123',
+      contrase_a: 'pat123', // Cambiado
       telefono: '73456789',
-      id_ciudad: ciudadesBD.find((d) => d.nombre === 'Potosí')!.id,
-      correo: 'patricia.diaz@example.com', // Añadido correo
+      id_ciudad: ciudadesBD.find((d) => d.nombre === 'Potosí')?.id,
+      correo: 'patricia.diaz@example.com',
     },
   ] as const;
 
@@ -98,7 +98,12 @@ async function main() {
       where: { nombre: u.nombre },
     });
     if (!existe) {
-      await prisma.usuario.create({ data: u });
+      await prisma.usuario.create({ 
+        data: {
+          ...u,
+          id_ciudad: u.id_ciudad ?? undefined, // Manejo de posible null
+        } 
+      });
     }
   }
 

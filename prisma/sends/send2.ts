@@ -1,10 +1,8 @@
 import { PrismaClient, Genero } from '@prisma/client';
 
 const prisma = new PrismaClient();
-// Declaración única para almacenar las relaciones UsuarioRol creadas
 const usuarioRoles: Array<{ id: number; id_rol: number; id_usuario: number }> = [];
 
-// Función para generar fechas aleatorias dentro de los próximos 2 meses
 function generarFechasAleatorias() {
   const ahora = new Date();
   const dosMesesDespues = new Date();
@@ -16,10 +14,9 @@ function generarFechasAleatorias() {
   return { disponible_desde, disponible_hasta };
 }
 
-// Función para generar valores aleatorios para ingresos y viajes
 function generarValoresAleatorios() {
-  const ingresoTotal = Math.floor(Math.random() * 5000) + 1000; // Entre 1000 y 6000
-  const NumeroViajes = Math.floor(Math.random() * 20) + 1; // Entre 1 y 20 viajes
+  const ingresoTotal = Math.floor(Math.random() * 5000) + 1000;
+  const NumeroViajes = Math.floor(Math.random() * 20) + 1;
   return { ingresoTotal, NumeroViajes };
 }
 
@@ -96,11 +93,11 @@ async function main() {
   // 6) Crear al menos 4 carros distintos, asignados a distintos hosts (como en el send2.ts original)
   const carrosData = [
     {
-      vim: '1HGCM82633A004352', // VIN válido
-      año: 2015,
-      marca: 'TOYOTA', // Convertido a mayúsculas
-      modelo: 'COROLLA', // Convertido a mayúsculas
-      placa: '1234ABC', // Formato válido de placa boliviana
+      vim: '1HGCM82633A004352',
+      a_o: 2015, // Corregido de año a a_o
+      marca: 'TOYOTA',
+      modelo: 'COROLLA',
+      placa: '1234ABC',
       asientos: 5,
       puertas: 4,
       soat: true,
@@ -108,10 +105,14 @@ async function main() {
       num_mantenimientos: 2,
       transmicion: 'Automática',
       estado: 'Disponible',
+      descripcion: 'Toyota Corolla en excelente estado',
+      calificacionpromedio: 0,
+      id_condiciones_uso: null,
+      notificaion_confirmacion_id: null
     },
     {
       vim: '2C3KA53G76H100001',
-      año: 2018,
+      a_o: 2018,
       marca: 'HONDA',
       modelo: 'CIVIC',
       placa: '5678DEF',
@@ -122,10 +123,14 @@ async function main() {
       num_mantenimientos: 1,
       transmicion: 'Manual',
       estado: 'Disponible',
+      descripcion: 'Honda Civic en excelente estado',
+      calificacionpromedio: 0,
+      id_condiciones_uso: null,
+      notificaion_confirmacion_id: null
     },
     {
       vim: '3N1AB7AP5KY238001',
-      año: 2020,
+      a_o: 2020,
       marca: 'NISSAN',
       modelo: 'SENTRA',
       placa: 'GHI-9012',
@@ -136,10 +141,14 @@ async function main() {
       num_mantenimientos: 0,
       transmicion: 'Automática',
       estado: 'Disponible',
+      descripcion: 'Nissan Sentra en excelente estado',
+      calificacionpromedio: 0,
+      id_condiciones_uso: null,
+      notificaion_confirmacion_id: null
     },
     {
       vim: '1FTFW1ET4EKF51234',
-      año: 2017,
+      a_o: 2017,
       marca: 'FORD',
       modelo: 'F-150',
       placa: 'JKL-3456',
@@ -150,6 +159,10 @@ async function main() {
       num_mantenimientos: 3,
       transmicion: 'Automática',
       estado: 'Disponible',
+      descripcion: 'Ford F-150 en excelente estado',
+      calificacionpromedio: 0,
+      id_condiciones_uso: null,
+      notificaion_confirmacion_id: null
     },
   ];
 
@@ -179,11 +192,11 @@ async function main() {
   //    * Para el host con id 3, añade 5 carros
   const extraCarsInfo = [
     {
-      vimPrefix: '1HGCM82633A004352', // Ejemplo válido de VIN
-      año: 2016,
-      marca: 'KIA', // Convertido a mayúsculas
-      modelo: 'RIO', // Convertido a mayúsculas
-      placaPrefix: '1234ABC', // Formato válido de placa boliviana
+      vimPrefix: '1HGCM82633A004352',
+      a_o: 2016, // Corregido
+      marca: 'KIA',
+      modelo: 'RIO',
+      placaPrefix: '1234ABC',
       asientos: 5,
       puertas: 4,
       soat: true,
@@ -194,7 +207,7 @@ async function main() {
     },
     {
       vimPrefix: '2C3KA53G76H100001',
-      año: 2019,
+      a_o: 2019,
       marca: 'CHEVROLET',
       modelo: 'SPARK',
       placaPrefix: '5678DEF',
@@ -208,7 +221,7 @@ async function main() {
     },
     {
       vimPrefix: '3N1AB7AP5KY238001',
-      año: 2018,
+      a_o: 2018,
       marca: 'HYUNDAI',
       modelo: 'ACCENT',
       placaPrefix: '3456GHI',
@@ -222,7 +235,7 @@ async function main() {
     },
     {
       vimPrefix: '1FTFW1ET4EKF51234',
-      año: 2021,
+      a_o: 2021,
       marca: 'VOLKSWAGEN',
       modelo: 'POLO',
       placaPrefix: '6399JKL',
@@ -239,7 +252,7 @@ async function main() {
   const extraCarsInfoHost3 = [
     {
       vimPrefix: '1HGCM82633A004351', // VIN válido
-      año: 2017,
+      a_o: 2017,
       marca: 'MAZDA', // Convertido a mayúsculas
       modelo: '3', // Convertido a mayúsculas
       placaPrefix: '1234ABC', // Formato válido de placa boliviana
@@ -253,7 +266,7 @@ async function main() {
     },
     {
       vimPrefix: '2C3KA53G76H100002',
-      año: 2020,
+      a_o: 2020,
       marca: 'SUBARU',
       modelo: 'IMPREZA',
       placaPrefix: '5678DEF',
@@ -267,7 +280,7 @@ async function main() {
     },
     {
       vimPrefix: '3N1AB7AP5KY238003',
-      año: 2019,
+      a_o: 2019,
       marca: 'RENAULT',
       modelo: 'SANDERO',
       placaPrefix: '3456GHI',
@@ -281,7 +294,7 @@ async function main() {
     },
     {
       vimPrefix: '1FTFW1ET4EKF51234',
-      año: 2022,
+      a_o: 2022,
       marca: 'SUZUKI',
       modelo: 'SWIFT',
       placaPrefix: '6399JKL',
@@ -295,7 +308,7 @@ async function main() {
     },
     {
       vimPrefix: '5YJ3E1EA7KF317456',
-      año: 2021,
+      a_o: 2021,
       marca: 'FIAT',
       modelo: 'CRONOS',
       placaPrefix: '4321MNO',
@@ -324,10 +337,10 @@ async function main() {
     const { ingresoTotal, NumeroViajes } = generarValoresAleatorios();
     const { disponible_desde, disponible_hasta } = generarFechasAleatorias();
 
-    const carro = await prisma.carro.create({
+    return await prisma.carro.create({
       data: {
         vim: `${carData.vimPrefix}${extraIndex}`,
-        año: carData.año,
+        a_o: carData.a_o, // Corregido
         marca: carData.marca,
         modelo: carData.modelo,
         placa: `${carData.placaPrefix}${extraIndex}`,
@@ -345,11 +358,12 @@ async function main() {
         NumeroViajes,
         disponible_desde,
         disponible_hasta,
-        id_tipodeDescuento: null
+        id_tipodeDescuento: null,
+        id_condiciones_uso: null,
+        notificaion_confirmacion_id: null,
+        calificacionpromedio: 0
       },
     });
-
-    return carro;
   }
 
   // Agregar carros extra para el host con id 1 (4 carros)
