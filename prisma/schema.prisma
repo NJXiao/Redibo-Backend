@@ -145,6 +145,12 @@ model Imagen {
   Carro     Carro   @relation(fields: [id_carro], references: [id])
 }
 
+model test{
+  id        Int     @id @default(autoincrement())
+  nombre    String
+  apellido  String
+}
+
 model Notificacion {
   id             Int     @id @default(autoincrement())
   id_usuario_rol Int
