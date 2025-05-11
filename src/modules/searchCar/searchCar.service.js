@@ -1,5 +1,40 @@
 const prisma = require('../../config/prisma');
 
+const calcularPromedioCalificaciones = async (carros) => {
+  try {
+    // Procesar cada carro para calcular su promedio
+    const carrosConPromedio = carros.map(carro => {
+      const calificaciones = carro.Calificacion.map(cal => cal.calf_carro).filter(val => typeof val === 'number');
+      let promedioCalificacion = 0;
+      
+      if (calificaciones.length > 0) {
+        const sumaCalificaciones = calificaciones.reduce((acc, curr) => acc + curr, 0);
+        promedioCalificacion = sumaCalificaciones / calificaciones.length;
+      }
+
+      return {
+        id: carro.id,
+        promedioCalificacion
+      };
+    });
+
+    // Actualizar los promedios en la base de datos de manera eficiente
+    await Promise.all(
+      carrosConPromedio.map(carro => 
+        prisma.carro.update({
+          where: { id: carro.id },
+          data: { calificacionpromedio: carro.promedioCalificacion }
+        })
+      )
+    );
+
+    return carrosConPromedio;
+  } catch (error) {
+    console.error('Error al calcular promedios de calificaciones:', error);
+    throw error;
+  }
+};
+
 const findAll = async () => {
   try {
     const carros = await prisma.carro.findMany({
@@ -22,6 +57,12 @@ const findAll = async () => {
         NumeroViajes: true,
         disponible_desde: true,
         disponible_hasta: true,
+        calificacionpromedio: true,
+        Calificacion: {
+          select: {
+            calf_carro: true
+          }
+        },
         direccion: {
           select: {
             calle: true,
@@ -95,19 +136,23 @@ const findAll = async () => {
       return null;
     }
 
-    // Transformar características adicionales en una lista de strings
+    // Calcular y actualizar promedios de calificaciones
+    const promediosActualizados = await calcularPromedioCalificaciones(carros);
+
+    // Transformar características adicionales y agregar promedios actualizados
     const carrosTransformados = carros.map(carro => {
       const caracteristicas = carro.caracteristicasAdicionalesCarro.map(item => item.carasteristicasAdicionales.nombre);
+      const promedioActualizado = promediosActualizados.find(p => p.id === carro.id)?.promedioCalificacion || 0;
+
       return {
         ...carro,
         caracteristicasAdicionales: caracteristicas,
-        caracteristicasAdicionalesCarro: undefined 
+        caracteristicasAdicionalesCarro: undefined,
+        calificacionpromedio: promedioActualizado
       };
     });
 
     return carrosTransformados;
-
-    //return carros;
   } catch (error) {
     console.error('Error al obtener los carros:', error);
     throw error;

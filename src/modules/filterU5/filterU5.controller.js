@@ -20,7 +20,7 @@ router.get('/filtrosIniciales', async (req, res) => {
 // Filtrar por precio
 router.post('/filtroPrecio', async (req, res) => {
   try {
-    const { minPrecio, maxPrecio, idsCarros } = req.body;
+    const { minPrecio, maxPrecio, idsCarros } = req.body;//lo que se obtiene del frontend
     
     if (!minPrecio || !maxPrecio || !idsCarros || !Array.isArray(idsCarros)) {
       return res.status(400).json({ 
@@ -34,7 +34,7 @@ router.post('/filtroPrecio', async (req, res) => {
       idsCarros
     );
     
-    res.json(carros);
+    res.json(carros);//Retorna los carros que están dentro del rango de precios
   } catch (error) {
     console.error('Error en filtro por precio:', error);
     res.status(500).json({ error: 'Error al filtrar por precio' });
