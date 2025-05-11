@@ -41,7 +41,7 @@ const findAll = async () => {
       select: {
         id: true,
         vim: true,
-        año: true,
+        a_o: true,
         marca: true,
         modelo: true,
         placa: true,
@@ -63,17 +63,17 @@ const findAll = async () => {
             calf_carro: true
           }
         },
-        direccion: {
+        Direccion: {
           select: {
             calle: true,
             zona: true,
             num_casa: true,
             latitud: true,
             longitud: true,
-            provincia: {
+            Provincia: {
               select: {
                 nombre: true,
-                ciudad: {
+                Ciudad: {
                   select: {
                     nombre: true
                   }
@@ -82,16 +82,16 @@ const findAll = async () => {
             }
           }
         },
-        usuario: {
+        Usuario: {
           select: {
             nombre: true,
             correo: true,
             telefono: true
           }
         },
-        combustiblesporCarro: {
+        CombustibleCarro: {
           select: {
-            combustible: {
+            TipoCombustible: {
               select: {
                 tipoDeCombustible: true
               }
@@ -100,14 +100,14 @@ const findAll = async () => {
         },
         caracteristicasAdicionalesCarro: {
           select: {
-            carasteristicasAdicionales: {
+            CarasteristicasAdicionales: {
               select: {
                 nombre: true
               }
             }
           }
         },
-        imagenes: {
+        Imagen: {
           take: 1,
           orderBy: {
             id: 'asc'
@@ -141,7 +141,9 @@ const findAll = async () => {
 
     // Transformar características adicionales y agregar promedios actualizados
     const carrosTransformados = carros.map(carro => {
-      const caracteristicas = carro.caracteristicasAdicionalesCarro.map(item => item.carasteristicasAdicionales.nombre);
+      const caracteristicas = carro.caracteristicasAdicionalesCarro
+        .map(item => item.CarasteristicasAdicionales?.nombre)
+        .filter(Boolean);
       const promedioActualizado = promediosActualizados.find(p => p.id === carro.id)?.promedioCalificacion || 0;
 
       return {
