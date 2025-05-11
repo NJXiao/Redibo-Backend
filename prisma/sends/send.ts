@@ -50,7 +50,7 @@ async function main() {
       nombre: 'Ana Pérez',
       genero: Genero.FEMENINO,
       fecha_nacimiento: new Date('1990-05-14'),
-      contrase_a: '1234', // Cambiado de contraseña a contrase_a
+      contraseña: '1234', // Cambiado de contraseña a contrase_a
       telefono: '78912345',
       id_ciudad: ciudadesBD.find((d) => d.nombre === 'La Paz')?.id,
       correo: 'ana.perez@example.com',
@@ -59,7 +59,7 @@ async function main() {
       nombre: 'Carlos Gómez',
       genero: Genero.MASCULINO,
       fecha_nacimiento: new Date('1985-11-23'),
-      contrase_a: 'abcd', // Cambiado
+      contraseña: 'abcd', // Cambiado
       telefono: '71234567',
       id_ciudad: ciudadesBD.find((d) => d.nombre === 'Cochabamba')?.id,
       correo: 'carlos.gomez@example.com',
@@ -68,7 +68,7 @@ async function main() {
       nombre: 'Luis Flores',
       genero: Genero.MASCULINO,
       fecha_nacimiento: new Date('1998-07-09'),
-      contrase_a: 'qwerty', // Cambiado
+      contraseña: 'qwerty', // Cambiado
       telefono: '70123456',
       id_ciudad: ciudadesBD.find((d) => d.nombre === 'Santa Cruz')?.id,
       correo: 'luis.flores@example.com',
@@ -77,7 +77,7 @@ async function main() {
       nombre: 'María Rojas',
       genero: Genero.FEMENINO,
       fecha_nacimiento: new Date('2000-01-01'),
-      contrase_a: 'pass', // Cambiado
+      contraseña: 'pass', // Cambiado
       telefono: '76543210',
       id_ciudad: ciudadesBD.find((d) => d.nombre === 'Oruro')?.id,
       correo: 'maria.rojas@example.com',
@@ -86,7 +86,7 @@ async function main() {
       nombre: 'Patricia Díaz',
       genero: Genero.OTRO,
       fecha_nacimiento: new Date('1993-09-27'),
-      contrase_a: 'pat123', // Cambiado
+      contraseña: 'pat123', // Cambiado
       telefono: '73456789',
       id_ciudad: ciudadesBD.find((d) => d.nombre === 'Potosí')?.id,
       correo: 'patricia.diaz@example.com',

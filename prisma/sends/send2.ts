@@ -94,7 +94,7 @@ async function main() {
   const carrosData = [
     {
       vim: '1HGCM82633A004352',
-      a_o: 2015, // Corregido de año a a_o
+      año: 2015, // Corregido de año a a_o
       marca: 'TOYOTA',
       modelo: 'COROLLA',
       placa: '1234ABC',
@@ -112,7 +112,7 @@ async function main() {
     },
     {
       vim: '2C3KA53G76H100001',
-      a_o: 2018,
+      año: 2018,
       marca: 'HONDA',
       modelo: 'CIVIC',
       placa: '5678DEF',
@@ -130,7 +130,7 @@ async function main() {
     },
     {
       vim: '3N1AB7AP5KY238001',
-      a_o: 2020,
+      año: 2020,
       marca: 'NISSAN',
       modelo: 'SENTRA',
       placa: 'GHI-9012',
@@ -148,7 +148,7 @@ async function main() {
     },
     {
       vim: '1FTFW1ET4EKF51234',
-      a_o: 2017,
+      año: 2017,
       marca: 'FORD',
       modelo: 'F-150',
       placa: 'JKL-3456',
@@ -340,7 +340,7 @@ async function main() {
     return await prisma.carro.create({
       data: {
         vim: `${carData.vimPrefix}${extraIndex}`,
-        a_o: carData.a_o, // Corregido
+        año: carData.a_o, // Corregido
         marca: carData.marca,
         modelo: carData.modelo,
         placa: `${carData.placaPrefix}${extraIndex}`,

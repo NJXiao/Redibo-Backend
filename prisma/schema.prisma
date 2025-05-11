@@ -36,7 +36,7 @@ model CarasteristicasAdicionales {
 model Carro {
   id                              Int                               @id @default(autoincrement())
   vim                             String
-  a_o                             Int                               @map("año")
+  año                             Int                               @map("año")
   marca                           String
   modelo                          String
   placa                           String
@@ -130,7 +130,7 @@ model Garantia {
   pagado       Boolean
   descripcion  String?
   id_reserva   Int?
-  pagoPorDa_os Boolean? @map("pagoPorDaños")
+  pagoPorDaños Boolean? @map("pagoPorDaños")
   Reserva      Reserva? @relation(fields: [id_reserva], references: [id])
 }
 
@@ -145,11 +145,7 @@ model Imagen {
   Carro     Carro   @relation(fields: [id_carro], references: [id])
 }
 
-model test{
-  id        Int     @id @default(autoincrement())
-  nombre    String
-  apellido  String
-}
+
 
 model Notificacion {
   id             Int     @id @default(autoincrement())
@@ -172,7 +168,7 @@ model PasswordRecoveryCode {
   created_at DateTime @default(now())
   expires_at DateTime
   used       Boolean  @default(false)
-  Usuario    Usuario  @relation(fields: [id_usuario], references: [id])
+  usuario    Usuario  @relation(fields: [id_usuario], references: [id])
 }
 
 model Provincia {
@@ -245,35 +241,35 @@ model Ubicacion {
 }
 
 model Usuario {
-  id                   Int                    @id @default(autoincrement())
-  nombre               String
-  fecha_nacimiento     DateTime?
-  id_ciudad            Int?
-  contrase_a           String?                @map("contraseña")
-  telefono             String?
-  foto                 String?
-  google_id            String?
-  correo               String                 @unique
-  genero               Genero?
-  Busqueda             Busqueda[]
-  Calificacion         Calificacion[]
-  Carro                Carro[]
-  Favorito             Favorito[]
-  Notificacion         Notificacion[]
-  PasswordRecoveryCode PasswordRecoveryCode[]
-  Reserva              Reserva[]
-  Ciudad               Ciudad?                @relation(fields: [id_ciudad], references: [id])
-  UsuarioRol           UsuarioRol[]
+  id               Int              @id @default(autoincrement())             
+  nombre           String
+  correo           String           @unique
+  fecha_nacimiento DateTime?
+  genero           Genero?
+  id_ciudad        Int?
+  ciudad           Ciudad?           @relation(fields: [id_ciudad], references: [id])
+  contraseña       String?
+  google_id       String?
+  foto            String?
+  telefono         String?
+  roles            UsuarioRol[]
+  favoritos        Favorito[]
+  calificaciones   Calificacion[]
+  notificaciones   Notificacion[]
+  reservas         Reserva[]
+  carros           Carro[]
+  busquedas        Busqueda[]
+  recoveryCode  PasswordRecoveryCode[]
   comentarios          comentarios[]
 }
 
 model UsuarioRol {
-  id          Int           @id @default(autoincrement())
-  id_rol      Int
-  id_usuario  Int
-  Favorito    Favorito[]
-  Rol         Rol           @relation(fields: [id_rol], references: [id])
-  Usuario     Usuario       @relation(fields: [id_usuario], references: [id])
+  id         Int         @id @default(autoincrement())
+  id_rol     Int
+  id_usuario Int
+  usuario    Usuario     @relation(fields: [id_usuario], references: [id])
+  rol        Rol         @relation(fields: [id_rol], references: [id])
+  favoritos  Favorito[]
   comentarios comentarios[]
 }
 
@@ -354,7 +350,7 @@ model devolucion_auto {
   exterior_limpio   Boolean
   rayones           Boolean
   herramientas      Boolean
-  cobrar_da_os      Boolean          @map("cobrar_daños")
+  cobrar_daños      Boolean          @map("cobrar_daños")
   combustible_igual Boolean
   condiciones_uso   condiciones_uso?
 }
@@ -366,7 +362,7 @@ model entrega_auto {
   inter_limpio       Boolean
   rayones            Boolean
   llanta_estado      Boolean
-  interior_da_o      Boolean          @map("interior_daño")
+  interior_daño      Boolean          @map("interior_daño")
   condiciones_uso    condiciones_uso?
 }
 
@@ -398,7 +394,7 @@ model tipodeDescuento {
 
 model tiposeguro {
   id             Int          @id @default(autoincrement())
-  tipoda_o       String?      @map("tipodaño") @db.VarChar(255)
+  tipodaño       String?      @map("tipodaño") @db.VarChar(255)
   descripcion    String?
   segurocarro_id Int?
   valides        String?      @db.VarChar(255)
