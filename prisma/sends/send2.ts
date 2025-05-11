@@ -22,7 +22,7 @@ function generarValoresAleatorios() {
 
 async function main() {
   // 1) Crear o recuperar los roles base
-  const rolesBase = ['renter', 'host'];
+  const rolesBase = ['HOST', 'RENTER', 'DRIVER']; // Agregado DRIVER
   const roles: Record<string, { id: number; rol: string }> = {};
 
   for (const rolName of rolesBase) {
@@ -39,14 +39,14 @@ async function main() {
     let ur = await prisma.usuarioRol.findFirst({
       where: {
         id_usuario: usuario.id,
-        id_rol: roles['host'].id,
+        id_rol: roles['HOST'].id,
       },
     });
     if (!ur) {
       ur = await prisma.usuarioRol.create({
         data: {
           id_usuario: usuario.id,
-          id_rol: roles['host'].id,
+          id_rol: roles['RENTER'].id,
         },
       });
     }

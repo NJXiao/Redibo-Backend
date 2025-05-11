@@ -399,6 +399,7 @@ model tiposeguro {
   SeguroCarro    SeguroCarro? @relation(fields: [segurocarro_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
+
 enum Genero {
   MASCULINO
   FEMENINO
