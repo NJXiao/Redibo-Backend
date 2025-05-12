@@ -72,6 +72,7 @@ model Carro {
   caracteristicasAdicionalesCarro caracteristicasAdicionalesCarro[]
   comentarios                     comentarios[]
   contratodeAlquiler              contratodeAlquiler[]
+  OrdenPago                       OrdenPago[]
 }
 
 model Ciudad {
@@ -199,6 +200,27 @@ model Reserva {
   Descuento              Descuento[]
 }
 
+enum EstadoOrden {
+  PENDIENTE
+  PROCESANDO
+  COMPLETADO
+  CANCELADO
+}
+
+model OrdenPago {
+  id                            Int             @id @default(autoincrement())
+  codigo                        String          @unique
+  id_usuario_host               Int
+  id_usuario_renter             Int
+  id_carro                      Int
+  fecha_de_emision              DateTime        @default(now())
+  monto_a_pagar                 Float
+  estado                        EstadoOrden     @default(PENDIENTE)
+  host                          Usuario         @relation("HostOrders", fields: [id_usuario_host], references: [id])
+  renter                        Usuario         @relation("RenterOrders", fields: [id_usuario_renter], references: [id])
+  carro                         Carro           @relation(fields: [id_carro], references: [id])
+}
+
 model Rol {
   id         Int          @id @default(autoincrement())
   rol        String
@@ -252,6 +274,7 @@ model Usuario {
   google_id       String?
   foto            String?
   telefono         String?
+  saldo            Float       @default(0)
   roles            UsuarioRol[]
   favoritos        Favorito[]
   calificaciones   Calificacion[]
@@ -261,6 +284,8 @@ model Usuario {
   busquedas        Busqueda[]
   recoveryCode  PasswordRecoveryCode[]
   comentarios          comentarios[]
+  ordenesPagoHost   OrdenPago[] @relation("HostOrders")
+  ordenesPagoRenter OrdenPago[] @relation("RenterOrders")
 }
 
 model UsuarioRol {
@@ -411,4 +436,5 @@ enum Roles {
   HOST
   RENTER
   DRIVER
+  ADMIN
 }
