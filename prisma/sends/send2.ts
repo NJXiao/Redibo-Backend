@@ -46,7 +46,7 @@ async function main() {
       ur = await prisma.usuarioRol.create({
         data: {
           id_usuario: usuario.id,
-          id_rol: roles['RENTER'].id,
+          id_rol: roles['HOST'].id,
         },
       });
     }
