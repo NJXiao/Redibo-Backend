@@ -22,17 +22,23 @@ const findAll = async () => {
         NumeroViajes: true,
         disponible_desde: true,
         disponible_hasta: true,
-        direccion: {
+        calificacionpromedio: true,
+        Calificacion: {
+          select: {
+            calf_carro: true
+          }
+        },
+        Direccion: {
           select: {
             calle: true,
             zona: true,
             num_casa: true,
             latitud: true,
             longitud: true,
-            provincia: {
+            Provincia: {
               select: {
                 nombre: true,
-                ciudad: {
+                Ciudad: {
                   select: {
                     nombre: true
                   }
@@ -41,16 +47,16 @@ const findAll = async () => {
             }
           }
         },
-        usuario: {
+        Usuario: {
           select: {
             nombre: true,
             correo: true,
             telefono: true
           }
         },
-        combustiblesporCarro: {
+        CombustibleCarro: {
           select: {
-            combustible: {
+            TipoCombustible: {
               select: {
                 tipoDeCombustible: true
               }
@@ -59,14 +65,14 @@ const findAll = async () => {
         },
         caracteristicasAdicionalesCarro: {
           select: {
-            carasteristicasAdicionales: {
+            CarasteristicasAdicionales: {
               select: {
                 nombre: true
               }
             }
           }
         },
-        imagenes: {
+        Imagen: {
           take: 1,
           orderBy: {
             id: 'asc'
@@ -95,19 +101,38 @@ const findAll = async () => {
       return null;
     }
 
-    // Transformar características adicionales en una lista de strings
+    // Transformar características adicionales y calcular calificaciones promedio
     const carrosTransformados = carros.map(carro => {
-      const caracteristicas = carro.caracteristicasAdicionalesCarro.map(item => item.carasteristicasAdicionales.nombre);
+      const caracteristicas = carro.caracteristicasAdicionalesCarro.map(item => item.CarasteristicasAdicionales.nombre);
+      
+      // Calcular promedio de calificaciones
+      const calificaciones = carro.Calificacion.map(cal => cal.calf_carro).filter(val => typeof val === 'number');
+      let promedioCalificacion = 0;
+      
+      if (calificaciones.length > 0) {
+        const sumaCalificaciones = calificaciones.reduce((acc, curr) => acc + curr, 0);
+        promedioCalificacion = sumaCalificaciones / calificaciones.length;
+      }
+
       return {
         ...carro,
         caracteristicasAdicionales: caracteristicas,
-        caracteristicasAdicionalesCarro: undefined 
+        caracteristicasAdicionalesCarro: undefined,
+        calificacionpromedio: promedioCalificacion
       };
     });
 
-    return carrosTransformados;
+    // Actualizar los promedios en la base de datos
+    await Promise.all(
+      carrosTransformados.map(carro =>
+        prisma.carro.update({
+          where: { id: carro.id },
+          data: { calificacionpromedio: carro.calificacionpromedio }
+        })
+      )
+    );
 
-    //return carros;
+    return carrosTransformados;
   } catch (error) {
     console.error('Error al obtener los carros:', error);
     throw error;
