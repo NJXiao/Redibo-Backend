@@ -177,13 +177,6 @@ const filtrarPorCalificacion = async (minCalificacion, idsCarros) => {
     .filter(item => item._promedioCalculado >= minCalificacion) // FILTRADO POR PROMEDIO
     .map(item => item.carroOriginal);
     return carrosFiltrados;
-
-    // return carros.map(carro => ({
-    //   id: carro.id,
-    //   precio_por_dia: carro.precio_por_dia,
-    //   NumeroViajes: carro.NumeroViajes,
-    //   calificaciones: carro.calificaciones.map(cal => cal.calf_carro).filter(Boolean)
-    // }));
   } catch (error) {
     console.error('Error al filtrar por calificación:', error);
     throw error;
