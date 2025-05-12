@@ -1,5 +1,6 @@
 
 const app = require('./core/server');
+
 /*
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
@@ -27,6 +28,9 @@ app.get('/departamento', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch departamento' });
   }
 });*/
+app.get('/', (req, res) => {
+  res.send('server is running');
+});
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
