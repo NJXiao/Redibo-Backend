@@ -29,7 +29,7 @@ async function createFullCar(dto) {
         data: {
           ...carro,
           id_direccion: dir.id,
-          combustiblesporCarro: {
+          CombustibleCarro: {
             create: combustibles.map(idComb => ({ id_combustible: idComb })),
           },
           caracteristicasAdicionalesCarro: {
@@ -39,9 +39,15 @@ async function createFullCar(dto) {
           },
         },
         include: {
-          combustiblesporCarro: { include: { combustible: true } },
+          CombustibleCarro: { 
+            include: { 
+              TipoCombustible: true 
+            } 
+          },
           caracteristicasAdicionalesCarro: {
-            include: { carasteristicasAdicionales: true }
+            include: { 
+              CarasteristicasAdicionales: true 
+            }
           },
         },
       });

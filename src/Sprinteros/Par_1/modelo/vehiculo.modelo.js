@@ -1,4 +1,3 @@
-
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -116,33 +115,33 @@ const obtenerCaracteristicasPorId = async (id) => {
     const caracteristicas = await prisma.carro.findUnique({
       where: { id: parseInt(id) },
       select: {
-        asientos: true, // Agregar el campo "asientos"
+        asientos: true,
         puertas: true,
         transmicion: true,
         soat: true,
-        combustiblesporCarro: {
+        CombustibleCarro: {
           select: {
-            combustible: {
+            TipoCombustible: {
               select: {
-                tipoDeCombustible: true,
-              },
-            },
-          },
-        },
-      },
+                tipoDeCombustible: true
+              }
+            }
+          }
+        }
+      }
     });
 
     if (!caracteristicas) return null;
 
     // Extraer tipo(s) de combustible
-    const tiposCombustible = caracteristicas.combustiblesporCarro.map(
-      (c) => c.combustible.tipoDeCombustible
+    const tiposCombustible = caracteristicas.CombustibleCarro.map(
+      (c) => c.TipoCombustible.tipoDeCombustible
     );
 
     // Retornar datos en el orden solicitado
     return {
       tipoDeCombustible: tiposCombustible.join(', '),
-      asientos: caracteristicas.asientos, // Incluir "asientos" en la respuesta
+      asientos: caracteristicas.asientos,
       puertas: caracteristicas.puertas,
       transmision: caracteristicas.transmicion,
       soat: caracteristicas.soat,
@@ -160,21 +159,21 @@ const obtenerCaracteristicasAdicionalesPorId = async (id) => {
       select: {
         caracteristicasAdicionalesCarro: {
           select: {
-            carasteristicasAdicionales: {
+            CarasteristicasAdicionales: {
               select: {
-                nombre: true, // Selecciona el nombre de las características adicionales
-              },
-            },
-          },
-        },
-      },
+                nombre: true
+              }
+            }
+          }
+        }
+      }
     });
 
     if (!caracteristicasAdicionales) return null;
 
     // Extraer y formatear las características adicionales
     const adicionales = caracteristicasAdicionales.caracteristicasAdicionalesCarro.map(
-      (item) => item.carasteristicasAdicionales.nombre
+      (item) => item.CarasteristicasAdicionales.nombre
     );
 
     return adicionales;

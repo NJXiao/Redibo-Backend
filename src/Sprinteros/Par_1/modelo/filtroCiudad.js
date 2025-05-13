@@ -26,43 +26,59 @@ const getProvincias = async (idCiudad) => {
 
 // Obtener todos los datos del carro con respecto a la dirección (para preseleccionar)
 const getCarroConDireccion = async (idCarro) => {
-  const carro = await prisma.carro.findUnique({
-    where: { id: idCarro },
-    select: {
-      id: true,
-      direccion: {
-        select: {
-          id: true,
-          calle: true,
-          num_casa: true,
-          provincia: {
-            select: {
-              id: true,
-              nombre: true,
-              ciudad: {
-                select: {
-                  id: true,
-                  nombre: true,
-                  pais: {
-                    select: {
-                      id: true,
-                      nombre: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
+  try {
+    if (!idCarro) {
+      throw new Error('ID del carro no proporcionado');
+    }
+
+    const carro = await prisma.carro.findUnique({
+      where: {
+        id: parseInt(idCarro)
       },
-    },
-  });
+      select: {
+        id: true,
+        Direccion: {
+          select: {
+            id: true,
+            calle: true,
+            num_casa: true,
+            zona: true,
+            Provincia: {
+              select: {
+                id: true,
+                nombre: true,
+                Ciudad: {
+                  select: {
+                    id: true,
+                    nombre: true,
+                    Pais: {
+                      select: {
+                        id: true,
+                        nombre: true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
 
-  if (!carro || !carro.direccion) {
-    throw new Error(`No se encontró un carro con dirección asociada al ID ${idCarro}`);
+    if (!carro) {
+      throw new Error('Carro no encontrado');
+    }
+
+    if (!carro.Direccion) {
+      throw new Error('El carro no tiene dirección asociada');
+    }
+
+    return carro;
+  } catch (error) {
+    console.error('Error en getCarroConDireccion:', error);
+    throw error;
   }
-
-  return carro;
 };
 
 module.exports = {

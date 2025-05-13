@@ -50,30 +50,34 @@ const obtenerCarroConDireccion = async (req, res) => {
 
     const carro = await getCarroConDireccion(parseInt(idCarro));
 
-    if (!carro || !carro.direccion) {
+    if (!carro || !carro.Direccion) {
       return res.status(404).json({ error: 'Carro no encontrado o sin dirección asociada' });
     }
 
-    const { provincia, calle, num_casa } = carro.direccion;
-    const { ciudad } = provincia;
-    const { pais } = ciudad;
+    const { Provincia, calle, num_casa, zona } = carro.Direccion;
+    const { Ciudad } = Provincia;
+    const { Pais } = Ciudad;
 
     // Datos mapeados
     const result = {
-      paisId: pais.id,
-      paisNombre: pais.nombre,
-      ciudadId: ciudad.id,
-      ciudadNombre: ciudad.nombre,
-      provinciaId: provincia.id,
-      provinciaNombre: provincia.nombre,
+      paisId: Pais.id,
+      paisNombre: Pais.nombre,
+      ciudadId: Ciudad.id,
+      ciudadNombre: Ciudad.nombre,
+      provinciaId: Provincia.id,
+      provinciaNombre: Provincia.nombre,
       calle,
-      num_casa
+      num_casa,
+      zona
     };
 
     res.status(200).json(result);
   } catch (error) {
     console.error('Error al obtener datos del carro con dirección:', error);
-    res.status(500).json({ error: 'Error al obtener datos del carro con dirección' });
+    res.status(500).json({ 
+      error: 'Error al obtener datos del carro con dirección',
+      message: error.message 
+    });
   }
 };
 
