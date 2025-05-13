@@ -240,7 +240,7 @@ exports.UpdateStatePaymentOrder = async (req, res) => {
       select: {
         id: true,
         roles: {
-          where: { rol: { rol: 'ADMIN' } }, 
+          where: { rol: { rol: 'ADMIN' } }, // Filtro directo en la relación
           select: { id: true }
         }
       }
@@ -261,6 +261,23 @@ exports.UpdateStatePaymentOrder = async (req, res) => {
         estado: estadoOrden
       }
     });
+    if(estadoOrden === 'COMPLETADO'){
+      
+      //Actualizar el saldo del usuario
+      const usuario = await prisma.usuario.findUnique({
+        where: {
+          id: comprobantePago.id_usuario_host
+        }
+      });
+      if (usuario) {
+        const montoHost = Number((comprobantePago.monto_a_pagar * 0.8).toFixed(2));
+        await prisma.usuario.update({
+          where: { id: comprobantePago.id_usuario_host },
+          data: { saldo: { increment: montoHost } }
+        });
+      }
+    }
+
     return res.status(201).json(comprobantePago);
   } catch (error) {
     console.error('Error al crear el comprobante de pago:', error);
