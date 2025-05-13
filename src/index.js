@@ -16,11 +16,23 @@ const OrdenPagoRoutes = require('./routes/paymentOrderRoutes');
 
 const app = express();
 const prisma = new PrismaClient();
+
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://faithful-respect-production.up.railway.app'
+];
+
 app.use(cors({
-  origin: 'http://localhost:3000', // Especifica el origen de tu frontend exactamente
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  credentials: true // Esto permite el intercambio de cookies/credenciales
+  credentials: true
 }));
 app.use(express.json());
 app.use(morgan("dev"));

@@ -218,11 +218,77 @@ exports.getListProcessingOrders = async (req, res) => {
       renter:             o.renter.nombre,
       host:               o.host.nombre,
       numero_transaccion: o.ComprobanteDePago[0]?.numero_transaccion ?? null,
-      fecha_emision:      o.ComprobanteDePago[0]?.fecha_emision      ?? null,
+      fecha_emision:      o.fecha_de_emision ?? null,
     }));
     return res.status(200).json(ordenesFormateadas);
   } catch (error) {
     console.error('Error al obtener la lista de órdenes de pago:', error);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
+
+exports.getProcessingOrderDetails = async (req, res) => {
+  try {
+    const id_usuario = req.user.id;
+    const { codigo } = req.body;
+
+    if (!id_usuario || !codigo) {
+      return res.status(400).json({ error: 'Faltan datos necesarios' });
+    }
+
+    const idUsuario = parseInt(id_usuario);
+    if (isNaN(idUsuario)) {
+      return res.status(400).json({ error: 'El id del usuario debe ser un número entero' });
+    }
+    
+    const tieneAcceso = await prisma.usuario.findUnique({
+      where: { id: idUsuario },
+      select: {
+        id: true,
+        roles: {
+          where: { rol: { rol: 'ADMIN' } },
+          select: { id: true }
+        }
+      }
+    });
+    
+    if (!tieneAcceso || tieneAcceso.roles.length === 0) {
+      return res.status(403).json({ error: 'Acceso denegado' });
+    }
+    
+    const orden = await prisma.ordenPago.findFirst({
+      where: { codigo: codigo },
+      include: {
+        renter: { 
+          select: { 
+            nombre: true,
+            id: true 
+          } 
+        },
+        host: { 
+          select: { 
+            nombre: true,
+            id: true 
+          } 
+        },
+        ComprobanteDePago: {
+          select: {
+            numero_transaccion: true,
+            fecha_emision: true,
+            id: true
+          }
+        }
+      }
+    });
+    
+    if (!orden) {
+      return res.status(404).json({ error: 'Orden de pago no encontrada' });
+    }
+
+    return res.status(200).json(orden);
+    
+  } catch (error) {
+    console.error('Error al obtener detalles de la orden de pago:', error);
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
@@ -284,5 +350,3 @@ exports.UpdateStatePaymentOrder = async (req, res) => {
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
-
-
