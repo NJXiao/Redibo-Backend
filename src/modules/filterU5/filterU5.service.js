@@ -8,7 +8,7 @@ const getFiltrosIniciales = async () => {
         id: true,
         precio_por_dia: true,
         NumeroViajes: true,
-        calificaciones: {
+        Calificacion: {
           select: {
             calf_carro: true
           }
@@ -25,7 +25,7 @@ const getFiltrosIniciales = async () => {
       id: carro.id,
       precio_por_dia: carro.precio_por_dia,
       NumeroViajes: carro.NumeroViajes,
-      calificaciones: carro.calificaciones.map(cal => cal.calf_carro).filter(Boolean)
+      calificaciones: carro.Calificacion.map(cal => cal.calf_carro).filter(Boolean)
     }));
 
     return carrosTransformados;
@@ -38,6 +38,21 @@ const getFiltrosIniciales = async () => {
 // Filtrar por rango de precio
 const filtrarPorPrecio = async (minPrecio, maxPrecio, idsCarros) => {
   try {
+    // Validar que el array de ids no esté vacío
+    if (!idsCarros || idsCarros.length === 0) {
+      throw new Error('Se requiere al menos un ID de carro para filtrar');
+    }
+
+    // Validar que minPrecio sea menor que maxPrecio
+    if (minPrecio > maxPrecio) {
+      throw new Error('El precio mínimo no puede ser mayor que el precio máximo');
+    }
+
+    // Validar que los precios no sean negativos
+    if (minPrecio < 0 || maxPrecio < 0) {
+      throw new Error('Los precios no pueden ser negativos');
+    }
+
     const carros = await prisma.carro.findMany({
       where: {
         AND: [
@@ -58,7 +73,7 @@ const filtrarPorPrecio = async (minPrecio, maxPrecio, idsCarros) => {
         id: true,
         precio_por_dia: true,
         NumeroViajes: true,
-        calificaciones: {
+        Calificacion: {
           select: {
             calf_carro: true
           }
@@ -70,7 +85,7 @@ const filtrarPorPrecio = async (minPrecio, maxPrecio, idsCarros) => {
       id: carro.id,
       precio_por_dia: carro.precio_por_dia,
       NumeroViajes: carro.NumeroViajes,
-      calificaciones: carro.calificaciones.map(cal => cal.calf_carro).filter(Boolean)
+      calificaciones: carro.Calificacion.map(cal => cal.calf_carro).filter(Boolean)
     }));
   } catch (error) {
     console.error('Error al filtrar por precio:', error);
@@ -81,6 +96,16 @@ const filtrarPorPrecio = async (minPrecio, maxPrecio, idsCarros) => {
 // Filtrar por número de viajes
 const filtrarPorViajes = async (minViajes, idsCarros) => {
   try {
+    // Validar que el array de ids no esté vacío
+    if (!idsCarros || idsCarros.length === 0) {
+      throw new Error('Se requiere al menos un ID de carro para filtrar');
+    }
+
+    // Validar que minViajes no sea negativo
+    if (minViajes < 0) {
+      throw new Error('El número mínimo de viajes no puede ser negativo');
+    }
+
     const carros = await prisma.carro.findMany({
       where: {
         AND: [
@@ -100,7 +125,7 @@ const filtrarPorViajes = async (minViajes, idsCarros) => {
         id: true,
         precio_por_dia: true,
         NumeroViajes: true,
-        calificaciones: {
+        Calificacion: {
           select: {
             calf_carro: true
           }
@@ -112,7 +137,7 @@ const filtrarPorViajes = async (minViajes, idsCarros) => {
       id: carro.id,
       precio_por_dia: carro.precio_por_dia,
       NumeroViajes: carro.NumeroViajes,
-      calificaciones: carro.calificaciones.map(cal => cal.calf_carro).filter(Boolean)
+      calificaciones: carro.Calificacion.map(cal => cal.calf_carro).filter(Boolean)
     }));
   } catch (error) {
     console.error('Error al filtrar por viajes:', error);
@@ -123,6 +148,16 @@ const filtrarPorViajes = async (minViajes, idsCarros) => {
 // Filtrar por calificación mínima
 const filtrarPorCalificacion = async (minCalificacion, idsCarros) => {
   try {
+    // Validar que el array de ids no esté vacío
+    if (!idsCarros || idsCarros.length === 0) {
+      throw new Error('Se requiere al menos un ID de carro para filtrar');
+    }
+
+    // Validar que la calificación esté en un rango válido (1-5)
+    if (minCalificacion < 1 || minCalificacion > 5) {
+      throw new Error('La calificación debe estar entre 1 y 5');
+    }
+
     const carros = await prisma.carro.findMany({
       where: {
         AND: [
@@ -132,7 +167,7 @@ const filtrarPorCalificacion = async (minCalificacion, idsCarros) => {
             }
           },
           {
-            calificaciones: {
+            Calificacion: {
               some: {
                 calf_carro: {
                   gte: minCalificacion
@@ -146,7 +181,7 @@ const filtrarPorCalificacion = async (minCalificacion, idsCarros) => {
         id: true,
         precio_por_dia: true,
         NumeroViajes: true,
-        calificaciones: {
+        Calificacion: {
           select: {
             calf_carro: true
           }
@@ -158,7 +193,7 @@ const filtrarPorCalificacion = async (minCalificacion, idsCarros) => {
       id: carro.id,
       precio_por_dia: carro.precio_por_dia,
       NumeroViajes: carro.NumeroViajes,
-      calificaciones: carro.calificaciones.map(cal => cal.calf_carro).filter(Boolean)
+      calificaciones: carro.Calificacion.map(cal => cal.calf_carro).filter(Boolean)
     }));
   } catch (error) {
     console.error('Error al filtrar por calificación:', error);
