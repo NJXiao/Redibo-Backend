@@ -73,3 +73,92 @@ exports.ReceiptPayment = async (req, res) => {
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
+
+exports.getListPaymentOrders = async (req, res) => {
+  try {
+    const { id_usuario } = req.body;
+
+    // Validar que se recibieron los datos necesarios
+    if (!id_usuario) {
+      return res.status(400).json({ error: 'Faltan datos necesarios' });
+    }
+    // si los numeros recibidos no son enteros convertirlos
+    const idUsuario = parseInt(id_usuario);
+    if (isNaN(idUsuario)) {
+      return res.status(400).json({ error: 'El id de la orden de pago debe ser un número entero' });
+    }
+    // Obtener la lista de órdenes de pago
+    const ordenes = await prisma.ordenPago.findMany({
+      where: { id_usuario_renter: idUsuario },
+      include: {
+        host:  { select: { nombre: true } },   // Usuario host
+        carro: { select: { placa: true } },  // Carro
+      }
+    });
+
+
+    const ordenesFormateadas = ordenes.map(({ 
+        codigo, 
+        monto_a_pagar, 
+        estado, 
+        host: { nombre }, 
+        carro: { placa } 
+      }) => ({
+        codigo,
+        monto_a_pagar,
+        estado,
+        nombre,
+        placa
+    }));
+    return res.status(200).json(ordenesFormateadas);
+  } catch (error) {
+    console.error('Error al obtener la lista de órdenes de pago:', error);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
+
+
+exports.getInfoPaymentOrderbyCode = async (req, res) => {
+  try {
+    const { codigo } = req.body;
+
+    // Validar que se recibieron los datos necesarios
+    if (!codigo) {
+      return res.status(400).json({ error: 'Faltan datos necesarios' });
+    }
+    
+    // Obtener la lista de órdenes de pago
+    const orden = await prisma.ordenPago.findUnique({
+      where: { codigo: codigo },
+      include: {
+        host:  { select: { nombre: true, telefono: true, correo: true } },   // Usuario host
+        carro: { select: { placa: true, marca: true , modelo: true } },  // Carro
+      }
+    });
+
+    // Destructuramos y formateamos
+    const {
+      codigo: codigoOrd,
+      monto_a_pagar,
+      estado,
+      host:   { nombre, telefono, correo },
+      carro:  { placa, marca, modelo }
+    } = orden;
+
+    return res.status(200).json({
+      codigo:       codigoOrd,
+      monto_a_pagar,
+      estado,
+      nombre,
+      telefono,
+      correo,
+      placa,
+      marca,
+      modelo
+    });
+    return res.status(200).json(ordenesFormateadas);
+  } catch (error) {
+    console.error('Error al obtener la lista de órdenes de pago:', error);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
