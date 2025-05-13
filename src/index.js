@@ -1,33 +1,28 @@
-
-const app = require('./core/server');
-
-/*
 const express = require('express');
-const { PrismaClient } = require('@prisma/client');
-const morgan = require("morgan");
-const cors = require("cors");
+const cors = require('cors');
+const morgan = require('morgan');
+
+// Importa los módulos
+const detailCarModule = require('./modules/detailCar/detailCar.module');
+const filterCarModule = require('./modules/filterCar/filterCar.module');
+const searchCarModule = require('./modules/searchCar/searchCar.module');
+const filterU5Module = require('./modules/filterU5/filterU5.module');
+const filterDisModule = require('./modules/filterDis/filterDis.module');
 
 const app = express();
-const prisma = new PrismaClient();
 
 app.use(express.json());
 app.use(morgan("dev"));
 app.use(cors());
 
+// Rutas principales
+app.use('/filterDis', filterDisModule.controller);
+app.use('/detailCar', detailCarModule.controller);
+app.use('/filterCar', filterCarModule.controller);
+app.use('/searchCar', searchCarModule.controller);
+app.use('/filterU5', filterU5Module.controller);
 
-app.get('/', (req, res) => {
-  res.send('server is running');
-});
-
-
-app.get('/departamento', async (req, res) => {
-  try {
-    const departamento = await prisma.departamento.findMany();
-    res.json(departamento);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch departamento' });
-  }
-});*/
+// Ruta raíz
 app.get('/', (req, res) => {
   res.send('server is running');
 });

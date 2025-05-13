@@ -1,10 +1,12 @@
-"material-icon-theme.folders.associations": {
-  "controllers": "nest-controller",
-  "services": "nest-service",
-  "modules": "nest-module"
-},
-"material-icon-theme.files.associations": {
-  "*.controller.ts": "nest-controller",
-  "*.service.ts": "nest-service",
-  "*.module.ts": "nest-module"
+{
+  "material-icon-theme.folders.associations": {
+    "controllers": "nest-controller",
+    "services": "nest-service",
+    "modules": "nest-module"
+  },
+  "material-icon-theme.files.associations": {
+    "*.controller.ts": "nest-controller",
+    "*.service.ts": "nest-service",
+    "*.module.ts": "nest-module"
+  }
 }
