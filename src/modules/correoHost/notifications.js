@@ -36,6 +36,39 @@ function crearMensaje(datos) {
   `;
 }
 
+function crearMensajeExitoRenter(datos) {
+  return `
+    <h1 style="color: green;">¡Solicitud enviada con éxito!</h1>
+    <p style="color: black;">Hola <strong>${datos.renterNombre}</strong>,</p>
+    <p style="color: black;">
+      Tu solicitud para el auto <strong>${datos.modelo} (${datos.marca})</strong> fue enviada correctamente al host <strong>${datos.hostNombre}</strong>.
+    </p>
+    <table border="1" style="border-collapse: collapse; width: 100%; color: black;">
+      <tr>
+        <th>Precio</th>
+        <td>BOB ${datos.precio} por día</td>
+      </tr>
+      <tr>
+        <th>Fecha y hora de recogida</th>
+        <td>${datos.fechaRecogida}</td>
+      </tr>
+      <tr>
+        <th>Fecha y hora de devolución</th>
+        <td>${datos.fechaDevolucion}</td>
+      </tr>
+      <tr>
+        <th>Lugar de recogida</th>
+        <td>${datos.lugarRecogida}</td>
+      </tr>
+      <tr>
+        <th>Lugar de devolución</th>
+        <td>${datos.lugarDevolucion}</td>
+      </tr>
+    </table>
+    <p style="color: black;">Te avisaremos cuando el host responda tu solicitud.</p>
+  `;
+}
+
 async function enviarCorreo({ renterEmail, hostEmail, mensaje }) {
   try {
     const transporter = nodemailer.createTransport({
@@ -64,4 +97,5 @@ async function enviarCorreo({ renterEmail, hostEmail, mensaje }) {
 module.exports = {
   enviarCorreo,
   crearMensaje,
+  crearMensajeExitoRenter,
 };

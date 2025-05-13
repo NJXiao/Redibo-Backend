@@ -21,7 +21,6 @@ async function envCorreoHost(data) {
         id_host,
     } = data;
 
-    // Crear el mensaje con los datos proporcionados
     const mensaje = crearMensaje({
         fecha,
         hostNombre,
@@ -36,7 +35,6 @@ async function envCorreoHost(data) {
     });
 
     try {
-        // Enviar el correo
         await enviarCorreo({
             renterEmail,
             hostEmail,
@@ -60,6 +58,61 @@ async function envCorreoHost(data) {
     }
 }
 
+async function envCorreoExitoRenter(data) {
+    const {
+        fecha,
+        hostNombre,
+        renterNombre,
+        modelo,
+        marca,
+        precio,
+        fechaRecogida,
+        fechaDevolucion,
+        lugarRecogida,
+        lugarDevolucion,
+        renterEmail,
+        id_renter,
+        id_host,
+    } = data;
+
+    const mensaje = crearMensajeExitoRenter({
+        fecha,
+        hostNombre,
+        renterNombre,
+        modelo,
+        marca,
+        precio,
+        fechaRecogida,
+        fechaDevolucion,
+        lugarRecogida,
+        lugarDevolucion,
+    });
+
+    try {
+        await enviarCorreo({
+            renterEmail: 'sistema@tudominio.com', // Remitente (puedes poner el correo del sistema)
+            hostEmail: renterEmail,               // Destinatario: el renter
+            mensaje,
+        });
+
+        // Guardar la notificación si lo necesitas
+        const notificacion = await prisma.notificaion_confirmacion.create({
+            data: {
+                mensaje,
+                estado: true,
+                id_renter,
+                id_host,
+            },
+        });
+
+        return notificacion;
+    } catch (error) {
+        console.error('Error al enviar el correo de éxito al renter:', error);
+        throw new Error('Error al procesar la notificación de éxito');
+    }
+}
+
 module.exports = {
     envCorreoHost,
+    envCorreoExitoRenter,
 };
