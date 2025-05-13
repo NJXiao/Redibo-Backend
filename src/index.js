@@ -1,14 +1,11 @@
-
 const express = require('express');
 const cors = require('cors'); // <--- IMPORTANTE
 const dotenv = require('dotenv');
 const sprinterosRoutes = require('./Sprinteros'); // Importar las rutas de sprinteros
 const app = require('./core/server');
+const { config } = require('./config');
 
 dotenv.config();
-
-const app = express();
-const port = process.env.PORT || 4000;
 
 app.use(cors()); // <--- Habilita CORS para todas las rutas
 
@@ -16,7 +13,7 @@ app.use(cors()); // <--- Habilita CORS para todas las rutas
 app.use(express.json());
 
 // Montar las rutas de sprinteros
-app.use('/api', sprinterosRoutes);  // <<-- esto es importante para sprinteros no modificar
+app.use('/api', sprinterosRoutes);  // <<-- esto es importante para 
 
 // Middleware global para manejar errores no capturados
 app.use((err, req, res, next) => {
@@ -26,6 +23,8 @@ app.use((err, req, res, next) => {
     message: err.message || 'Error interno del servidor',
   });
 });
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+
+// Iniciar el servidor
+app.listen(config.port, () => {
+  console.log(`Servidor corriendo en el puerto ${config.port}`);
 });
