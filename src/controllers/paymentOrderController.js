@@ -169,6 +169,7 @@ exports.getInfoPaymentOrderbyCode = async (req, res) => {
   }
 }
 
+//ADMIN
 exports.getListProcessingOrders = async (req, res) => {
   try {
     const id_usuario = req.user.id;
