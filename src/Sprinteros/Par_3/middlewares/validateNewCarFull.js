@@ -64,7 +64,7 @@ const newCarSchema = Joi.object({
   soat:     Joi.boolean().required(),
   precio_por_dia: Joi.number().precision(2).required(),
   num_mantenimientos: Joi.number().integer().min(0).required(),
-  transmicion: Joi.string().valid('manual', 'automatica').required(),
+  transmicion: Joi.string().valid('Manual', 'Automatica').required(),
   estado: Joi.string().required(),
   descripcion: Joi.string().allow(null, ''),
   //segurosAdicionales: Joi.array()
