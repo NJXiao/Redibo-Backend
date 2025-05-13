@@ -16,7 +16,12 @@ const OrdenPagoRoutes = require('./routes/paymentOrderRoutes');
 
 const app = express();
 const prisma = new PrismaClient();
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000', // Especifica el origen de tu frontend exactamente
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true // Esto permite el intercambio de cookies/credenciales
+}));
 app.use(express.json());
 app.use(morgan("dev"));
 
