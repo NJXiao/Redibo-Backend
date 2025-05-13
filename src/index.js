@@ -1,10 +1,9 @@
 
-const app = require('./core/server');
-/*
 const express = require('express');
 const cors = require('cors'); // <--- IMPORTANTE
 const dotenv = require('dotenv');
 const sprinterosRoutes = require('./Sprinteros'); // Importar las rutas de sprinteros
+const app = require('./core/server');
 
 dotenv.config();
 
@@ -17,7 +16,7 @@ app.use(cors()); // <--- Habilita CORS para todas las rutas
 app.use(express.json());
 
 // Montar las rutas de sprinteros
-app.use('/api', sprinterosRoutes);
+app.use('/api', sprinterosRoutes);  // <<-- esto es importante para sprinteros no modificar
 
 // Middleware global para manejar errores no capturados
 app.use((err, req, res, next) => {
@@ -27,24 +26,6 @@ app.use((err, req, res, next) => {
     message: err.message || 'Error interno del servidor',
   });
 });
-
-<<<<<<< HEAD
-
-app.get('/departamento', async (req, res) => {
-  try {
-    const departamento = await prisma.departamento.findMany();
-    res.json(departamento);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch departamento' });
-  }
-});*/
-
-const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
-=======
-// Iniciar el servidor
-app.listen(port, () => {
-  console.log(`Servidor corriendo en http://localhost:${port}`);
->>>>>>> sprinteros
 });
