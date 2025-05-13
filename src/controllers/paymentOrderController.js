@@ -41,32 +41,39 @@ exports.createPaymentOrder = async (req, res) => {
   }
 };
 
-exports.ReceiptPayment = async (req, res) => {
+exports.RegisterTransactionNumber = async (req, res) => {
   try {
-    const { id_orden_pago, numero_transaccion } = req.body;
-
+    const { codigo_orden_pago, numero_transaccion } = req.body;
     // Validar que se recibieron los datos necesarios
-    if (!id_orden_pago || !numero_transaccion) {
+    if (!codigo_orden_pago || !numero_transaccion) {
       return res.status(400).json({ error: 'Faltan datos necesarios' });
     }
-    // si los numeros recibidos no son enteros convertirlos
-    const idOrdenPago = parseInt(id_orden_pago);
-    if (isNaN(idOrdenPago)) {
-      return res.status(400).json({ error: 'El id de la orden de pago debe ser un número entero' });
-    }
+    
     // verificar que el numero sea un string
     const numeroTransaccion = String(numero_transaccion);
+    
+    // Actualizar el estado de la orden de pago a "PROCESANDO"
+    await prisma.ordenPago.update({
+      where: {
+        codigo: codigo_orden_pago
+      },
+      data: {
+        estado: 'PROCESANDO'
+      }
+    });
     // Crear el comprobante de pago
     const comprobantePago = await prisma.ComprobanteDePago.create({
       data: {
         OrdenPago: {
           connect: {
-            id: idOrdenPago
+            codigo: codigo_orden_pago
           }
         },
         numero_transaccion: numeroTransaccion
       },
     });
+    
+
     return res.status(201).json(comprobantePago);
   } catch (error) {
     console.error('Error al crear el comprobante de pago:', error);
@@ -174,32 +181,44 @@ exports.getListProcessingOrders = async (req, res) => {
     if (isNaN(idUsuario)) {
       return res.status(400).json({ error: 'El id de la orden de pago debe ser un número entero' });
     }
-    
+    const tieneAcceso = await prisma.usuario.findUnique({
+      where: { id: idUsuario },
+      select: {
+        id: true,
+        roles: {
+          where: { rol: { rol: 'ADMIN' } }, // Filtro directo en la relación
+          select: { id: true }
+        }
+      }
+    });
+    if (tieneAcceso.roles.length === 0) {
+      return res.status(403).json({ error: 'Acceso denegado' });
+    }
+
     // Obtener la lista de órdenes de pago
     const ordenes = await prisma.ordenPago.findMany({
       where: { estado: 'PROCESANDO' },
       include: {
-        renter: { select: { nombre: true } },   
-        host:   { select: { nombre: true } },
-        ComprobanteDePago: {select: { numero_transaccion: true, fecha_emision: true } }
+        renter: { select: { nombre: true } },
+        host: { select: { nombre: true } },
+        ComprobanteDePago: {
+          take: 1,    // solo el primer comprobante
+          select: {
+            numero_transaccion: true,
+            fecha_emision:      true
+          }
+        }
       }
     });
 
-    const ordenesFormateadas = ordenes.map(({ 
-      codigo, 
-      monto_a_pagar, 
-      estado, 
-      renter: { nombre },
-      host: { nombre: nombreHost },
-      ComprobanteDePago: { numero_transaccion, fecha_emision }
-    }) => ({
-      codigo,
-      monto_a_pagar,
-      estado,
-      renter: nombre,
-      host: nombreHost,
-      numero_transaccion,
-      fecha_emision
+    const ordenesFormateadas = ordenes.map(o => ({
+      codigo:             o.codigo,
+      monto_a_pagar:      o.monto_a_pagar,
+      estado:             o.estado,
+      renter:             o.renter.nombre,
+      host:               o.host.nombre,
+      numero_transaccion: o.ComprobanteDePago[0]?.numero_transaccion ?? null,
+      fecha_emision:      o.ComprobanteDePago[0]?.fecha_emision      ?? null,
     }));
     return res.status(200).json(ordenesFormateadas);
   } catch (error) {
@@ -207,3 +226,46 @@ exports.getListProcessingOrders = async (req, res) => {
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
+
+exports.UpdateStatePaymentOrder = async (req, res) => {
+  try {
+    const { codigo_orden_pago, estado } = req.body;
+    // Validar que se recibieron los datos necesarios
+    if (!codigo_orden_pago || !estado) {
+      return res.status(400).json({ error: 'Faltan datos necesarios' });
+    }
+    const idUsuario = parseInt(req.user.id);
+    const tieneAcceso = await prisma.usuario.findUnique({
+      where: { id: idUsuario },
+      select: {
+        id: true,
+        roles: {
+          where: { rol: { rol: 'ADMIN' } }, 
+          select: { id: true }
+        }
+      }
+    });
+    if (tieneAcceso.roles.length === 0) {
+      return res.status(403).json({ error: 'Acceso denegado' });
+    }
+
+    // verificar que el estado sea un string
+    const estadoOrden = String(estado);
+    
+    // Crear el comprobante de pago
+    const comprobantePago = await prisma.ordenPago.update({
+      where: {
+        codigo: codigo_orden_pago
+      },
+      data: {
+        estado: estadoOrden
+      }
+    });
+    return res.status(201).json(comprobantePago);
+  } catch (error) {
+    console.error('Error al crear el comprobante de pago:', error);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
+
+

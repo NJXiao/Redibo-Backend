@@ -7,14 +7,19 @@ const router = express.Router();
 
 // Ruta para obtener todas las ciudades
 router.post('/paymentOrder', paymentOrderController.createPaymentOrder);
-
-// Ruta comprobante de pago
-router.post('/paymentOrder/ReceiptPayment', paymentOrderController.ReceiptPayment);
-
+// Ruta para pagar una orden de pago registrar el numero de transaccion
+router.post('/paymentOrder/RegisterTransactionNumber', paymentOrderController.RegisterTransactionNumber);
+// Ruta para obtener todas mis ordenes de pago si soy renter
 router.get('/list-paymentOrder',authenticateToken, paymentOrderController.getListPaymentOrders);
-
-router.get('/paymentOrderbyCode', paymentOrderController.getInfoPaymentOrderbyCode);
-
+// detalles de una orden de pago apartir del id de la orden
+router.post('/paymentOrderbyCode', paymentOrderController.getInfoPaymentOrderbyCode);
+// Ruta para obtener todas las ordenes de pago "PROCESANDO" si soy admin
 router.get('/admin/getProcessingOrders', authenticateToken , paymentOrderController.getListProcessingOrders);
+// Ruta para actualizar el estado de una orden de pago SI SOY ADMIN
+router.post('/admin/updatePaymentOrder', authenticateToken , paymentOrderController.UpdateStatePaymentOrder);
+
+
+
+
 
 module.exports = router;
