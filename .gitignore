@@ -1,5 +1,10 @@
 node_modules
 # Keep environment variables out of version control
+<<<<<<< HEAD
 .environment
+=======
+
+# Ignorar archivos de entorno
+>>>>>>> origin/sprinteros
 .env
 .env.local

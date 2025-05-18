@@ -13,6 +13,8 @@ dotenv.config();
 const userRoutes = require('./routes/userRoutes');
 const cityRoutes = require('./routes/cityRoutes');
 const authRoutes = require('./routes/authRoutes');
+const sprinterosRoutes = require('./Sprinteros'); // Importar las rutas de sprinteros
+
 
 const app = express();
 const prisma = new PrismaClient();
@@ -38,10 +40,12 @@ app.get('/', (req, res) => {
 app.use('/api', userRoutes);
 app.use('/api', cityRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api', sprinterosRoutes);
 
 // Puerto
 const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
+
 });
