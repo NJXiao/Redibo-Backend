@@ -47,4 +47,7 @@ router.get('/perfil', authenticateToken, userController.getUserProfile);
 // Ruta para agregar un nuevo rol de usuario
 router.post('/add-rol', authenticateToken, userController.addUserRole);
 
+//Ruta para obtener el saldo de un usuario
+router.get('/get-saldo', authenticateToken, userController.getUserBalance);
+
 module.exports = router;

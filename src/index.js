@@ -4,7 +4,6 @@ const morgan = require("morgan");
 const cors = require("cors");
 const passport = require('./config/passport');
 const dotenv = require('dotenv');
-const cookieParser = require('cookie-parser');
 
 // Cargar variables de entorno
 dotenv.config();
@@ -13,18 +12,29 @@ dotenv.config();
 const userRoutes = require('./routes/userRoutes');
 const cityRoutes = require('./routes/cityRoutes');
 const authRoutes = require('./routes/authRoutes');
-const sprinterosRoutes = require('./Sprinteros'); // Importar las rutas de sprinteros
 
+const sprinterosRoutes = require('./Sprinteros'); // Importar las rutas de sprinteros
+const OrdenPagoRoutes = require('./routes/paymentOrderRoutes');
 
 const app = express();
 const prisma = new PrismaClient();
-app.use(cookieParser(process.env.COOKIE_SECRET || 'redibo-secret'));
+
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://faithful-respect-production.up.railway.app'
+];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL,
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
-  exposedHeaders: ['Set-Cookie', 'Cookie', 'Date', 'ETag']
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true
 }));
 app.use(express.json());
 app.use(morgan("dev"));
@@ -40,7 +50,11 @@ app.get('/', (req, res) => {
 app.use('/api', userRoutes);
 app.use('/api', cityRoutes);
 app.use('/api/auth', authRoutes);
+
 app.use('/api', sprinterosRoutes);
+
+app.use('/api', OrdenPagoRoutes);
+
 
 // Puerto
 const PORT = process.env.PORT || 4000;
