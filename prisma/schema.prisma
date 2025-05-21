@@ -12,7 +12,6 @@ model Busqueda {
   criterio       String
   fecha_creacion DateTime @default(now())
   id_usuario     Int
-  Usuario        Usuario  @relation(fields: [id_usuario], references: [id])
 }
 
 model Calificacion {
@@ -284,13 +283,13 @@ model Usuario {
   foto            String?
   telefono         String?
   saldo            Float       @default(0)
+  busquedas        String?
   roles            UsuarioRol[]
   favoritos        Favorito[]
   calificaciones   Calificacion[]
   notificaciones   Notificacion[]
   reservas         Reserva[]
   carros           Carro[]
-  busquedas        Busqueda[]
   recoveryCode  PasswordRecoveryCode[]
   comentarios          comentarios[]
   ordenesPagoHost   OrdenPago[] @relation("HostOrders")
