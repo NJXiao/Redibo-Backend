@@ -205,47 +205,7 @@ const actualizarVehiculoPorId = async (id, datosActualizados) => {
     }
 
     // Validación del año del vehículo
-    /* if (typeof año !== "number" || año < 1900 || año > new Date().getFullYear()) {
-      throw new Error("El año del vehículo es inválido");
-    } */
-
-    // Validación de marca y modelo
-    /* const validarMarcaYModelo = (texto) => {
-      const regex = /^[A-Za-z0-9\s\-]+$/; // Permite letras, números, espacios y guiones
-      return regex.test(texto);
-    };
-
-    if (!validarMarcaYModelo(marca)) {
-      throw new Error("La marca es inválida");
-    }
-
-    if (!validarMarcaYModelo(modelo)) {
-      throw new Error("El modelo es inválido");
-    } */
-
-    // Verificar si el VIN ya existe en otro vehículo (excepto el vehículo actual)
-    /* const vinExistente = await prisma.carro.findFirst({
-      where: {
-        vim: vim,
-        NOT: { id: parseInt(id) }, // Excluir el vehículo actual
-      },
-    });
-
-    if (vinExistente) {
-      throw new Error("El VIN ya está registrado en otro vehículo");
-    } */
-
-    // Verificar si la placa ya existe en otro vehículo (excepto el vehículo actual)
-    /* const placaExistente = await prisma.carro.findFirst({
-      where: {
-        placa: placa,
-        NOT: { id: parseInt(id) }, // Excluir el vehículo actual
-      },
-    });
-
-    if (placaExistente) {
-      throw new Error("La placa ya está registrada en otro vehículo");
-    } */
+    /**/
 
     // Actualizar el vehículo en la base de datos
     const carroActualizado = await prisma.carro.update({
@@ -446,7 +406,7 @@ const actualizarCaracteristicasAdicionalesPorId = async (id, nuevasCaracteristic
     const caracteristicasActualizadas = await prisma.caracteristicasAdicionalesCarro.findMany({
       where: { id_carro: parseInt(id) },
       include: {
-        carasteristicasAdicionales: {
+        CarasteristicasAdicionales: { // <-- nombre correcto según tu schema.prisma
           select: {
             nombre: true,
           },

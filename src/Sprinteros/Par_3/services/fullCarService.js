@@ -52,6 +52,8 @@ async function createFullCar(dto) {
         },
       });
       return { dir, c };
+    }, {
+      timeout: 10000 // 10 segundos, puedes ajustar el valor según lo que necesites
     });
 
     return {
