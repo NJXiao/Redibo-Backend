@@ -249,7 +249,7 @@ model SeguroCarro {
   fechaFin    DateTime
   id_carro    Int
   id_seguro   Int
-  enlace      String?      @db.VarChar(255)
+  enlaceSeguro     String?     
   Carro       Carro        @relation(fields: [id_carro], references: [id])
   Seguro      Seguro       @relation(fields: [id_seguro], references: [id])
   tiposeguro  tiposeguro[]
@@ -430,7 +430,7 @@ model tiposeguro {
   tipodaño       String?      @map("tipodaño") @db.VarChar(255)
   descripcion    String?
   segurocarro_id Int?
-  valides        String?      @db.VarChar(255)
+  cantidadCobertura        String?      @db.VarChar(255)
   SeguroCarro    SeguroCarro? @relation(fields: [segurocarro_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
