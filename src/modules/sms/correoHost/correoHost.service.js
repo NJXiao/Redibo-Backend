@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const { enviarCorreoHost, crearMensajeHost, enviarCorreoRenter, crearMensajeRenter } = require('./notifications');
+const nodemon = require('nodemon');
 
 const prisma = new PrismaClient();
 
@@ -47,7 +48,7 @@ async function envCorreoHost(data) {
         const notificacion = await prisma.notificaion_confirmacion.create({
             data: {
                 mensaje,
-                estado: true,
+                estado: null,
                 id_renter,
                 id_host,
             },
@@ -90,9 +91,14 @@ async function envCorreoRenter(data) {
         fechaDevolucion,
         lugarRecogida,
         lugarDevolucion,
+        idNotificacion: notificacion.id
     });
 
     try {
+        await prisma.notificaion_confirmacion.update({
+            where:{id:notificacion.id},
+            data: {mensaje}
+        })
         // Enviar el correo
         await enviarCorreoRenter({
             renterEmail,
@@ -100,7 +106,7 @@ async function envCorreoRenter(data) {
             mensaje,
         });
 
-        return {'mensaje': 'Correo enviado al renter con éxito' };
+        return {'mensaje': 'Correo enviado al renter con éxito' },notificacion;
     } catch (error) {
         console.error('Error al enviar el correo:', error);
         throw new Error('Error al procesar la solicitud');

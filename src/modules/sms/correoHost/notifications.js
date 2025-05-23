@@ -30,9 +30,20 @@ function crearMensajeHost(datos) {
     </table>
     <br>
     <div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px; flex-wrap: wrap;">
-      <button style="background-color: rgb(168, 168, 168); color: white; padding: 10px 20px; border: none; cursor: pointer; margin: 5px;">Aceptar</button>
-      <button style="background-color:rgb(168, 168, 168); color: white; padding: 10px 20px; border: none; cursor: pointer; margin: 5px;">Rechazar</button>
+      <a href="${process.env.API_URL || 'http://localhost:3000'}/notificaciones/aceptar?id=${datos.idNotificacion}" 
+         style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; text-decoration: none; cursor: pointer; margin: 5px; border-radius: 5px;">
+         Aceptar
+      </a>
+      <a href="${process.env.API_URL || 'http://localhost:3000'}/notificaciones/rechazar?id=${datos.idNotificacion}" 
+         style="background-color: #f44336; color: white; padding: 10px 20px; border: none; text-decoration: none; cursor: pointer; margin: 5px; border-radius: 5px;">
+         Rechazar
+      </a>
     </div>
+    <p style="color: black; margin-top: 20px; font-size: 12px;">
+      Si los botones no funcionan, copia y pega estos enlaces en tu navegador:<br>
+      Aceptar: ${process.env.API_URL || 'http://localhost:3000'}/notificaciones/aceptar?id=${datos.idNotificacion}<br>
+      Rechazar: ${process.env.API_URL || 'http://localhost:3000'}/notificaciones/rechazar?id=${datos.idNotificacion}
+    </p>
   `;
 }
 

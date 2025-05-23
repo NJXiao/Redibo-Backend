@@ -23,4 +23,6 @@ router.post('/', async (req, res) => {
     }
 });
 
+router.get('/notificaciones/aceptar', notificacionController.aceptarNotificacion);
+router.get('/notificaciones/rechazar', notificacionController.rechazarNotificacion);
 module.exports = router;

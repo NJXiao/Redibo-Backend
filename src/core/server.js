@@ -8,7 +8,7 @@ const searchCarModule = require('../modules/searchCar/searchCar.module');
 const insertCondition= require('../modules/insertCondition/insertCondition.module');
 const insertInsurance= require('../modules/InsertInsurance/InsertedInsurance.module');
 const insurance = require('../modules/insurance/insurance.module');
-const correoHost = require('../modules/correoHost/correoHost.module');
+const correoHost = require('../modules/sms/correoHost/correoHost.module');
 
 const detailHostModule=require('../modules/detailHost/detailHost.module');
 const useConditonModule=require('../modules/detailUseCondition/detailUseCondition.module');
@@ -18,7 +18,7 @@ const deleteSeguro = require('../modules/deleteSeguro/deleteSeguro.module')
 
 const comments=require('../modules/comments/comments.module');
 
-const envSMS = require('../modules/envSMS/envSMS.module');
+const envSMS = require('../modules/sms/envSMS/envSMS.module');
 
 const insEnlace= require('../modules/insertEnlace/insertEnlace.module');
 
