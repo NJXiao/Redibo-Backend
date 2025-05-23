@@ -20,8 +20,9 @@ const app = express();
 const prisma = new PrismaClient();
 
 const allowedOrigins = [
-  'http://localhost:3000',
-  'https://faithful-respect-production.up.railway.app'
+  "http://localhost:3000",
+  "https://faithful-respect-production.up.railway.app",
+  "https://redibo.up.railway.app"
 ];
 
 app.use(cors({
