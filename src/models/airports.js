@@ -1,30 +1,30 @@
-const { prisma } = require("../config/prisma");
+const prisma = require("../config/prisma");
 
 class AirportModel {
   static async getAll() {
     try {
       const airports = await prisma.aeropuerto.findMany({
-         select: {
+        select: {
           id: true,
-          nombre:true,
+          nombre: true,
           latitud: true,
-          longitud: true,          
-          ciudad: {
+          longitud: true,
+          Ciudad: {
             select: {
               nombre: true
-            }          
+            }
           }
-          },  
-          orderBy: {
+        },
+        orderBy: {
           nombre: 'asc'
-          }
+        }
       })
 
       return airports.map(airport => ({
         nombre: airport.nombre,
         latitud: airport.latitud,
         longitud: airport.longitud,
-        ciudad: airport.ciudad
+        ciudad: airport.Ciudad
       }))
     } catch (error) {
       console.error('Error al obtener aeropuertos: ', error)

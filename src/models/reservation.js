@@ -1,4 +1,4 @@
-const { prisma } = require("../config/prisma");
+const prisma = require("../config/prisma");
 
 class ReservationModel {
   static async createReservation({ userId, carId, starDate, endDate, estado }) {
@@ -87,7 +87,7 @@ class ReservationModel {
   }
   static async cancelExpiredReservations() {
     const now = new Date();
-  
+
     const expiredReservations = await prisma.reserva.findMany({
       where: {
         estado: 'pendiente',
@@ -96,17 +96,17 @@ class ReservationModel {
         },
       },
     });
-  
+
     for (const reservation of expiredReservations) {
       await prisma.reserva.update({
         where: { id: reservation.id },
         data: { estado: 'cancelado' },
       });
     }
-  
+
     return expiredReservations.length;
   }
-  
+
 }
 
 module.exports = { ReservationModel }
