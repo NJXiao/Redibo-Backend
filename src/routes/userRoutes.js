@@ -5,7 +5,6 @@ const { authenticateToken } = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
-// Validaciones para el registro de usuario
 const registerValidations = [
   body('nombre').notEmpty().withMessage('El nombre es obligatorio')
     .isLength({ min: 3 }).withMessage('El nombre debe tener al menos 3 caracteres'),

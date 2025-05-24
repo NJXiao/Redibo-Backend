@@ -15,9 +15,11 @@ const authRoutes = require('./routes/authRoutes');
 
 const sprinterosRoutes = require('./Sprinteros'); // Importar las rutas de sprinteros
 const OrdenPagoRoutes = require('./routes/paymentOrderRoutes');
+const uploadRoutes = require("./routes/uploadRoutes");
+
+
 
 const app = express();
-const prisma = new PrismaClient();
 
 const allowedOrigins = [
   "http://localhost:3000",
@@ -55,6 +57,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api', sprinterosRoutes);
 
 app.use('/api', OrdenPagoRoutes);
+app.use("/api", uploadRoutes);
 
 
 // Puerto
