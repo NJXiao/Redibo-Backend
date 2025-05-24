@@ -16,6 +16,17 @@ const credenciales = {
               id:true,
               marca:true,
               modelo:true,
+              Imagen : {
+              take: 1,
+                orderBy: {
+                id: 'asc'
+                 },
+                select: {
+                  id: true,
+                  data: true,
+                  id_carro: true
+                }
+              },
               Usuario: {
                 select: {
                   id:true,
