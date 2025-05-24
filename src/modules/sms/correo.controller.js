@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const correoService = require('./correoHost.service');
+const correoService = require('./correo.service');
 
 const router = Router();
 
@@ -23,6 +23,4 @@ router.post('/', async (req, res) => {
     }
 });
 
-router.get('/notificaciones/aceptar', notificacionController.aceptarNotificacion);
-router.get('/notificaciones/rechazar', notificacionController.rechazarNotificacion);
 module.exports = router;
