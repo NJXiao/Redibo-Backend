@@ -16,6 +16,7 @@ const authRoutes = require('./routes/authRoutes');
 const sprinterosRoutes = require('./Sprinteros'); // Importar las rutas de sprinteros
 const OrdenPagoRoutes = require('./routes/paymentOrderRoutes');
 const uploadRoutes = require("./routes/uploadRoutes");
+const sessionRoutes = require("./routes/sessionRoutes");
 
 
 
@@ -58,6 +59,7 @@ app.use('/api', sprinterosRoutes);
 
 app.use('/api', OrdenPagoRoutes);
 app.use("/api", uploadRoutes);
+app.use("/api", sessionRoutes);
 
 
 // Puerto
