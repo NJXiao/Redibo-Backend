@@ -1,5 +1,5 @@
-const correoController = require('./correoHost.controller');
-const correoService = require('./correoHost.service');
+const correoController = require('./correo.controller');
+const correoService = require('./correo.service');
 
 module.exports = {
     controller : correoController,

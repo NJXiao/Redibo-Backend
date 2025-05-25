@@ -1,4 +1,4 @@
-// notifications/hostNotifications.js
+
 const { sendEmail } = require('../services/emailService');
 
 function createHostMessage(data) {

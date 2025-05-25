@@ -1,7 +1,4 @@
-
-const emailService = require('../envCorreo/email.controller');
-const { createRenterTemplate } = require('../templantes/renter-templante');
-const notificationsService = require('../prisma/notifications.service');
+const emailService = require('../envCorreo/email.service');
 
 class RenterNotifications {
   async sendRenterNotification(data, notificationId) {

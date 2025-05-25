@@ -1,7 +1,4 @@
-
-const emailService = require('../envCorreo/email.controller');
-const { createHostTemplate } = require('../templantes/host-templante');
-const email = require('../envCorreo/email.controller');
+const emailService = require('../envCorreo/email.service');
 
 class HostNotifications {
   async sendHostNotification(data) {
