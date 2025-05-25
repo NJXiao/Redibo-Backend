@@ -76,6 +76,11 @@ exports.crearSolicitud = async (req, res) => {
 exports.getSolicitudes = async (req, res) => {
   try {
     const solicitudes = await prisma.solicitudConductor.findMany({
+      where: {
+        usuario: {
+          estadoConductor: "PENDING",
+        },
+      },
       include: {
         usuario: {
           select: {
