@@ -271,6 +271,12 @@ model Ubicacion {
   Direccion       Direccion @relation(fields: [id_direccion], references: [id])
 }
 
+enum EstadoConductor {
+  NO_REQUESTED
+  PENDING
+  APPROVED
+}
+
 model Usuario {
   id               Int              @id @default(autoincrement())             
   nombre           String
@@ -295,6 +301,7 @@ model Usuario {
   comentarios          comentarios[]
   ordenesPagoHost   OrdenPago[] @relation("HostOrders")
   ordenesPagoRenter OrdenPago[] @relation("RenterOrders")
+  estadoConductor EstadoConductor? @default(NO_REQUESTED)
 }
 
 model UsuarioRol {
