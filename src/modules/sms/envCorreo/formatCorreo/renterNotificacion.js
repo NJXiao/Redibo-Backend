@@ -1,5 +1,5 @@
 
-const { sendEmail } = require('../services/emailService');
+const { sendEmail } = require('./conf');
 
 function createRenterMessage(data) {
   return `

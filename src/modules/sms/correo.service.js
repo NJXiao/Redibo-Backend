@@ -1,25 +1,23 @@
-const HostNotifications = require('./notification/host-notifications');
-const RenterNotifications = require('./notification/renter-notifications');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
-async function envCorreoHost(data) {
+async function correo(mensaje, data) {
   try {
-    return await HostNotifications.sendHostNotification(data);
+    await prisma.notificaion_confirmacion.create({
+      data: {
+        mensaje: mensaje,
+        estado: null,
+        id_renter: data.id_renter || null,
+        id_host: data.id_host || null,
+      }
+    });
+    return { success: true };
   } catch (error) {
-    console.error('Error al enviar el correo o guardar la notificación:', error);
-    throw new Error('Error al procesar la solicitud');
-  }
-}
-
-async function envCorreoRenter(data, notificationId) {
-  try {
-    return await RenterNotifications.sendRenterNotification(data, notificationId);
-  } catch (error) {
-    console.error('Error al enviar el correo:', error);
+    console.error('Error al guardar la notificación:', error);
     throw new Error('Error al procesar la solicitud');
   }
 }
 
 module.exports = {
-  envCorreoHost,
-  envCorreoRenter,
+  correo,
 };

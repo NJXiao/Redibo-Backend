@@ -1,26 +1,26 @@
-const nodemailer = require('nodemailer');
+const { sendHostNotification} = require('./formatCorreo/hostNotificacion');
+const { sendRenterNotification } = require('./formatCorreo/renterNotificacion');
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: 'edmilzon.luna@gmail.com',
-    pass: 'nbzv tvnd uody qswc',
-  },
-});
-
-async function sendEmail({ from, to, subject, html }) {
-  try {
-    const mailOptions = { from, to, subject, html };
-    const result = await transporter.sendMail(mailOptions);
-    console.log(`Correo enviado de ${from} a ${to}:`, result);
-    return result;
-  } catch (error) {
-    console.error('Error al enviar el correo:', {
-      error: error.message,
-      mailOptions
-    });
-    throw new Error('Error al enviar el correo');
-  }
+async function enviarCorreoHost(data) {
+  
+  const mensaje = await sendHostNotification({
+    renterEmail: data.renterEmail,
+    hostEmail: data.hostEmail,
+    data
+  });
+  return mensaje;
 }
 
-module.exports = { sendEmail };
+async function enviarCorreoRenter(data) {
+  const mensaje = await sendRenterNotification({
+    renterEmail: data.renterEmail,
+    hostEmail: data.hostEmail,
+    data
+  });
+  return mensaje;
+}
+
+module.exports = {
+  enviarCorreoHost,
+  enviarCorreoRenter
+};

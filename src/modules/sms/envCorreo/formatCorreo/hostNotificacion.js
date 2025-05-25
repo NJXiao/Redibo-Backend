@@ -1,4 +1,4 @@
-const { sendEmail } = require('../services/emailService');
+const { sendEmail } = require('./conf');
 
 function createHostMessage(data) {
   return `
@@ -44,12 +44,13 @@ function createHostMessage(data) {
 
 async function sendHostNotification({ renterEmail, hostEmail, data }) {
   const message = createHostMessage(data);
-  return sendEmail({
+  await sendEmail({
     from: renterEmail,
     to: hostEmail,
     subject: 'Solicitud de Reserva',
     html: message
   });
+  return message; 
 }
 
 module.exports = { sendHostNotification };
