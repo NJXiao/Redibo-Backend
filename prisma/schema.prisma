@@ -302,6 +302,58 @@ model Usuario {
   ordenesPagoHost   OrdenPago[] @relation("HostOrders")
   ordenesPagoRenter OrdenPago[] @relation("RenterOrders")
   estadoConductor EstadoConductor? @default(NO_REQUESTED)
+  solicitudesConductor  SolicitudConductor[]
+  licenciasConducir LicenciaConducir[]
+}
+
+model SolicitudConductor {
+  id                Int       @id @default(autoincrement())
+  usuarioId         Int
+  usuario           Usuario   @relation(fields: [usuarioId], references: [id])
+  front             String
+  back              String
+  estado            EstadoSolicitud @default(PENDIENTE)
+  categoria         CategoriaLicencia
+  numeroLicencia    String
+  fechaEmision      DateTime
+  fechaVencimiento  DateTime
+  createdAt         DateTime  @default(now())
+}
+
+model LicenciaConducir {
+  id               Int               @id @default(autoincrement())
+  usuarioId        Int
+  usuario          Usuario           @relation(fields: [usuarioId], references: [id])
+  numeroLicencia   String
+  fechaEmision     DateTime
+  fechaVencimiento DateTime
+  categoria        CategoriaLicencia
+  estado           EstadoLicencia   @default(ACTIVA)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+}
+
+enum EstadoLicencia {
+  ACTIVA
+  VENCIDA
+  SUSPENDIDA
+}
+
+
+
+enum EstadoSolicitud {
+  PENDIENTE
+  APROBADA
+  RECHAZADA
+}
+
+enum CategoriaLicencia {
+  M
+  P
+  A
+  B
+  C
+  T
 }
 
 model UsuarioRol {
