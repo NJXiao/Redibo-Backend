@@ -72,3 +72,23 @@ exports.crearSolicitud = async (req, res) => {
     res.status(500).json({ error: "Error interno del servidor" });
   }
 };
+
+exports.getSolicitudes = async (req, res) => {
+  try {
+    const solicitudes = await prisma.solicitudConductor.findMany({
+      include: {
+        usuario: {
+          select: {
+            nombre: true,
+            foto: true,
+          },
+        },
+      },
+    });
+
+    res.status(200).json(solicitudes);
+  } catch (error) {
+    console.error("Error al obtener solicitudes:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+}

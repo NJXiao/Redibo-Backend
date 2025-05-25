@@ -13,4 +13,6 @@ router.post('/request',authenticateToken,  upload.fields([
 licenseController.crearSolicitud
 );
 
+router.get('/applications', authenticateToken, licenseController.getSolicitudes);
+
 module.exports = router;
