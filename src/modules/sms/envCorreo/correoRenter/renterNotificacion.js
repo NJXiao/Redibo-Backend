@@ -1,4 +1,4 @@
-// notifications/renterNotifications.js
+
 const { sendEmail } = require('../services/emailService');
 
 function createRenterMessage(data) {

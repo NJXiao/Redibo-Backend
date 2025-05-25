@@ -4,8 +4,6 @@ class RenterNotifications {
   async sendRenterNotification(data, notificationId) {
     const message = createRenterTemplate(data);
     
-    await notificationsService.updateNotification(notificationId, { mensaje: message });
-
     await emailService.sendEmail({
       from: data.hostEmail,
       to: data.renterEmail,

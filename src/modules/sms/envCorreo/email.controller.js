@@ -1,4 +1,3 @@
-// controllers/notificationsController.js
 const { sendHostNotification } = require('./correoHost/hostNotificacion');
 const { sendRenterNotification } = require('./correoRenter/renterNotificacion');
 

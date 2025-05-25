@@ -11,10 +11,7 @@ class HostNotifications {
       html: message
     });
 
-    return notificationsService.createHostNotification({
-      ...data,
-      mensaje: message
-    });
+    return { message: 'Correo enviado al host con éxito' };
   }
 }
 

@@ -1,4 +1,3 @@
-
 const HostNotifications = require('./notification/host-notifications');
 const RenterNotifications = require('./notification/renter-notifications');
 
