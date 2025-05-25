@@ -197,6 +197,7 @@ model Reserva {
   Carro                  Carro       @relation(fields: [id_carro], references: [id])
   Usuario                Usuario     @relation(fields: [id_usuario], references: [id])
   Descuento              Descuento[]
+  reservasConductor      ReservaConductor[]
 }
 
 enum EstadoOrden {
@@ -304,6 +305,7 @@ model Usuario {
   estadoConductor EstadoConductor? @default(NO_REQUESTED)
   solicitudesConductor  SolicitudConductor[]
   licenciasConducir LicenciaConducir[]
+  reservasConductor ReservaConductor[]
 }
 
 model SolicitudConductor {
@@ -493,6 +495,14 @@ model tiposeguro {
   valides      String?      @db.VarChar(255)
   cantidadCobertura        String?      @db.VarChar(255)
   SeguroCarro    SeguroCarro? @relation(fields: [segurocarro_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model ReservaConductor {
+  id          Int      @id @default(autoincrement())
+  id_reserva  Int
+  id_usuario  Int
+  Reserva     Reserva   @relation(fields: [id_reserva], references: [id])
+  Usuario     Usuario   @relation(fields: [id_usuario], references: [id])
 }
 
 enum Genero {
