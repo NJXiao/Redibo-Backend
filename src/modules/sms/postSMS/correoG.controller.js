@@ -1,5 +1,5 @@
-const { enviarCorreoHost, enviarCorreoRenter } = require('./envCorreo/email.service');
-const { correo } = require('./correo.service');
+const { enviarCorreoHost, enviarCorreoRenter } = require('../envCorreo/email.service');
+const { correohost } = require('./correoG.service');
 const { Router } = require('express');
 
 const router = Router();
@@ -10,11 +10,11 @@ router.post('/', async (req, res) => {
     const mensajeHost = await enviarCorreoHost(req.body);
     const mensajeRenter = await enviarCorreoRenter(req.body);
 
-    await correo(mensajeHost, req.body);
+    await correohost(mensajeHost, req.body);
 
     res.status(201).json({
-      notificacion: mensajeHost,
-      confirmacionRenter: mensajeRenter,
+      mensaje: mensajeHost,
+      estado: "enviado"
     });
   } catch (error) {
     console.error('Error en el controlador:', error);

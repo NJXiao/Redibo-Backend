@@ -8,7 +8,9 @@ const searchCarModule = require('../modules/searchCar/searchCar.module');
 const insertCondition= require('../modules/insertCondition/insertCondition.module');
 const insertInsurance= require('../modules/InsertInsurance/InsertedInsurance.module');
 const insurance = require('../modules/insurance/insurance.module');
-const correo = require('../modules/sms/correo.module');
+
+const correoPost = require('../modules/sms/postSMS/correoG.module');
+const correoGet = require('../modules/sms/getSMS/correoM.module');
 
 const detailHostModule=require('../modules/detailHost/detailHost.module');
 const useConditonModule=require('../modules/detailUseCondition/detailUseCondition.module');
@@ -33,7 +35,10 @@ app.use('/filterCar', filterCarModule.controller);
 app.use('/searchCar', searchCarModule.controller);
 app.use('/insertCondition', insertCondition.controller);
 app.use('/insertedInsurance', insertInsurance.controller);
-app.use('/correo', correo.controller);
+
+app.use('/correoP', correoPost.controller);
+app.use('/correoG', correoGet.controller);
+
 app.use('/useConditon',useConditonModule.controller);
 app.use('/detailHost',detailHostModule.controller);
 app.use('/comments',comments.controller);

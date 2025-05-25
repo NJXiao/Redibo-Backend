@@ -1,7 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-async function correo(mensaje, data) {
+async function correohost(mensaje, data) {
   try {
     await prisma.notificaion_confirmacion.create({
       data: {
@@ -11,7 +11,7 @@ async function correo(mensaje, data) {
         id_host: data.id_host || null,
       }
     });
-    return { success: true };
+    return { data: data };
   } catch (error) {
     console.error('Error al guardar la notificación:', error);
     throw new Error('Error al procesar la solicitud');
@@ -19,5 +19,5 @@ async function correo(mensaje, data) {
 }
 
 module.exports = {
-  correo,
+  correohost,
 };
