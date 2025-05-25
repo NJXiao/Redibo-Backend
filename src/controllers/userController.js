@@ -852,6 +852,13 @@ exports.addUserRole = async (req, res) => {
         id_rol: rolData.id
       }
     });
+
+    if (req.body.rol === 'DRIVER') {
+      await prisma.usuario.update({
+        where: { id: id_usuario },
+        data: { estadoConductor: 'APPROVED' }
+      });
+    }
     
     return res.status(200).json({
       message: 'Rol agregado exitosamente',
