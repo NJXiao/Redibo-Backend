@@ -1,5 +1,7 @@
 const { sendEmail } = require('./conf');
 
+const {} = require('../../putSMS/correoE.service')
+
 function createHostMessage(data) {
   return `
     <h1 style="color: black;">Solicitud de Reserva</h1>
@@ -30,12 +32,12 @@ function createHostMessage(data) {
     </table>
     <br>
     <div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px; flex-wrap: wrap;">
-      <a href="d" 
-         style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; text-decoration: none; cursor: pointer; margin: 5px; border-radius: 5px;">
+      <a href="/correo/updateEstado/${data.notificacionId}?estado=true" 
+         style="background-color:rgb(7, 7, 7); color: white; padding: 10px 20px; border: none; text-decoration: none; cursor: pointer; margin: 5px; border-radius: 5px;">
          Aceptar
       </a>
-      <a href="" 
-         style="background-color: #f44336; color: white; padding: 10px 20px; border: none; text-decoration: none; cursor: pointer; margin: 5px; border-radius: 5px;">
+      <a href="/correo/updateEstado/${data.notificacionId}?estado=false" 
+         style="background-color:rgb(0, 0, 0); color: white; padding: 10px 20px; border: none; text-decoration: none; cursor: pointer; margin: 5px; border-radius: 5px;">
          Rechazar
       </a>
     </div>

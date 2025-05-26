@@ -11,6 +11,7 @@ const insurance = require('../modules/insurance/insurance.module');
 
 const correoPost = require('../modules/sms/postSMS/correoG.module');
 const correoGet = require('../modules/sms/getSMS/correoM.module');
+const correoUpdate = require('../modules/sms/putSMS/correoE.module')
 
 const detailHostModule=require('../modules/detailHost/detailHost.module');
 const useConditonModule=require('../modules/detailUseCondition/detailUseCondition.module');
@@ -36,8 +37,9 @@ app.use('/searchCar', searchCarModule.controller);
 app.use('/insertCondition', insertCondition.controller);
 app.use('/insertedInsurance', insertInsurance.controller);
 
-app.use('/correoP', correoPost.controller);
-app.use('/correoG', correoGet.controller);
+app.use('/correo/enviarGuardar', correoPost.controller);
+app.use('/correo/obtener', correoGet.controller);
+app.use('/correo/updateEstado', correoUpdate.controller);
 
 app.use('/useConditon',useConditonModule.controller);
 app.use('/detailHost',detailHostModule.controller);

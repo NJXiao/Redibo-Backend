@@ -3,9 +3,11 @@ const correoMService = require('./correoM.service');
 
 const correoM = express.Router();
 
-correoM.get('/', async(req, res) => {
+correoM.get('/:id', async(req, res) => {
+    const hostId = parseInt(req.params.id)
+    console.log("el ide del host es : " + hostId)
     try {
-        correoMJson = await correoMService.findAll();
+        correoMJson = await correoMService.findAll(hostId);
         res.json(correoMJson);
     } catch (error) {
         console.log('Correo no encontrado');

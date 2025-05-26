@@ -1,8 +1,9 @@
-const prisma = require('../../config/prisma');
+const prisma = require('../../../config/prisma');
 
-const findAll = async () => {
+const findAll = async (hostId) => {
     try {
-        return await prisma.notificaion_confirmacion.findAll({
+        return await prisma.notificaion_confirmacion.findMany({
+            where: {id_host: hostId},
             select: {
                 id: true,
                 mensaje: true,

@@ -6,7 +6,9 @@ async function enviarCorreoHost(data) {
   const mensaje = await sendHostNotification({
     renterEmail: data.renterEmail,
     hostEmail: data.hostEmail,
-    data
+    data:{
+      id:true, //de donde lo consigo,
+    }
   });
   return mensaje;
 }
