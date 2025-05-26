@@ -1,7 +1,43 @@
 const prisma = require("../config/prisma");
 
-class CarModel {
 
+class CarModel {
+  static async getHostOfCarro({id_carro}){
+    const host = await prisma.carro.findFirst({
+      where:{
+        id:id_carro,
+        Usuario:{
+          roles:{
+            some:{
+              id_rol:2
+            }
+          }
+        }
+      },
+      select:{
+        id_usuario_rol:true
+      }
+    })
+    return host;
+  }
+  static async getRenderOfCarro({id_carro}){
+    const renter = await prisma.carro.findFirst({
+      where:{
+        id:id_carro,
+        Usuario:{
+          roles:{
+            some:{
+              id_rol:1
+            }
+          }
+        }
+      },
+      select:{
+        id_usuario_rol:true
+      }
+    })
+    return renter;
+  }
   static async getMostRented() {
     try {
       const cars = await prisma.carro.findMany({
