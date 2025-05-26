@@ -6,8 +6,11 @@ const router = Router();
 
 router.post('/', async (req, res) => {
   try {
+
+    const notificacion = await correohost('Mensaje de reserva', req.body);
   
-    const mensajeHost = await enviarCorreoHost(req.body);
+    const mensajeHost = await enviarCorreoHost({...req.body, notificacionId: notificacion.id});
+
     const mensajeRenter = await enviarCorreoRenter(req.body);
 
     await correohost(mensajeHost, req.body);

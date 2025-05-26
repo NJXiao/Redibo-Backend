@@ -7,7 +7,8 @@ async function enviarCorreoHost(data) {
     renterEmail: data.renterEmail,
     hostEmail: data.hostEmail,
     data:{
-      id:true, //de donde lo consigo,
+      ...data,
+      notificaionId: data.notificaionId,
     }
   });
   return mensaje;
