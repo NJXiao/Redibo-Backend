@@ -1,3 +1,4 @@
+const { response } = require("express");
 const cloudinary = require("../config/cloudinary");
 const prisma = require("../config/prisma");
 
@@ -169,6 +170,47 @@ exports.rechazarSolicitud = async (req, res) => {
     res.status(200).json({ message: "Solicitud rechazada correctamente" });
   } catch (error) {
     console.error("Error al rechazar solicitud:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+};
+
+
+exports.getLicenciaConductor = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "No autorizado" });
+    }
+
+    const licencia = await prisma.licenciaConducir.findFirst({
+      where: { usuarioId: userId },
+      select: {
+        numeroLicencia: true,
+        fechaEmision: true,
+        fechaVencimiento: true,
+        categoria: true,
+      },
+    });
+
+    if (!licencia) {
+      return res.status(404).json({ error: "Licencia no encontrada" });
+    }
+    const userData = await prisma.usuario.findUnique({
+      where: { id: userId },
+      select: {
+        nombre: true,
+        foto: true,
+        fecha_nacimiento: true,
+        genero: true,
+      },
+    });
+    const response = {
+      ...licencia,
+      ...userData,
+    };
+    res.status(200).json(response);
+  } catch (error) {
+    console.error("Error al obtener licencia:", error);
     res.status(500).json({ error: "Error interno del servidor" });
   }
 };

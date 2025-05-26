@@ -16,5 +16,6 @@ licenseController.crearSolicitud
 router.get('/applications', authenticateToken, licenseController.getSolicitudes);
 router.put('/approve/:id', licenseController.aprobarSolicitud);
 router.put('/decline/:id', licenseController.rechazarSolicitud);
+router.get('/licencia', authenticateToken, licenseController.getLicenciaConductor);
 
 module.exports = router;
