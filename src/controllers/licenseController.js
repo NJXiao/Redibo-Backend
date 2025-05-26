@@ -1,5 +1,5 @@
 const cloudinary = require("../config/cloudinary");
-const prisma  = require("../config/prisma");
+const prisma = require("../config/prisma");
 
 exports.crearSolicitud = async (req, res) => {
   try {
@@ -96,4 +96,79 @@ exports.getSolicitudes = async (req, res) => {
     console.error("Error al obtener solicitudes:", error);
     res.status(500).json({ error: "Error interno del servidor" });
   }
-}
+};
+
+exports.aprobarSolicitud = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const solicitud = await prisma.solicitudConductor.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        usuario: true,
+      },
+    });
+
+    if (!solicitud) {
+      return res.status(404).json({ error: "Solicitud no encontrada" });
+    }
+
+    await prisma.usuario.update({
+      where: { id: solicitud.usuarioId },
+      data: { estadoConductor: "APPROVED" },
+    });
+
+    await prisma.usuarioRol.create({
+      data: {
+        id_usuario: solicitud.usuarioId,
+        id_rol: 3,
+      },
+    });
+
+    await prisma.licenciaConducir.create({
+      data: {
+        usuarioId: solicitud.usuarioId,
+        numeroLicencia: solicitud.numeroLicencia,
+        fechaEmision: solicitud.fechaEmision,
+        fechaVencimiento: solicitud.fechaVencimiento,
+        categoria: solicitud.categoria,
+      },
+    });
+
+    await prisma.solicitudConductor.delete({
+      where: { id: parseInt(id) },
+    });
+
+    res.status(200).json({ message: "Solicitud aprobada correctamente" });
+  } catch (error) {
+    console.error("Error al aprobar solicitud:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+};
+
+exports.rechazarSolicitud = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const solicitud = await prisma.solicitudConductor.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!solicitud) {
+      return res.status(404).json({ error: "Solicitud no encontrada" });
+    }
+
+    await prisma.solicitudConductor.delete({
+      where: { id: parseInt(id) },
+    });
+
+    await prisma.usuario.update({
+      where: { id: solicitud.usuarioId },
+      data: { estadoConductor: "NO_REQUESTED" },
+    });
+    res.status(200).json({ message: "Solicitud rechazada correctamente" });
+  } catch (error) {
+    console.error("Error al rechazar solicitud:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+};
