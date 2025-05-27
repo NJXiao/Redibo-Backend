@@ -72,6 +72,7 @@ model Carro {
   comentarios                     comentarios[]
   contratodeAlquiler              contratodeAlquiler[]
   OrdenPago                       OrdenPago[]
+  Comentarios                     ComentarioCarro[]
 }
 
 model Ciudad {
@@ -198,6 +199,8 @@ model Reserva {
   Usuario                Usuario     @relation(fields: [id_usuario], references: [id])
   Descuento              Descuento[]
   reservasConductor      ReservaConductor[]
+  Estado                 EstadoReserva @default(PENDIENTE)
+  calificaciones         CalificacionReserva[]
 }
 
 enum EstadoOrden {
@@ -290,6 +293,9 @@ model Usuario {
   google_id       String?
   foto            String?
   telefono         String?
+  ocupacion           String?
+  fecha_creacion      DateTime?                @default(now())
+  fecha_actualizacion DateTime?                @updatedAt
   saldo            Float       @default(0)
   busquedas        String?
   roles            UsuarioRol[]
@@ -310,6 +316,9 @@ model Usuario {
   asociacionesComoDriver  Asociacion[]        @relation("DriverAsociaciones")
   solicitudesEnviadas     SolicitudAsociacion[] @relation("SolicitanteSolicitudes")
   solicitudesRecibidas    SolicitudAsociacion[] @relation("ReceptorSolicitudes")
+  Comentarios         ComentarioCarro[]
+  reportesRecibidos   Reporte[] @relation("ReportesRecibidos")
+  reportesCreados     Reporte[] @relation("ReportesCreados")
 }
 
 model SolicitudConductor {
@@ -545,6 +554,68 @@ model ReservaConductor {
   Reserva     Reserva   @relation(fields: [id_reserva], references: [id])
   Usuario     Usuario   @relation(fields: [id_usuario], references: [id])
 }
+
+model CalificacionReserva {
+  id                Int      @id @default(autoincrement())
+  id_reserva        Int
+  reserva           Reserva  @relation(fields: [id_reserva], references: [id], onDelete: Cascade)
+  comportamiento    Int
+  cuidado_vehiculo  Int
+  puntualidad       Int
+  comentario        String?
+  fecha_creacion    DateTime @default(now())
+  
+  @@index([id_reserva])
+}
+
+model ComentarioCarro {
+  id          Int      @id @default(autoincrement())
+  id_carro    Int
+  id_usuario  Int
+  comentario  String
+  calificacion Int     @default(0)
+  fecha_creacion DateTime @default(now())
+  fecha_actualizacion DateTime @updatedAt
+  
+  carro       Carro    @relation(fields: [id_carro], references: [id], onDelete: Cascade)
+  usuario     Usuario  @relation(fields: [id_usuario], references: [id], onDelete: Cascade)
+  
+  @@index([id_carro])
+  @@index([id_usuario])
+}
+
+
+model Reporte {
+  id              Int         @id @default(autoincrement())
+  id_reportado    Int        
+  id_reportador   Int        
+  motivo          String
+  informacion_adicional String?
+  estado          String      @default("PENDIENTE")
+  fecha_creacion  DateTime    @default(now())
+  fecha_actualizacion DateTime @updatedAt
+  
+  reportado       Usuario?     @relation("ReportesRecibidos", fields: [id_reportado], references: [id])
+  reportador      Usuario?     @relation("ReportesCreados", fields: [id_reportador], references: [id])
+  
+  @@index([id_reportado])
+  @@index([id_reportador])
+}
+
+enum EstadoReserva {
+  PENDIENTE
+  CONFIRMADA
+  EN_CURSO
+  COMPLETADA
+  CANCELADA
+}
+
+enum EstadoCarro {
+  DISPONIBLE
+  RESERVADO
+  MANTENIMIENTO
+}
+
 
 enum Genero {
   MASCULINO
