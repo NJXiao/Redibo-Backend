@@ -306,6 +306,10 @@ model Usuario {
   solicitudesConductor  SolicitudConductor[]
   licenciasConducir LicenciaConducir[]
   reservasConductor ReservaConductor[]
+  asociacionesComoRenter  Asociacion[]        @relation("RenterAsociaciones")
+  asociacionesComoDriver  Asociacion[]        @relation("DriverAsociaciones")
+  solicitudesEnviadas     SolicitudAsociacion[] @relation("SolicitanteSolicitudes")
+  solicitudesRecibidas    SolicitudAsociacion[] @relation("ReceptorSolicitudes")
 }
 
 model SolicitudConductor {
@@ -356,6 +360,43 @@ enum CategoriaLicencia {
   B
   C
   T
+}
+enum TipoSolicitudAsociacion {
+  RENTER_A_DRIVER
+  DRIVER_A_RENTER
+}
+
+enum EstadoSolicitudAsociacion {
+  PENDIENTE
+  ACEPTADA
+  RECHAZADA
+  CANCELADA
+}
+
+model SolicitudAsociacion {
+  id                  Int                     @id @default(autoincrement())
+  solicitanteId       Int
+  receptorId          Int
+  tipo                TipoSolicitudAsociacion
+  mensaje             String?                 @db.VarChar(150)
+  estado              EstadoSolicitud         @default(PENDIENTE)
+  fechaSolicitud      DateTime                @default(now())
+  fechaRespuesta      DateTime?
+
+
+  solicitante         Usuario                 @relation("SolicitanteSolicitudes", fields: [solicitanteId], references: [id])
+  receptor           Usuario                 @relation("ReceptorSolicitudes", fields: [receptorId], references: [id])
+}
+
+model Asociacion {
+  id              Int                   @id @default(autoincrement())
+  renterId        Int
+  driverId        Int
+  fechaInicio     DateTime              @default(now())
+  activa          Boolean               @default(true)
+  
+  renter          Usuario               @relation("RenterAsociaciones", fields: [renterId], references: [id])
+  driver          Usuario               @relation("DriverAsociaciones", fields: [driverId], references: [id])
 }
 
 model UsuarioRol {
