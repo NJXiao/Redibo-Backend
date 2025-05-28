@@ -17,6 +17,7 @@ const authRoutes = require('./routes/authRoutes');
 
 const sprinterosRoutes = require('./Sprinteros'); // Importar las rutas de sprinteros
 const OrdenPagoRoutes = require('./routes/paymentOrderRoutes');
+const CodezenRoutes = require('./Codezen');
 
 const { carRouter } = require("./routes/cars");
 const { airportRouter } = require("./routes/airports");
@@ -68,6 +69,8 @@ app.use('/api/airports', airportRouter)
 app.use('/api/reservations', reservationRouter)
 app.use('/api/search', searchRouter)
 app.use('/api/users', userRouter)
+
+app.use('/api', CodezenRoutes);
 
 
 // Puerto
