@@ -76,5 +76,5 @@ module.exports = {
   listarSegurosCarro,
   obtenerSeguroCarroPorId,
   actualizarSeguroCarro,
-  eliminarSeguroCarro
+  eliminarSegurosCarroPorCarro
 };
