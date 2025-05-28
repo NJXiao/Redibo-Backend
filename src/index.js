@@ -19,7 +19,7 @@ const uploadRoutes = require("./routes/uploadRoutes");
 const sessionRoutes = require("./routes/sessionRoutes");
 const licenseRoutes = require("./routes/licenseRoutes");
 
-
+const associationRoutes = require('./routes/associationRoutes');
 const app = express();
 
 const allowedOrigins = [
@@ -62,6 +62,7 @@ app.use("/api", uploadRoutes);
 app.use("/api", sessionRoutes);
 app.use("/api", licenseRoutes);
 
+app.use("/api", associationRoutes);
 
 // Puerto
 const PORT = process.env.PORT || 4000;
