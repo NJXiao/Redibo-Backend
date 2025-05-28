@@ -15,6 +15,7 @@ const authRoutes = require('./routes/authRoutes');
 
 const sprinterosRoutes = require('./Sprinteros'); // Importar las rutas de sprinteros
 const OrdenPagoRoutes = require('./routes/paymentOrderRoutes');
+const CodezenRoutes = require('./Codezen');
 
 const app = express();
 const prisma = new PrismaClient();
@@ -55,6 +56,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api', sprinterosRoutes);
 
 app.use('/api', OrdenPagoRoutes);
+
+app.use('/api', CodezenRoutes);
 
 
 // Puerto
