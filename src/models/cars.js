@@ -1,6 +1,34 @@
 const prisma = require("../config/prisma");
 
 class CarModel {
+  static async getByIdCar({id}){
+    try {
+      const car = await prisma.carro.findUnique({
+        where:{
+          id: id,
+        },
+        select:{
+          Imagen:{
+            select:{
+              data:true,
+            }
+          },
+          marca:true,
+          modelo:true,
+          Direccion:{
+            select:{
+              calle:true,
+            }
+          },
+          precio_por_dia:true,
+        }
+      });
+      return car
+    } catch (error) {
+      console.error('La tabla no existe:', error)
+      throw new Error('La tabla no existe')
+    }
+  }
 
   static async getMostRented() {
     try {
