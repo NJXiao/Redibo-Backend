@@ -347,6 +347,7 @@ exports.getUserProfile = async (req, res) => {
       select: {
         id: true,
         nombre: true,
+        estadoConductor: true,
         correo: true,
         fecha_nacimiento: true,
         genero: true,
